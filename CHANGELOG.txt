@@ -1,0 +1,5 @@
+// $Id$
+
+Relation 7.x-1.x, xxxx-xx-xx
+----------------------------
+by sun: Added initial baseline of module files.
