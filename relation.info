@@ -1,8 +1,6 @@
 ; $Id$
 name = Relation
 description = Describes relationships between entities.
-;package = Multilingual
 core = 7.x
-;dependencies[] = locale
 files[] = relation.module
 files[] = tests/relation.test

@@ -6,3 +6,58 @@
  * Installation functions for Relation module.
  */
 
+/**
+ * Implements hook_schema().
+ */
+function relation_schema() {
+  $schema['relation'] = array(
+    'description' => 'Stores predicates of relations.',
+    'fields' => array(
+      'relation_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'predicate' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('relation_id'),
+    'indexes' => array(
+      'predicates' => array('predicate', 'relation_id'),
+    ),
+  );
+  $schema['relation_data'] = array(
+    'description' => 'Stores relations between entities.',
+    'fields' => array(
+      'relation_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'entity_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('relation_id', 'entity_type', 'entity_id'),
+    'indexes' => array(
+      'relation_id' => array('relation_id'),
+      'entity' => array('entity_type', 'entity_id'),
+    ),
+  );
+  return $schema;
+}
+

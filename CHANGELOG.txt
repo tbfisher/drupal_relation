@@ -2,4 +2,5 @@
 
 Relation 7.x-1.x, xxxx-xx-xx
 ----------------------------
+#977016 by sun: Moved Awesomerelationship into Relation project.
 by sun: Added initial baseline of module files.
