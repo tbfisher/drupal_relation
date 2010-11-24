@@ -2,5 +2,6 @@
 
 Relation 7.x-1.x, xxxx-xx-xx
 ----------------------------
+#957742 by naught101, sun: Added missing files[] entry for relation.field.inc.
 #977016 by sun: Moved Awesomerelationship into Relation project.
 by sun: Added initial baseline of module files.
