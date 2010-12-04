@@ -14,6 +14,7 @@ require_once dirname(__FILE__) . '/relation.field.inc';
  * Implements hook_entity_info().
  */
 function relation_entity_info() {
+  return;
   $entities['relation'] = array(
     'label' => t('Relation'),
     'base table' => 'relation',
@@ -41,6 +42,10 @@ function relation_entity_info() {
  * Implements hook_entity_info_alter().
  */
 function relation_entity_info_alter(&$entity_info) {
+  return;
+  $entity_info['node']['static cache'] = FALSE;
+  $entity_info['node']['field cache'] = FALSE;
+  return;
   $entity_info['node']['relationships']['user'] = array(
     // a handler -- this can be reusable or specific to the entity type
     // it will do things like list 'user' entities related to one or more nodes
@@ -72,15 +77,12 @@ class RelationEntityController extends DrupalDefaultEntityController {
   }
 }
 
-function _relation_entity_query_helper($query) {
-  // Add the machine name field from the {taxonomy_vocabulary} table.
-  $query->innerJoin('relation_data', 'l', 'base.relation_id = l.relation_id');
-  $query->innerJoin('relation_data', 'r', 'base.relation_id = r.relation_id AND NOT (l.entity_type = r.entity_type AND l.entity_id = r.entity_id)');
-  $query->addField('base', 'relation_id');
-  $query->addField('base', 'predicate');
-  $query->addField('l', 'entity_type', 'left_entity_type');
+function _relation_entity_query_helper($query, $table, $field_name) {
+  $query->innerJoin($table, 'r', "l.{$field_name}_relation_id = r.{$field_name}_relation_id AND NOT (l.etid = r.etid AND l.entity_id = r.entity_id)");
+  $query->addField('l', "{$field_name}_relation_id", 'relation_id');
+  $query->addField('l', 'etid', 'left_etid');
   $query->addField('l', 'entity_id', 'left_entity_id');
-  $query->addField('r', 'entity_type', 'right_entity_type');
+  $query->addField('r', 'etid', 'right_etid');
   $query->addField('r', 'entity_id', 'right_entity_id');
 }
 

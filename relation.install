@@ -7,35 +7,14 @@
  */
 
 /**
- * Implements hook_schema().
+ * Implements hook_field_schema().
  */
-function relation_schema() {
-  $schema['relation'] = array(
-    'description' => 'Stores predicates of relations.',
-    'fields' => array(
-      'relation_id' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'predicate' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-    ),
-    'primary key' => array('relation_id'),
-    'indexes' => array(
-      'predicates' => array('predicate', 'relation_id'),
-    ),
-  );
-  $schema['relation_data'] = array(
-    'description' => 'Stores relations between entities.',
-    'fields' => array(
+function relation_field_schema() {
+  $schema = array(
+    'columns' => array(
       'relation_id' => array(
         'type' => 'int',
-        'unsigned' => TRUE,
+        'unsigned' => FALSE,
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -51,8 +30,12 @@ function relation_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'revision_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
     ),
-    'primary key' => array('relation_id', 'entity_type', 'entity_id'),
     'indexes' => array(
       'relation_id' => array('relation_id'),
       'entity' => array('entity_type', 'entity_id'),
