@@ -2,6 +2,7 @@
 
 Relation 7.x-1.x, xxxx-xx-xx
 ----------------------------
+#981364 by sun, naught, chx: fix field schema column and variable names. fix hook_field_is_empty() implementation.
 #981364 by naught101, sun, chx: Re-use field storage for relation data.
 #957742 by naught101, sun: Added missing files[] entry for relation.field.inc.
 #977016 by sun: Moved Awesomerelationship into Relation project.

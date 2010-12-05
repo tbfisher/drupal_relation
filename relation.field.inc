@@ -28,7 +28,7 @@ function relation_field_info() {
  * Implements hook_field_is_empty().
  */
 function relation_field_is_empty($item, $field) {
-  return empty($item['relation_id']);
+  return empty($item['other_entity_id']);
 }
 
 /**
@@ -43,58 +43,62 @@ function relation_field_presave($entity_type, $entity, $field, $instance, $langc
   }
 
   $relations = array();
-  foreach ($items as $item) {
+  foreach ($items as &$item) {
+    // Create a new relation_id for new relations.
     if (!isset($item['relation_id'])) {
       $item['relation_id'] = db_next_id();
     }
-    $relations[$item['entity_type']][$item['relation_id']] = $item['entity_id'];
+    $relations[$item['other_entity_type']][$item['relation_id']] = $item['other_entity_id'];
   }
 
-  foreach ($relations as $target_type => $source_relations) {
-    $targets = entity_load($target_type, $source_relations);
+  //$entity_relations describes relations from $entity. Generally, $entity_
+  //describes the entity being saved, $other_ describes entities on the other
+  //end of the relation.
+  foreach ($relations as $other_type => $entity_relations) {
+    $others = entity_load($other_type, $entity_relations);
     // @todo The else condition must not happen; implement hook_field_validate().
-    if (!$targets) {
+    if (!$others) {
       continue;
     }
-    foreach ($targets as $target_id => $target) {
+    foreach ($others as $other_id => $other) {
       // A new field instance on existing entities contains no structure yet.
-      if (!isset($target->{$field_name}[$langcode])) {
-        $target->{$field_name}[$langcode] = array();
+      if (!isset($other->{$field_name}[$langcode])) {
+        $other->{$field_name}[$langcode] = array();
       }
-      $target_items = &$target->{$field_name}[$langcode];
+      $other_items = &$other->{$field_name}[$langcode];
 
-      // Transform current relations on the target into a lookup map keyed by
+      // Transform current relations on the other into a lookup map keyed by
       // relation_id.
-      $target_relations = array();
-      foreach ($target_items as $delta => $item) {
-        $target_relations[$item['relation_id']] = array(
+      $other_relations = array();
+      foreach ($other_items as $delta => $item) {
+        $other_relations[$item['relation_id']] = array(
           'delta' => $delta,
           'item' => $item,
         );
       }
       // Add a new relation, if it does not exist yet.
-      foreach ($source_relations as $relation_id => $target_entity_id) {
-        if (!isset($target_relations[$relation_id])) {
-          $target_items[] = array(
+      foreach ($entity_relations as $relation_id => $other_entity_id) {
+        if (!isset($other_relations[$relation_id])) {
+          $other_items[] = array(
             'relation_id' => $relation_id,
-            'entity_type' => $entity_type,
-            'entity_id' => $id,
+            'other_entity_type' => $entity_type,
+            'other_entity_id' => $id,
             // @todo Add optional revision_id handling.
-            // 'revision_id' => $vid,
-            'revision_id' => NULL,
+            // 'other_revision_id' => $vid,
+            'other_revision_id' => NULL,
           );
         }
       }
       // Prevent infinite recursion; ENTITY_save() calls hook_field_presave().
-      $target->relation_recursion = TRUE;
+      $other->relation_recursion = TRUE;
       // @todo Entity module's entity_save() does not handle core entities yet.
       // @see http://drupal.org/node/988780
-      $result = entity_save($target_type, $target);
-      if ($result === FALSE && function_exists($target_type . '_save')) {
-        $function = $target_type . '_save';
-        $function($target);
+      $result = entity_save($other_type, $other);
+      if ($result === FALSE && function_exists($other_type . '_save')) {
+        $function = $other_type . '_save';
+        $function($other);
       }
-      unset($target->relation_recursion);
+      unset($other->relation_recursion);
     }
   }
 }
@@ -146,27 +150,27 @@ function relation_field_widget_info() {
 function relation_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if (!isset($items[$delta])) {
     $items[$delta] = array(
-      'entity_type' => '',
-      'entity_id' => '',
       'relation_id' => NULL,
+      'other_entity_type' => '',
+      'other_entity_id' => '',
     );
   }
 
   $element['#type'] = 'fieldset';
-  $element['entity_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Entity type'),
-    '#options' => drupal_map_assoc(array_keys($field['bundles'])),
-    '#default_value' => $items[$delta]['entity_type'],
-  );
-  $element['entity_id'] = array(
-    '#title' => t('Entity ID'),
-    '#type' => 'textfield',
-    '#default_value' => $items[$delta]['entity_id'],
-  );
   $element['relation_id'] = array(
     '#type' => 'value',
     '#value' => $items[$delta]['relation_id'],
+  );
+  $element['other_entity_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Entity type'),
+    '#options' => drupal_map_assoc(array_keys($field['bundles'])),
+    '#default_value' => $items[$delta]['other_entity_type'],
+  );
+  $element['other_entity_id'] = array(
+    '#title' => t('Entity ID'),
+    '#type' => 'textfield',
+    '#default_value' => $items[$delta]['other_entity_id'],
   );
   return $element;
 }
@@ -189,10 +193,10 @@ function relation_field_formatter_info() {
 function relation_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $links = array();
   foreach ($items as $item) {
-    $class = $item['entity_type'] . '-' . $item['entity_id'];
-    $uri = entity_uri($item['entity_type'], $item['entity']);
+    $class = $item['other_entity_type'] . '-' . $item['other_entity_id'];
+    $uri = entity_uri($item['other_entity_type'], $item['entity']);
     $links[$class] = array(
-      'title' => entity_label($item['entity_type'], $item['entity']),
+      'title' => entity_label($item['other_entity_type'], $item['entity']),
       'href' => $uri['path'],
     ) + $uri;
   }
@@ -212,8 +216,8 @@ function relation_field_formatter_prepare_view($entity_type, $entities, $field, 
   $entities_to_load = array();
   foreach ($items as $key => $item) {
     foreach ($item as $delta => $value) {
-      $entities_to_load[$value['entity_type']][] = $value['entity_id'];
-      $lookup[$value['entity_type']][$value['entity_id']][] = array($key, $delta);
+      $entities_to_load[$value['other_entity_type']][] = $value['other_entity_id'];
+      $lookup[$value['other_entity_type']][$value['other_entity_id']][] = array($key, $delta);
     }
   }
   foreach ($entities_to_load as $entity_type => $ids) {

@@ -18,19 +18,19 @@ function relation_field_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'entity_type' => array(
+      'other_entity_type' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
-      'entity_id' => array(
+      'other_entity_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'revision_id' => array(
+      'other_revision_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => FALSE,
@@ -38,7 +38,7 @@ function relation_field_schema() {
     ),
     'indexes' => array(
       'relation_id' => array('relation_id'),
-      'entity' => array('entity_type', 'entity_id'),
+      'other_entity' => array('other_entity_type', 'other_entity_id'),
     ),
   );
   return $schema;
