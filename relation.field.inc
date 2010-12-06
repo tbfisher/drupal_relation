@@ -70,10 +70,10 @@ function relation_field_presave($entity_type, $entity, $field, $instance, $langc
       // Transform current relations on the other into a lookup map keyed by
       // relation_id.
       $other_relations = array();
-      foreach ($other_items as $delta => $item) {
-        $other_relations[$item['relation_id']] = array(
+      foreach ($other_items as $delta => $other_item) {
+        $other_relations[$other_item['relation_id']] = array(
           'delta' => $delta,
-          'item' => $item,
+          'item' => $other_item,
         );
       }
       // Add a new relation, if it does not exist yet.
