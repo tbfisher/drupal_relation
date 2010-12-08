@@ -14,10 +14,7 @@ function relation_field_info() {
     'relation' => array(
       'label' => t('Relation'),
       'description' => t('Stores relationships between entities.'),
-      'settings' => array(
-        'allowed_values' => '',
-        'allowed_values_function' => '',
-      ),
+      'settings' => array(),
       'default_widget' => 'relation_default',
       'default_formatter' => 'relation_default',
     ),
