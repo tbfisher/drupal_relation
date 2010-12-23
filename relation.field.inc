@@ -48,9 +48,9 @@ function relation_field_presave($entity_type, $entity, $field, $instance, $langc
     $relations[$item['other_entity_type']][$item['relation_id']] = $item['other_entity_id'];
   }
 
-  //$entity_relations describes relations from $entity. Generally, $entity_
-  //describes the entity being saved, $other_ describes entities on the other
-  //end of the relation.
+  // $entity_relations describes relations from $entity. In general, $entity_
+  // describes the entity being saved, $other_ describes entities on the other
+  // end of the relation.
   foreach ($relations as $other_type => $entity_relations) {
     $others = entity_load($other_type, $entity_relations);
     // @todo The else condition must not happen; implement hook_field_validate().
