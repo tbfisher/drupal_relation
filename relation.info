@@ -1,4 +1,3 @@
-; $Id$
 name = Relation
 description = Describes relationships between entities.
 dependencies[] = entity
