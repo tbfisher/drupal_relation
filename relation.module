@@ -221,7 +221,12 @@ function relation_dropzone_save($form, $form_state) {
 function relation_entity_load($entities, $type) {
   $entities_store = &drupal_static('relation_entities', array());
   $enabled = &drupal_static(__FUNCTION__);
+  // Recursion protection.
+  if ($enabled == -1) {
+    return;
+  }
   if (!isset($enabled)) {
+    $enabled = -1;
     $block_info = _block_load_blocks();
     $enabled = FALSE;
     foreach ($block_info as $region => $blocks) {
