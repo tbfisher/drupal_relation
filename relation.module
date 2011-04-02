@@ -54,7 +54,7 @@ function relation_page($relation) {
     '#theme' => 'item_list',
     '#items' => array(
       l(entity_label($relation->left_entity_type, $left_entity), $left_uri['path'], $left_uri['options']),
-      l(entity_label($relation->right_entity_type, $right_entity), $right_uri['path'], $right_uri['options']),      
+      l(entity_label($relation->right_entity_type, $right_entity), $right_uri['path'], $right_uri['options']),
     ),
   );
   return $build;
@@ -215,6 +215,13 @@ function relation_dropzone($form) {
         '#value' => t('Create relation'),
         '#submit' => array('relation_dropzone_save'),
       );
+      if (isset($_SESSION['stored_entity_keys'])) {
+        $form['clear'] = array(
+          '#type' => 'submit',
+          '#value' => t('Clear'),
+          '#submit' => array('relation_dropzone_clear'),
+        );
+      }
     }
   }
   return $form;
@@ -247,6 +254,13 @@ function relation_dropzone_save($form, $form_state) {
 }
 
 /**
+ * Submit handler for the clear button.
+ */
+function relation_dropzone_clear($form, $form_state) {
+  unset($_SESSION['stored_entity_keys']);
+}
+
+/**
  * Implements hook_entity_load().
  */
 function relation_entity_load($entities, $type) {
@@ -266,7 +280,7 @@ function relation_entity_load($entities, $type) {
         $enabled = TRUE;
         break;
       }
-    }    
+    }
   }
   if ($enabled) {
     $entities_store += array($type => array());
