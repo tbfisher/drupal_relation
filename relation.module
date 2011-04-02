@@ -9,7 +9,6 @@
  * Implements hook_entity_info().
  */
 function relation_entity_info() {
-  return;
   $entities['relation'] = array(
     'label' => t('Relation'),
     'base table' => 'relation',
@@ -33,6 +32,34 @@ function relation_entity_info() {
   return $entities;
 }
 
+function relation_menu() {
+  $items['relation/%relation'] = array(
+    'access arguments' => array('access content'),
+    'page callback' => 'relation_page',
+    'page arguments' => array(1),
+  );
+  return $items;
+}
+
+function relation_load($relation_id) {
+  return reset(entity_load('relation', array($relation_id)));
+}
+
+function relation_page($relation) {
+  $left_entity = reset(entity_load($relation->left_entity_type, array($relation->left_entity_id)));
+  $left_uri = entity_uri($relation->left_entity_type, $left_entity);
+  $right_entity = reset(entity_load($relation->right_entity_type, array($relation->right_entity_id)));
+  $right_uri = entity_uri($relation->right_entity_type, $right_entity);
+  $build['link_list'] = array(
+    '#theme' => 'item_list',
+    '#items' => array(
+      l(entity_label($relation->left_entity_type, $left_entity), $left_uri['path'], $left_uri['options']),
+      l(entity_label($relation->right_entity_type, $right_entity), $right_uri['path'], $right_uri['options']),      
+    ),
+  );
+  return $build;
+}
+
 /**
  * Controller class for entity relations.
  *
@@ -48,7 +75,7 @@ class RelationEntityController extends DrupalDefaultEntityController {
   }
 }
 
-function _relation_entity_query_helper($query, $table, $field_name) {
+function _relation_entity_query_helper($query) {
   $query->innerJoin('relation_data', 'l', 'base.relation_id = l.relation_id');
   $query->innerJoin('relation_data', 'r', 'base.relation_id = r.relation_id AND NOT (l.entity_type = r.entity_type AND l.entity_id = r.entity_id)');
   $query->addField('base', 'relation_id');
