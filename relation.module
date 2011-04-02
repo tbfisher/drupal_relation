@@ -179,7 +179,7 @@ function relation_dropzone($form) {
         // The structure is (entity_type, entity_id, entity label).
         $list[] = $entity_key[2];
       }
-      $form['stored'] =  array(
+      $form['stored'] = array(
         '#theme' => 'item_list',
         '#items' => $list,
       );
@@ -226,7 +226,7 @@ function relation_entity_load($entities, $type) {
   $entities_store = &drupal_static('relation_entities', array());
   $enabled = &drupal_static(__FUNCTION__);
   // Recursion protection.
-  if ($enabled == -1) {
+  if ($enabled === -1) {
     return;
   }
   if (!isset($enabled)) {
