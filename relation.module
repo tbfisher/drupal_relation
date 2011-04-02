@@ -32,13 +32,70 @@ function relation_entity_info() {
   return $entities;
 }
 
+/**
+ * implement hook_permission().
+ */
+function relation_permission() {
+  return array(
+    'administer relation' => array(
+      'title' => t('Administer Relations'),
+      'description' => t('Perform administration tasks for relations.'),
+    ),
+  );
+}
+
+/**
+ * implement hook_menu().
+ */
 function relation_menu() {
   $items['relation/%relation'] = array(
     'access arguments' => array('access content'),
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
+  // will need to be moved, when relation bundles (predicates) are implemented.
+  $items['admin/structure/relation'] = array(
+    'title' => 'Relation',
+    'access arguments' => array('access content'),
+    'page callback' => 'relation_config',
+    'type' => MENU_LOCAL_TASK,
+    'page arguments' => array(1),
+  );
   return $items;
+}
+
+/**
+ * relation settings page, proof of concept, most will need to be moved
+ * to relation bundle settings page.
+ */
+function relation_config() {
+  $bundles = array();
+  foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
+    if (isset($entity['bundles'])) {
+      foreach ($entity['bundles'] as $bundle_id => $bundle) {
+        $bundles[$entity_type . '_' . $bundle_id] = $bundle['label'] . ' (' . $entity['label'] . ')';
+      }
+    }
+  }
+  $form['predicate'] = array(
+    '#type'         => 'textfield',
+    '#title'        => 'Predicate',
+    '#description'  => 'Title of the relation type',
+  );
+  $form['available_bundles'] = array(
+    '#type'         => 'select',
+    '#title'        => 'Available bundles',
+    '#options'      => $bundles,
+    '#size'         => min(12, count($bundles)),
+    '#multiple'     => TRUE,
+    '#description'  => 'Bundles that are not selected will not be available as end points for relations. Ctrl+click to select multiple.',
+  );
+  $form['directional'] = array(
+    '#type'         => 'checkbox',
+    '#title'        => 'Directional?',
+    '#options'      => FALSE,
+  );
+  return $form;
 }
 
 function relation_load($relation_id) {
