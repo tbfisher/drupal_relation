@@ -6,38 +6,55 @@
  */
 
 /**
- * Implements hook_field_schema().
+ * Implements hook_schema().
  */
-function relation_field_schema() {
-  $schema = array(
-    'columns' => array(
+function relation_schema() {
+  $schema['relation'] = array(
+    'description' => 'Keeps track of relation entities.',
+    'fields' => array(
       'relation_id' => array(
-        'type' => 'int',
-        'unsigned' => FALSE,
+        'type' => 'serial',
+        'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
       ),
-      'other_entity_type' => array(
+      'predicate' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
-      'other_entity_id' => array(
+    ),
+    'primary key' => array('relation_id'),
+    'indexes' => array(
+      'predicates' => array('predicate', 'relation_id'),
+    ),
+  );
+  $schema['relation_data'] = array(
+    'description' => 'Stores information about relations between entities',
+    'fields' => array(
+      'relation_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'other_revision_id' => array(
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'entity_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not null' => FALSE,
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
+    'primary key' => array('relation_id', 'entity_type', 'entity_id'),
     'indexes' => array(
       'relation_id' => array('relation_id'),
-      'other_entity' => array('other_entity_type', 'other_entity_id'),
+      'entity' => array('entity_type', 'entity_id'),
     ),
   );
   return $schema;
