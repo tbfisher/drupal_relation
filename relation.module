@@ -140,7 +140,7 @@ function relation_block_info() {
  */
 function relation_block_view() {
   $form = drupal_get_form('relation_dropzone');
-  if (isset($form['entity'])) {
+  if (isset($form['entity_key'])) {
     return array(
       'subject' => t('Pick an entity'),
       'content' => $form,
@@ -162,10 +162,12 @@ function relation_dropzone($form) {
   if ($options) {
     $form['entity_key'] = array(
       '#type'         => 'select',
-      '#empty_value'  => '',
-      '#empty_option' => t('Select an entity'),
       '#options'      => $options,
     );
+    if (count($options) > 1) {
+      $form['#empty_value'] = '';
+      $form['#empty_option'] = t('Select an entity');
+    }
     $form['save'] = array(
       '#type' => 'submit',
       '#submit' => array('relation_dropzone_pick'),
@@ -187,6 +189,7 @@ function relation_dropzone($form) {
       );
     }
   }
+  return $form;
 }
 
 /**
@@ -227,6 +230,7 @@ function relation_entity_load($entities, $type) {
   }
   if (!isset($enabled)) {
     $enabled = -1;
+    drupal_theme_initialize();
     $block_info = _block_load_blocks();
     $enabled = FALSE;
     foreach ($block_info as $region => $blocks) {
@@ -237,8 +241,8 @@ function relation_entity_load($entities, $type) {
     }    
   }
   if ($enabled) {
-    $entities += array($type => array());
-    $entities[$type] += $entities;
+    $entities_store += array($type => array());
+    $entities_store[$type] += $entities;
   }
 }
 
