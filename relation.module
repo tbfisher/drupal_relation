@@ -118,7 +118,7 @@ function relation_create($entity_keys) {
   $query = db_insert('relation_data')
     ->fields(array('relation_id', 'entity_type', 'entity_id'));
   foreach ($entity_keys as $entity_key) {
-    $query->values(array($relation_id, $entity_key[0], $entity_key[1]))
+    $query->values(array($relation_id, $entity_key[0], $entity_key[1]));
   }
   $query->execute();
   return $relation_id;
@@ -168,11 +168,11 @@ function relation_dropzone($form) {
     );
     $form['save'] = array(
       '#type' => 'submit',
-      '#submit' => array('relation_dropzone_pick')
+      '#submit' => array('relation_dropzone_pick'),
       '#value' => t('Pick'),
     );
     if (!empty($_SESSION['stored_entity_keys'])) {
-      $list = array()
+      $list = array();
       foreach ($_SESSION['stored_entity_keys'] as $entity_key) {
         // The structure is (entity_type, entity_id, entity label).
         $list[] = $entity_key[0] .': '. $entity_key[2];
@@ -180,7 +180,7 @@ function relation_dropzone($form) {
       $form['stored']['#markup'] =  array(
         '#theme' => 'item_list',
         '#items' => $list,
-      )
+      );
       $form['save'] = array(
         '#type' => 'submit',
         '#value' => t('Pick'),
