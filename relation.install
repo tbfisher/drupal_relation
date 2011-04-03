@@ -57,6 +57,46 @@ function relation_schema() {
       'entity' => array('entity_type', 'entity_id'),
     ),
   );
-  return $schema;
+  $schema['relation_settings'] = array(
+    'description' => 'Relation settings.',
+    'fields' => array(
+      'predicate' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'directional' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('predicate'),
+  );
+  $schema['relation_bundles'] = array(
+    'description' => 'Relation settings.',
+    'fields' => array(
+      'predicate' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'bundle' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+  );
+ return $schema;
 }
-

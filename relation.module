@@ -21,14 +21,15 @@ function relation_entity_info() {
     'bundle keys' => array(
       'bundle' => 'predicate',
     ),
-    'bundles' => array(
-      // Describe Drupal's built-in relations.
-      'creator' => array(
-        'label' => t('Author'),
-      ),
-    ),
+    'bundles' => array(),
     'view modes' => array(),
   );
+  foreach (db_query('SELECT predicate FROM {relation_settings}') as $record) {
+    $entities['relation']['bundles'][$record->predicate] = array(
+      'label' => $record->predicate,
+
+    );
+  }
   return $entities;
 }
 
@@ -53,13 +54,18 @@ function relation_menu() {
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
-  // will need to be moved, when relation bundles (predicates) are implemented.
-  $items['admin/structure/relation'] = array(
+  $items['admin/structure/relation/add'] = array (
+    'title' => 'Add relation',
+    'access arguments' => array('administer relation'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('relation_config_page'),
+  );
+  $items['admin/structure/relation/edit/%'] = array(
     'title' => 'Relation',
-    'access arguments' => array('access content'),
-    'page callback' => 'relation_config_page', //change this to relation_types_page
-    'type' => MENU_LOCAL_TASK,
-    'page arguments' => array(1),
+    'access arguments' => array('administer relation'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('relation_config_page', 4),
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -68,32 +74,62 @@ function relation_menu() {
  * Relation settings page, proof of concept, most will need to be moved
  * to relation bundle settings pages.
  */
-function relation_config_page() {
-  $form['predicate'] = array(
-    '#type'         => 'textfield',
-    '#title'        => 'Predicate',
-    '#description'  => 'Title of the relation type',
-  );
-  $bundles = array();
-  foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
-    if (isset($entity['bundles'])) {
-      foreach ($entity['bundles'] as $bundle_id => $bundle) {
-        $bundles[$entity_type . '_' . $bundle_id] = $bundle['label'] . ' (' . $entity['label'] . ')';
+function relation_config_page($form, $form_state, $predicate = NULL) {
+  if ($predicate) {
+    $relation_type = db_query('SELECT * FROM {relation_settings} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
+    if ($relation_type) {
+      foreach (db_query('SELECT entity_type, bundle FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
+        $relation_type->bundles[] = "$record->entity_type:$record->bundle";
       }
     }
   }
-  $form['available_bundles'] = array(
-    '#type'         => 'select',
-    '#title'        => 'Available bundles',
-    '#options'      => $bundles,
-    '#size'         => min(12, count($bundles)),
-    '#multiple'     => TRUE,
-    '#description'  => 'Bundles that are not selected will not be available as end points for relations. Ctrl+click to select multiple.',
+  if (empty($relation_type)) {
+    $relation_type = (object) array('predicate' => '', 'bundles' => array(), 'directional' => FALSE);
+  }
+  if ($relation_type->predicate) {
+    $form['predicate'] = array(
+      '#type'  => 'value',
+      '#value' => $relation_type->predicate,
+    );
+    $form['_predicate']['#markup'] = t('Relation name: %predicate', array(':predicate' => $relation_type->predicate));
+  }
+  else {
+    $form['predicate'] = array(
+      '#type'          => 'textfield',
+      '#title'         => 'Predicate',
+      '#description'   => 'Name of the relation',
+      '#default_value' => $relation_type->predicate,
+      '#required'      => TRUE,
+    );
+  }
+  $bundles = array();
+  $counter = 0;
+  foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
+    if (isset($entity['bundles'])) {
+      foreach ($entity['bundles'] as $bundle_id => $bundle) {
+        $bundles[$entity_type]["$entity_type:$bundle_id"] = $bundle['label'];
+        $counter++;
+      }
+    }
+    else {
+      $bundles[$entity_type]["$entity_type:$entity_type"] = $entity['label'];
+        $counter++;
+    }
+  }
+  $form['bundles'] = array(
+    '#type'          => 'select',
+    '#title'         => 'Available bundles',
+    '#options'       => $bundles,
+    '#size'          => max(12, $counter),
+    '#default_value' => $relation_type->bundles,
+    '#multiple'      => TRUE,
+    '#description'   => 'Bundles that are not selected will not be available as end points for relations. Ctrl+click to select multiple.',
+    '#required'      => TRUE,
   );
   $form['directional'] = array(
-    '#type'         => 'checkbox',
-    '#title'        => 'Directional?',
-    '#options'      => FALSE,
+    '#type'           => 'checkbox',
+    '#title'          => 'Directional?',
+    '#default_value'  => $relation_type->directional,
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -103,9 +139,24 @@ function relation_config_page() {
 }
 
 /**
- * Submit data from settings page... useless until we implement bundles...
+ * Submit data from settings page.
  */
 function relation_config_page_submit($form, &$form_state) {
+  $predicate = $form_state['values']['predicate'];
+  $record = array(
+    'predicate'   => $predicate,
+    'directional' => $form_state['values']['directional'],
+  );
+  $transaction = db_transaction();
+  drupal_write_record('relation_settings', $record, $form['predicate']['#type'] == 'value' ? 'predicate' : array());
+  db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
+  $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle'));
+  foreach ($form_state['values']['bundles'] as $entity_bundles) {
+    list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
+    $query->values(array($predicate, $entity_type, $bundle));
+  }
+  $query->execute();
+  $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
 }
 
 function relation_load($relation_id) {
@@ -354,4 +405,3 @@ function relation_entity_load($entities, $type) {
     $entities_store[$type] += $entities;
   }
 }
-
