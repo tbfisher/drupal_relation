@@ -110,7 +110,7 @@ function relation_config_page($form, $form_state, $predicate = NULL) {
       }
     }
     else {
-      $bundles[$entity_type]["$entity_type:$entity_type"] = $entity['label'];
+      $bundles[$entity['label']]["$entity_type:$entity_type"] = $entity['label'];
         $counter++;
     }
   }
@@ -252,7 +252,7 @@ class RelationHandler implements RelationInterface {
  * Create a relation.
  *
  * @param $entity_keys
- *   An array with keys for entity_type whose values are arrays of entity ID's.
+ *   A list of (entity_type, entity_id) pairs.
  * @return
  *   The new relation id.
  */
@@ -327,15 +327,7 @@ function relation_dropzone($form) {
       '#value' => t('Pick'),
     );
     if (!empty($_SESSION['relation_entity_keys'])) {
-      $list = array();
-      foreach ($_SESSION['relation_entity_keys'] as $entity_key) {
-        // The structure is (entity_type, entity_id, entity label).
-        $list[] = $entity_key[2];
-      }
-      $form['stored'] = array(
-        '#theme' => 'item_list',
-        '#items' => $list,
-      );
+      $form['stored'] = _relation_stored_entity_keys_list();
       $form['save'] = array(
         '#type' => 'submit',
         '#value' => t('Create relation'),
@@ -351,6 +343,21 @@ function relation_dropzone($form) {
     }
   }
   return $form;
+}
+
+/**
+ * Helper to get a item_list render structure out of the entities in session.
+ */
+function _relation_stored_entity_keys_list() {
+  $list = array();
+  foreach ($_SESSION['relation_entity_keys'] as $entity_key) {
+    // The structure is (entity_type, entity_id, entity label).
+    $list[] = $entity_key[2];
+  }
+  return array(
+    '#theme' => 'item_list',
+    '#items' => $list,
+  );
 }
 
 /**
@@ -375,7 +382,12 @@ function relation_dropzone_pick($form, $form_state) {
 function relation_dropzone_save($form, $form_state) {
   relation_dropzone_pick($form, $form_state);
   if (isset($_SESSION['relation_entity_keys'])) {
-    relation_create($_SESSION['relation_predicate'], $_SESSION['relation_entity_keys']);
+    $predicate = $_SESSION['relation_predicate'];
+    $relation_id = relation_create($predicate, $_SESSION['relation_entity_keys']);
+    $link = l($predicate, "relation/$relation_id");
+    $list = drupal_render(_relation_stored_entity_keys_list());
+    $message = t('Created new !link from !list.', array('!link' => $link, '!list' => $list));
+    drupal_set_message($message);
     relation_dropzone_clear($form, $form_state);
   }
 }
