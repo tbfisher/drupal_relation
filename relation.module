@@ -90,7 +90,7 @@ function relation_config_page($form, $form_state, $predicate = NULL) {
       '#type'  => 'value',
       '#value' => $relation_type->predicate,
     );
-    $form['_predicate']['#markup'] = t('Relation name: %predicate', array(':predicate' => $relation_type->predicate));
+    $form['_predicate']['#markup'] = t('Relation name: %predicate', array('%predicate' => $relation_type->predicate));
   }
   else {
     $form['predicate'] = array(
@@ -105,7 +105,7 @@ function relation_config_page($form, $form_state, $predicate = NULL) {
   foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
     if (isset($entity['bundles'])) {
       foreach ($entity['bundles'] as $bundle_id => $bundle) {
-        $bundles[$entity_type]["$entity_type:$bundle_id"] = $bundle['label'];
+        $bundles[$entity['label']]["$entity_type:$bundle_id"] = $bundle['label'];
         $counter++;
       }
     }
@@ -252,7 +252,7 @@ class RelationHandler implements RelationInterface {
  * Create a relation.
  *
  * @param $entity_keys
- *   A list of (entity_type, entity_id) pairs.
+ *   An array with keys for entity_type whose values are arrays of entity ID's.
  * @return
  *   The new relation id.
  */
