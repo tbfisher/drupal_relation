@@ -277,6 +277,7 @@ function relation_block_info() {
   return array(
     'dropzone' => array(
       'info' => t('Relation block'),
+      'cache' => DRUPAL_NO_CACHE,
     ),
   );
 }
@@ -325,19 +326,35 @@ function relation_dropzone($form) {
       '#type' => 'submit',
       '#submit' => array('relation_dropzone_pick'),
       '#value' => t('Pick'),
+      '#ajax'  => array(
+        'wrapper' => 'relation_dropzone_stored',
+        'callback' => '_relation_dropzone_ajax',
+      ),
+    );
+    $form['reload'] = array(
+      '#prefix' => '<span id="relation_dropzone_stored">',
+      '#postfix' => '</span>',
     );
     if (!empty($_SESSION['relation_entity_keys'])) {
-      $form['stored'] = _relation_stored_entity_keys_list();
-      $form['save'] = array(
+      $form['reload']['stored'] = _relation_stored_entity_keys_list();
+      $form['reload']['save'] = array(
         '#type' => 'submit',
         '#value' => t('Create relation'),
         '#submit' => array('relation_dropzone_save'),
+        '#ajax'  => array(
+          'wrapper' => 'relation_dropzone_stored',
+          'callback' => '_relation_dropzone_ajax',
+        ),
       );
       if (isset($_SESSION['relation_entity_keys'])) {
-        $form['clear'] = array(
+        $form['reload']['clear'] = array(
           '#type' => 'submit',
           '#value' => t('Clear'),
           '#submit' => array('relation_dropzone_clear'),
+          '#ajax'  => array(
+            'wrapper' => 'relation_dropzone_stored',
+            'callback' => '_relation_dropzone_ajax',
+          ),
         );
       }
     }
@@ -397,6 +414,13 @@ function relation_dropzone_save($form, $form_state) {
  */
 function relation_dropzone_clear($form, $form_state) {
   unset($_SESSION['relation_predicate'], $_SESSION['relation_entity_keys']);
+}
+
+/**
+ * Ajax helper.
+ */
+function _relation_dropzone_ajax($form) {
+  return $form['reload'];
 }
 
 /**
