@@ -178,7 +178,12 @@ function relation_config_page_submit($form, &$form_state) {
 }
 
 function relation_load($relation_id) {
-  return reset(entity_load('relation', array($relation_id)));
+  return reset(relation_multiple_load(array($relation_id)));
+}
+
+function relation_multiple_load($relation_ids) {
+  $entities = entity_load('relation', array($relation_id));
+  field_attach_load('relation_type', $entities);
 }
 
 function relation_page($relation) {
