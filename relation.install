@@ -23,6 +23,12 @@ function relation_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'max_ary' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('relation_id'),
     'indexes' => array(
@@ -45,6 +51,12 @@ function relation_schema() {
         'default' => '',
       ),
       'entity_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'ary' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
