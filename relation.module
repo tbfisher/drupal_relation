@@ -207,13 +207,13 @@ function relation_config_page_submit($form, &$form_state) {
     $query->values(array($predicate, $entity_type, $bundle));
   }
   $query->execute();
-  $previous_ary = variable_get("relation_multi_$predicate");
-  if (isset($form_state['values']['ary']) && $form_state['values']['ary'] != variable_get("relation_multi_$predicate")) {
+  $previous_ary = variable_get("relation_arity_$predicate");
+  if (isset($form_state['values']['ary']) && $form_state['values']['ary'] != variable_get("relation_arity_$predicate")) {
     if ($previous_ary) {
-      variable_del("relation_multi_$predicate");
+      variable_del("relation_arity_$predicate");
     }
     else {
-      variable_set("relation_multi_$predicate", TRUE);
+      variable_set("relation_arity_$predicate", TRUE);
     }
   }
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
@@ -338,7 +338,7 @@ function relation_create($predicate, $entity_keys) {
 }
 
 function relation_validate($predicate, $entity_keys) {
-  return (!isset($entity_keys[2]) || variable_get("relation_multi_$predicate"));
+  return (!isset($entity_keys[2]) || variable_get("relation_arity_$predicate"));
 }
 
 /**
