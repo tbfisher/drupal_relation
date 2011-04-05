@@ -53,11 +53,22 @@ function relation_menu() {
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
+  $items['admin/structure/relation'] = array (
+    'title' => 'Relation',
+    'access arguments' => array('administer relation'),
+    'page callback' => 'relation_list',
+  );
+  $items['admin/structure/relation/list'] = array (
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
   $items['admin/structure/relation/add'] = array (
-    'title' => 'Add relation type',
+    'title' => 'Add',
     'access arguments' => array('administer relation'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_config_page'),
+    'type' => MENU_LOCAL_ACTION,
   );
   $items['admin/structure/relation/edit/%'] = array(
     'title' => 'Edit relation type',
@@ -67,6 +78,21 @@ function relation_menu() {
     'type' => MENU_CALLBACK,
   );
   return $items;
+}
+
+/**
+ * List all relation predicates
+ */
+function relation_list() {
+  $relation = relation_entity_info();
+  $headers = array(t('Name'));
+  foreach ($relation['relation']['bundles'] as $name => $bundle) {
+    $url = 'admin/structure/relation/edit/' . $name;
+    $link = t('<a href="!url">@label</a>', array('!url' => $url, '@label' => $bundle['label']));
+    $rows[] = array($link);
+  }
+  $output = theme('table',array('header'=>$headers, 'rows'=>$rows));
+  return $output;
 }
 
 /**
