@@ -24,7 +24,7 @@ function relation_entity_info() {
     'bundles' => array(),
     'view modes' => array(),
   );
-  foreach (db_query('SELECT predicate FROM {relation_settings}') as $record) {
+  foreach (db_query('SELECT predicate FROM {relation_type}') as $record) {
     $entities['relation']['bundles'][$record->predicate] = array(
       'label' => $record->predicate,
     );
@@ -91,6 +91,7 @@ function relation_menu() {
 function relation_list() {
   $relation = relation_entity_info();
   $headers = array(t('Name'));
+  $rows = array();
   foreach ($relation['relation']['bundles'] as $name => $bundle) {
     $url = url('admin/structure/relation/edit/' . $name);
     $link = t('<a href="!url">@label</a>', array('!url' => $url, '@label' => $bundle['label']));
@@ -107,7 +108,7 @@ function relation_list() {
 function relation_config_page($form, $form_state, $predicate = '') {
   $form['#write_record_keys'] = array();
   if ($predicate) {
-    $relation_type = db_query('SELECT * FROM {relation_settings} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
+    $relation_type = db_query('SELECT * FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
     if ($relation_type) {
       $form['#write_record_keys'][] = 'predicate';
       $relation_type->bundles = array();
@@ -148,12 +149,15 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#title'          => 'Directional?',
     '#default_value'  => $relation_type->directional,
   );
-  if (!$predicate || !variable_get("relation_multi_$predicate") || db_query('SELECT max_ary FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
-    $form['multiple'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Non-binary'),
-      '#description' => t('Siblings can be a non-binary relation for example, three siblings in one relation.'),
-      '#default_value' => variable_get("relation_multi_$predicate"),
+  $arity = !variable_get("relation_arity_$predicate");
+  if (!$predicate || $arity || db_query('SELECT max_ary FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
+    $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
+    $form['arity'] = array(
+      '#type' => 'select',
+      '#title' => t('Arity'),
+      '#options' => $options,
+      '#description' => t('Number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
+      '#default_value' => $arity ? $arity : 2,
     );
   }
   $counter = 0;
@@ -195,7 +199,7 @@ function relation_config_page_submit($form, &$form_state) {
     'directional' => $form_state['values']['directional'],
   );
   $transaction = db_transaction();
-  drupal_write_record('relation_settings', $record, $form['#write_record_keys']);
+  drupal_write_record('relation_type', $record, $form['#write_record_keys']);
   db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
   $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle'));
   foreach ($form_state['values']['bundles'] as $entity_bundles) {
@@ -513,7 +517,7 @@ function relation_entity_load($entities, $type) {
  */
 function relation_predicate_autocomplete($string='') {
   // need to add label when we store it..
-  $sql = "SELECT DISTINCT predicate FROM {relation} WHERE lower(predicate) LIKE lower('%".$string."%')";
+  $sql = "SELECT DISTINCT predicate FROM {relation_type} WHERE lower(predicate) LIKE lower('%".$string."%')";
 
   $resource = db_query($sql);
   $results = array();

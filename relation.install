@@ -69,7 +69,7 @@ function relation_schema() {
       'entity' => array('entity_type', 'entity_id'),
     ),
   );
-  $schema['relation_settings'] = array(
+  $schema['relation_type'] = array(
     'description' => 'Relation settings.',
     'fields' => array(
       'predicate' => array(
@@ -77,12 +77,30 @@ function relation_schema() {
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
+        'description' => 'The machine-readable name of this type.',
+
+      ),
+      'label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The human-readable name of this type.',
+
       ),
       'directional' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+
+      ),
+      'arity' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 2,
+
       ),
     ),
     'primary key' => array('predicate'),
