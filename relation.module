@@ -87,7 +87,7 @@ function relation_list() {
   $relation = relation_entity_info();
   $headers = array(t('Name'));
   foreach ($relation['relation']['bundles'] as $name => $bundle) {
-    $url = 'admin/structure/relation/edit/' . $name;
+    $url = url('admin/structure/relation/edit/' . $name);
     $link = t('<a href="!url">@label</a>', array('!url' => $url, '@label' => $bundle['label']));
     $rows[] = array($link);
   }
