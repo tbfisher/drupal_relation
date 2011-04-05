@@ -314,6 +314,8 @@ function relation_block_info() {
  * Implements hook_block_view().
  */
 function relation_block_view() {
+  drupal_add_css(drupal_get_path('module','relation').'/relation.css');
+
   $form = drupal_get_form('relation_dropzone');
   if (isset($form['entity_key'])) {
     return array(
