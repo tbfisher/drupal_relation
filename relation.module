@@ -77,6 +77,11 @@ function relation_menu() {
     'page arguments' => array('relation_config_page', 4),
     'type' => MENU_CALLBACK,
   );
+  $items['relation/autocomplete/bundles'] = array(
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+    'page callback' => 'relation_predicate_autocomplete',
+  );
   return $items;
 }
 
@@ -125,12 +130,24 @@ function relation_config_page($form, $form_state, $predicate = '') {
   else {
     $form['predicate'] = array(
       '#type'          => 'textfield',
-      '#title'         => t('Predicate'),
+      '#title'         => t('Machine Name'),
       '#description'   => t('Name of the relation'),
       '#default_value' => $predicate,
       '#required'      => TRUE,
     );
   }
+  $form['name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Display Name'),
+    '#description'   => t('Name of the relation'),
+    '#default_value' => $predicate,
+    '#required'      => TRUE,
+  );
+  $form['directional'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => 'Directional?',
+    '#default_value'  => $relation_type->directional,
+  );
   if (!$predicate || !variable_get("relation_multi_$predicate") || db_query('SELECT max_ary FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
     $form['multiple'] = array(
       '#type' => 'checkbox',
@@ -160,11 +177,6 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#default_value' => $relation_type->bundles,
     '#multiple'      => TRUE,
     '#description'   => 'Bundles that are not selected will not be available as end points for relations. Ctrl+click to select multiple.',
-  );
-  $form['directional'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => 'Directional?',
-    '#default_value'  => $relation_type->directional,
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -365,8 +377,9 @@ function relation_dropzone($form) {
   if ($options) {
     $form['predicate'] = array(
       '#type'          => 'textfield',
-      '#title'         => 'Predicate',
+      '#title'         => t('Predicate'),
       '#description'   => 'Name of the relation',
+    '#autocomplete_path' => 'relation/autocomplete/bundles',
       '#default_value' => isset($_SESSION['relation_predicate']) ? $_SESSION['relation_predicate'] : '',
       '#required'      => TRUE,
     );
@@ -493,4 +506,20 @@ function relation_entity_load($entities, $type) {
     $entities_store += array($type => array());
     $entities_store[$type] += $entities;
   }
+}
+
+/**
+ * Autocomplete page for listing bundles.
+ */
+function relation_predicate_autocomplete($string='') {
+  // need to add label when we store it..
+  $sql = "SELECT DISTINCT predicate FROM {relation} WHERE lower(predicate) LIKE lower('%".$string."%')";
+
+  $resource = db_query($sql);
+  $results = array();
+  foreach ($resource as $row) {
+    $results[$row->predicate] = $row->predicate;
+  }
+  print drupal_json_encode($results);
+  exit();
 }
