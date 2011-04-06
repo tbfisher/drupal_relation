@@ -508,7 +508,7 @@ function relation_dropzone_pick($form, &$form_state) {
 
 function relation_dropzone_validate($form, &$form_state) {
   relation_dropzone_pick($form, $form_state);
-  if (isset($_SESSION['relation_predicate'])) {
+  if (isset($_SESSION['relation_predicate']) && $form_state['clicked_button']['#value']!='Clear') {
     $predicate = $_SESSION['relation_predicate'];
     if (!relation_validate($predicate, $_SESSION['relation_entity_keys'])) {
       form_set_error('predicate', t('This selection is invalid for !predicate', array('!predicate' => l($predicate, "admin/structure/relation/edit/$predicate"))));
