@@ -168,6 +168,11 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#options' => $options,
     '#description' => t('Minimum number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => $relation_type->min_arity ? $relation_type->min_arity : 2,
+    '#states' => array(
+      'disabled' => array(   // action to take.
+        ':input[name="directional"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
   $form['max_arity'] = array(
@@ -176,6 +181,11 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#options' => $options,
     '#description' => t('Maximum number of entities joined by the relation. <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => $relation_type->max_arity ? $relation_type->max_arity : 2,
+    '#states' => array(
+      'disabled' => array(   // action to take.
+        ':input[name="directional"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $counter = 0;
   foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
@@ -197,7 +207,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->source_bundles,
     '#multiple'      => TRUE,
-    '#description'   => 'Bundles that are not selected will not be available as sources for directional relations. Ctrl+click to select multiple.',
+    '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple.',
   );
   $form['target_bundles'] = array(
     '#type'          => 'select',
@@ -207,6 +217,11 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#default_value' => $relation_type->target_bundles,
     '#multiple'      => TRUE,
     '#description'   => 'Bundles that are not selected will not be available as targets for directional relations. Ctrl+click to select multiple.',
+    '#states' => array(
+      '!visible' => array(   // action to take.
+        ':input[name="directional"]' => array('checked' => FALSE),
+      ),
+    ),
   );
   $form['submit'] = array(
     '#type' => 'submit',
