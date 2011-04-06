@@ -228,8 +228,14 @@ function relation_load($relation_id) {
 }
 
 function relation_multiple_load($relation_ids) {
-  $entities = entity_load('relation', array($relation_id));
+  if (is_array($relation_ids)) {
+    $entities = entity_load('relation', $relation_ids);
+  }
+  else {
+    $entities = entity_load('relation', array($relation_ids));
+  }
   field_attach_load('relation_type', $entities);
+  return $entities;
 }
 
 function relation_page($relation) {
