@@ -24,9 +24,19 @@ function relation_entity_info() {
     'bundles' => array(),
     'view modes' => array(),
   );
-  foreach (db_query('SELECT predicate FROM {relation_type}') as $record) {
+  foreach (db_query('SELECT predicate, label, directional, min_arity, max_arity FROM {relation_type}') as $record) {
     $entities['relation']['bundles'][$record->predicate] = array(
-      'label' => $record->predicate,
+      'label' => $record->label ? $record->label : $record->predicate,
+      'directional' => $record->directional,
+      'min_arity' => $record->min_arity,
+      'max_arity' => $record->max_arity,
+    );
+  }
+  foreach (db_query('SELECT predicate, entity_type, bundle, r_index FROM {relation_bundles}') as $record) {
+    $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
+    $entities['relation']['bundles'][$record->predicate][$endpoint][] = array(
+      'entity_type' => $record->entity_type,
+      'bundle'      => $record->bundle,
     );
   }
   return $entities;
