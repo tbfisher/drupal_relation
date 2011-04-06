@@ -393,11 +393,20 @@ function relation_create($predicate, $entity_keys) {
 
 function relation_validate($predicate, $entity_keys) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchObject();
+
+  if ($relation_type) {
+    return array(FALSE, t("The :predicate relation type does not exist!", array(':predicate' => $predicate)));
+  }
+
   $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchAll();
 
-  if (count($entity_keys) < $relation_type->min_arity || count($entity_keys) > $relation_type->max_arity) {
-    return FALSE;
+  if (count($entity_keys) < $relation_type->min_arity) {
+    return array(FALSE, t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity)));
   }
+  if (count($entity_keys) > $relation_type->max_arity) {
+    return array(FALSE, t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity)));
+  }
+  return array(TRUE, NULL);
 }
 
 /**
@@ -512,11 +521,13 @@ function relation_dropzone_pick($form, &$form_state) {
 }
 
 function relation_dropzone_validate($form, &$form_state) {
+  $predicate = $_SESSION['relation_predicate'] ? $_SESSION['relation_predicate'] :$form_state['values']['predicate'];
+
+  $validation = relation_validate($predicate, $_SESSION['relation_entity_keys']);
   if ($form_state['clicked_button']['#value']=='Create relation') {
-    if (isset($_SESSION['relation_predicate'])) {
-      $predicate = $_SESSION['relation_predicate'];
-      if (!relation_validate($predicate, $_SESSION['relation_entity_keys'])) {
-        form_set_error('predicate', t('This selection is invalid for !predicate', array('!predicate' => l($predicate, "admin/structure/relation/edit/$predicate"))));
+    if ($predicate) {
+      if (!$validation[0]) {
+        form_set_error('predicate', $validation[1]);
       }
     }
   }
