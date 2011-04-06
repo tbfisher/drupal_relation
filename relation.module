@@ -394,7 +394,7 @@ function relation_create($predicate, $entity_keys) {
 function relation_validate($predicate, $entity_keys) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
 
-  if ($relation_type) {
+  if (!$relation_type) {
     return array(FALSE, t("The :predicate relation type does not exist!", array(':predicate' => $predicate)));
   }
 
