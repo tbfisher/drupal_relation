@@ -97,7 +97,11 @@ function relation_list() {
     $link = t('<a href="!url">@label</a>', array('!url' => $url, '@label' => $bundle['label']));
     $rows[] = array($link);
   }
-  $output = theme('table',array('header'=>$headers, 'rows'=>$rows));
+  $output = array(
+    '#heme' => 'table',
+    '#header' => $headers,
+    '#rows' => $rows,
+  );
   return $output;
 }
 
