@@ -392,7 +392,13 @@ function relation_create($predicate, $entity_keys) {
 }
 
 function relation_validate($predicate, $entity_keys) {
-  return (!isset($entity_keys[2]) || variable_get("relation_max_arity_$predicate"));
+  $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchObject();
+  $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchAll();
+  dsm($bundles);
+
+  if (count($entity_keys) < $relation_type->min_arity || count($entity_keys) > $relation_type->max_arity) {
+    return FALSE;
+  }
 }
 
 /**
@@ -507,11 +513,12 @@ function relation_dropzone_pick($form, &$form_state) {
 }
 
 function relation_dropzone_validate($form, &$form_state) {
-  relation_dropzone_pick($form, $form_state);
-  if (isset($_SESSION['relation_predicate']) && $form_state['clicked_button']['#value']!='Clear') {
-    $predicate = $_SESSION['relation_predicate'];
-    if (!relation_validate($predicate, $_SESSION['relation_entity_keys'])) {
-      form_set_error('predicate', t('This selection is invalid for !predicate', array('!predicate' => l($predicate, "admin/structure/relation/edit/$predicate"))));
+  if ($form_state['clicked_button']['#value']=='Create relation') {
+    if (isset($_SESSION['relation_predicate'])) {
+      $predicate = $_SESSION['relation_predicate'];
+      if (!relation_validate($predicate, $_SESSION['relation_entity_keys'])) {
+        form_set_error('predicate', t('This selection is invalid for !predicate', array('!predicate' => l($predicate, "admin/structure/relation/edit/$predicate"))));
+      }
     }
   }
 }
