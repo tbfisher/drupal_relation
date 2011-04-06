@@ -149,15 +149,15 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#title'          => 'Directional?',
     '#default_value'  => $relation_type->directional,
   );
-  $arity = !variable_get("relation_arity_$predicate");
-  if (!$predicate || $arity || db_query('SELECT max_ary FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
+  $max_arity = !variable_get("relation_max_arity_$predicate");
+  if (!$predicate || $max_arity || db_query('SELECT max_index FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
     $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
-    $form['arity'] = array(
+    $form['max_arity'] = array(
       '#type' => 'select',
       '#title' => t('Arity'),
       '#options' => $options,
       '#description' => t('Number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
-      '#default_value' => $arity ? $arity : 2,
+      '#default_value' => $max_arity ? $max_arity : 2,
     );
   }
   $counter = 0;
@@ -207,13 +207,13 @@ function relation_config_page_submit($form, &$form_state) {
     $query->values(array($predicate, $entity_type, $bundle));
   }
   $query->execute();
-  $previous_ary = variable_get("relation_arity_$predicate");
-  if (isset($form_state['values']['ary']) && $form_state['values']['ary'] != variable_get("relation_arity_$predicate")) {
+  $previous_ary = variable_get("relation_max_arity_$predicate");
+  if (isset($form_state['values']['index']) && $form_state['values']['index'] != variable_get("relation_max_arity_$predicate")) {
     if ($previous_ary) {
-      variable_del("relation_arity_$predicate");
+      variable_del("relation_max_arity_$predicate");
     }
     else {
-      variable_set("relation_arity_$predicate", TRUE);
+      variable_set("relation_max_arity_$predicate", TRUE);
     }
   }
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
@@ -332,19 +332,19 @@ class RelationHandler implements RelationInterface {
 function relation_create($predicate, $entity_keys) {
   $relation_id = db_insert('relation')
     ->useDefaults(array('relation_id'))
-    ->fields(array('predicate' => $predicate, 'max_ary' => count($entity_keys) - 1))
+    ->fields(array('predicate' => $predicate, 'max_index' => count($entity_keys) - 1))
     ->execute();
   $query = db_insert('relation_data')
-    ->fields(array('relation_id', 'entity_type', 'entity_id', 'ary'));
-  foreach ($entity_keys as $ary => $entity_key) {
-    $query->values(array($relation_id, $entity_key[0], $entity_key[1], $ary));
+    ->fields(array('relation_id', 'entity_type', 'entity_id', 'index'));
+  foreach ($entity_keys as $index => $entity_key) {
+    $query->values(array($relation_id, $entity_key[0], $entity_key[1], $index));
   }
   $query->execute();
   return $relation_id;
 }
 
 function relation_validate($predicate, $entity_keys) {
-  return (!isset($entity_keys[2]) || variable_get("relation_arity_$predicate"));
+  return (!isset($entity_keys[2]) || variable_get("relation_max_arity_$predicate"));
 }
 
 /**
