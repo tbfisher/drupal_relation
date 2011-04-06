@@ -53,17 +53,17 @@ function relation_menu() {
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
-  $items['admin/structure/relation'] = array (
+  $items['admin/structure/relation'] = array(
     'title' => 'Relation',
     'access arguments' => array('administer relation'),
     'page callback' => 'relation_list',
   );
-  $items['admin/structure/relation/list'] = array (
+  $items['admin/structure/relation/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  $items['admin/structure/relation/add'] = array (
+  $items['admin/structure/relation/add'] = array(
     'title' => 'Add',
     'access arguments' => array('administer relation'),
     'page callback' => 'drupal_get_form',
@@ -165,7 +165,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#default_value'  => $relation_type->directional,
   );
   // these should probably be changed to numerical (validated) textfields.
-  $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8');
+  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8');
   $form['min_arity'] = array(
     '#type' => 'select',
     '#title' => t('Minimum Arity'),
@@ -178,7 +178,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
       ),
     ),
   );
-  $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
+  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8', '0' => t('Infinite'));
   $form['max_arity'] = array(
     '#type' => 'select',
     '#title' => t('Maximum Arity'),
@@ -392,13 +392,13 @@ function relation_create($predicate, $entity_keys) {
 }
 
 function relation_validate($predicate, $entity_keys) {
-  $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchObject();
+  $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
 
   if ($relation_type) {
     return array(FALSE, t("The :predicate relation type does not exist!", array(':predicate' => $predicate)));
   }
 
-  $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchAll();
+  $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchAll();
 
   if (count($entity_keys) < $relation_type->min_arity) {
     return array(FALSE, t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity)));
@@ -424,7 +424,7 @@ function relation_block_info() {
  * Implements hook_block_view().
  */
 function relation_block_view() {
-  drupal_add_css(drupal_get_path('module','relation').'/relation.css');
+  drupal_add_css(drupal_get_path('module', 'relation') . '/relation.css');
 
   $form = drupal_get_form('relation_dropzone');
   if (isset($form['entity_key'])) {
@@ -588,7 +588,7 @@ function relation_entity_load($entities, $type) {
  */
 function relation_predicate_autocomplete($string='') {
   // need to add label when we store it..
-  $sql = "SELECT DISTINCT predicate FROM {relation_type} WHERE lower(predicate) LIKE lower('%".$string."%')";
+  $sql = "SELECT DISTINCT predicate FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
 
   $resource = db_query($sql);
   $results = array();

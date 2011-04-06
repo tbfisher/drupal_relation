@@ -72,7 +72,7 @@ function relation_schema() {
     ),
     'primary key' => array('relation_id', 'entity_type', 'entity_id'),
     'indexes' => array(
-      'relation_id' => array('relation_id','r_index'),
+      'relation_id' => array('relation_id', 'r_index'),
       'entity' => array('entity_type', 'entity_id'),
     ),
   );
