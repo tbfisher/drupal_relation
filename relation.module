@@ -394,7 +394,6 @@ function relation_create($predicate, $entity_keys) {
 function relation_validate($predicate, $entity_keys) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchObject();
   $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate'=>$predicate))->fetchAll();
-  dsm($bundles);
 
   if (count($entity_keys) < $relation_type->min_arity || count($entity_keys) > $relation_type->max_arity) {
     return FALSE;
