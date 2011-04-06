@@ -111,9 +111,17 @@ function relation_config_page($form, $form_state, $predicate = '') {
     $relation_type = db_query('SELECT * FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
     if ($relation_type) {
       $form['#write_record_keys'][] = 'predicate';
-      $relation_type->bundles = array();
-      foreach (db_query('SELECT entity_type, bundle FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
-        $relation_type->bundles[] = "$record->entity_type:$record->bundle";
+      $relation_type->source_bundles = array();
+      $relation_type->target_bundles = array();
+      foreach (db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
+        // if relation is non-directional, all indexes should be 0.
+        if ($record->index == 0) {
+          $relation_type->source_bundles[] = "$record->entity_type:$record->bundle";
+        }
+        elseif ($record->index == 1) {
+          $relation_type->target_bundles[] = "$record->entity_type:$record->bundle";
+        }
+
       }
     }
   }
@@ -123,25 +131,28 @@ function relation_config_page($form, $form_state, $predicate = '') {
   $predicate = $relation_type->predicate;
   if ($predicate) {
     $form['predicate'] = array(
-      '#type'  => 'value',
-      '#value' => $predicate,
+      '#type'          => 'textfield',
+      '#title'         => t('Predicate'),
+      '#description'   => t('Machine name of the relation'),
+      '#default_value' => $predicate,
+      '#required'      => TRUE,
+      '#disabled'      => TRUE,
     );
-    $form['_predicate']['#markup'] = t('Relation name: %predicate', array('%predicate' => $predicate));
   }
   else {
     $form['predicate'] = array(
       '#type'          => 'textfield',
       '#title'         => t('Machine Name'),
-      '#description'   => t('Name of the relation'),
+      '#description'   => t('Machine name of the relation'),
       '#default_value' => $predicate,
       '#required'      => TRUE,
     );
   }
   $form['name'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('Display Name'),
-    '#description'   => t('Name of the relation'),
-    '#default_value' => $predicate,
+    '#title'         => t('Label'),
+    '#description'   => t('Display name of the relation'),
+    '#default_value' => $relation_type->label,
     '#required'      => TRUE,
   );
   $form['directional'] = array(
@@ -149,17 +160,23 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#title'          => 'Directional?',
     '#default_value'  => $relation_type->directional,
   );
-  $max_arity = !variable_get("relation_max_arity_$predicate");
-  if (!$predicate || $max_arity || db_query('SELECT max_index FROM {relation} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchField() < 2) {
-    $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
-    $form['max_arity'] = array(
-      '#type' => 'select',
-      '#title' => t('Arity'),
-      '#options' => $options,
-      '#description' => t('Number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
-      '#default_value' => $max_arity ? $max_arity : 2,
-    );
-  }
+  // these should probably be changed to numerical (validated) textfields.
+  $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8');
+  $form['min_arity'] = array(
+    '#type' => 'select',
+    '#title' => t('Minimum Arity'),
+    '#options' => $options,
+    '#description' => t('Minimum number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
+    '#default_value' => $relation_type->min_arity ? $relation_type->min_arity : 2,
+  );
+  $options = array('2'=>'2','3'=>'3','4'=>'4','5'=>'5','8'=>'8','0'=>t('Infinite'));
+  $form['max_arity'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum Arity'),
+    '#options' => $options,
+    '#description' => t('Maximum number of entities joined by the relation. <em>In nearly all cases you will want to leave this set to 2</em>.'),
+    '#default_value' => $relation_type->max_arity ? $relation_type->max_arity : 2,
+  );
   $counter = 0;
   foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
     if (isset($entity['bundles'])) {
@@ -173,14 +190,23 @@ function relation_config_page($form, $form_state, $predicate = '') {
         $counter++;
     }
   }
-  $form['bundles'] = array(
+  $form['source_bundles'] = array(
     '#type'          => 'select',
-    '#title'         => 'Available bundles',
+    '#title'         => 'Available source bundles',
     '#options'       => $bundles,
     '#size'          => max(12, $counter),
-    '#default_value' => $relation_type->bundles,
+    '#default_value' => $relation_type->source_bundles,
     '#multiple'      => TRUE,
-    '#description'   => 'Bundles that are not selected will not be available as end points for relations. Ctrl+click to select multiple.',
+    '#description'   => 'Bundles that are not selected will not be available as sources for directional relations. Ctrl+click to select multiple.',
+  );
+  $form['target_bundles'] = array(
+    '#type'          => 'select',
+    '#title'         => 'Available target bundles',
+    '#options'       => $bundles,
+    '#size'          => max(12, $counter),
+    '#default_value' => $relation_type->target_bundles,
+    '#multiple'      => TRUE,
+    '#description'   => 'Bundles that are not selected will not be available as targets for directional relations. Ctrl+click to select multiple.',
   );
   $form['submit'] = array(
     '#type' => 'submit',
