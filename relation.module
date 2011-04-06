@@ -98,7 +98,7 @@ function relation_list() {
     $rows[] = array($link);
   }
   $output = array(
-    '#heme' => 'table',
+    '#theme' => 'table',
     '#header' => $headers,
     '#rows' => $rows,
   );
