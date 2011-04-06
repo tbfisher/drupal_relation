@@ -62,7 +62,7 @@ function relation_schema() {
         'default' => 0,
         'description' => 'Entity_id of this relation end-point.',
       ),
-      'index' => array(
+      'r_index' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -72,7 +72,7 @@ function relation_schema() {
     ),
     'primary key' => array('relation_id', 'entity_type', 'entity_id'),
     'indexes' => array(
-      'relation_id' => array('relation_id','index'),
+      'relation_id' => array('relation_id','r_index'),
       'entity' => array('entity_type', 'entity_id'),
     ),
   );
@@ -141,7 +141,7 @@ function relation_schema() {
         'default' => '',
         'description' => 'Entity bundle that is available to this relation.',
       ),
-      'index' => array(
+      'r_index' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,

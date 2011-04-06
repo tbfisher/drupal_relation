@@ -115,10 +115,10 @@ function relation_config_page($form, $form_state, $predicate = '') {
       $relation_type->target_bundles = array();
       foreach (db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
         // if relation is non-directional, all indexes should be 0.
-        if ($record->index == 0) {
+        if ($record->r_index == 0) {
           $relation_type->source_bundles[] = "$record->entity_type:$record->bundle";
         }
-        elseif ($record->index == 1) {
+        elseif ($record->r_index == 1) {
           $relation_type->target_bundles[] = "$record->entity_type:$record->bundle";
         }
 
@@ -148,7 +148,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
       '#required'      => TRUE,
     );
   }
-  $form['name'] = array(
+  $form['label'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Label'),
     '#description'   => t('Display name of the relation'),
@@ -235,28 +235,31 @@ function relation_config_page($form, $form_state, $predicate = '') {
  */
 function relation_config_page_submit($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
+  $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
+  $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
+
   $record = array(
     'predicate'   => $predicate,
+    'min_arity'   => $min_arity,
+    'max_arity'   => $max_arity,
+    'label' => $form_state['values']['label'],
     'directional' => $form_state['values']['directional'],
   );
   $transaction = db_transaction();
   drupal_write_record('relation_type', $record, $form['#write_record_keys']);
   db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
-  $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle'));
-  foreach ($form_state['values']['bundles'] as $entity_bundles) {
+  $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle', 'r_index'));
+  foreach ($form_state['values']['source_bundles'] as $entity_bundles) {
     list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
-    $query->values(array($predicate, $entity_type, $bundle));
+    $query->values(array($predicate, $entity_type, $bundle, 0));
+  }
+  if ($form_state['values']['directional'] = TRUE) {
+    foreach ($form_state['values']['target_bundles'] as $entity_bundles) {
+      list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
+      $query->values(array($predicate, $entity_type, $bundle, 1));
+    }
   }
   $query->execute();
-  $previous_ary = variable_get("relation_max_arity_$predicate");
-  if (isset($form_state['values']['index']) && $form_state['values']['index'] != variable_get("relation_max_arity_$predicate")) {
-    if ($previous_ary) {
-      variable_del("relation_max_arity_$predicate");
-    }
-    else {
-      variable_set("relation_max_arity_$predicate", TRUE);
-    }
-  }
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
 }
 
@@ -376,7 +379,7 @@ function relation_create($predicate, $entity_keys) {
     ->fields(array('predicate' => $predicate, 'max_index' => count($entity_keys) - 1))
     ->execute();
   $query = db_insert('relation_data')
-    ->fields(array('relation_id', 'entity_type', 'entity_id', 'index'));
+    ->fields(array('relation_id', 'entity_type', 'entity_id', 'r_index'));
   foreach ($entity_keys as $index => $entity_key) {
     $query->values(array($relation_id, $entity_key[0], $entity_key[1], $index));
   }
