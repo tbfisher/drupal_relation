@@ -396,7 +396,7 @@ class RelationHandler implements RelationInterface {
 function relation_create($predicate, $entity_keys) {
   $relation_id = db_insert('relation')
     ->useDefaults(array('relation_id'))
-    ->fields(array('predicate' => $predicate, 'max_index' => count($entity_keys) - 1))
+    ->fields(array('predicate' => $predicate, 'arity' => count($entity_keys) - 1))
     ->execute();
   $query = db_insert('relation_data')
     ->fields(array('relation_id', 'entity_type', 'entity_id', 'r_index'));

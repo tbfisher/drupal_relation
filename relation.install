@@ -25,7 +25,7 @@ function relation_schema() {
         'default' => '',
         'description' => 'Relation type (see relation_type table).',
       ),
-      'max_index' => array(
+      'arity' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -67,7 +67,7 @@ function relation_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        'description' => 'The index of this row in this relation. The highest index in the relation (ie. arity) is stored as "max_index" in the relation table.',
+        'description' => 'The index of this row in this relation. The highest index in the relation is stored as "arity" in the relation table.',
       ),
     ),
     'primary key' => array('relation_id', 'entity_type', 'entity_id'),
