@@ -614,3 +614,29 @@ function relation_predicate_autocomplete($string='') {
   print drupal_json_encode($results);
   exit();
 }
+
+/**
+ * Helper query to get all relations tied to an entity.
+ *
+ * @TODO how to use $index?
+ */
+function relation_get_relations($entity_type, $entity_id, $predicates = array(), $index = NULL) {
+  $query = db_select('relation_data', 'rd');
+  $query->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id');
+  $query->addField('r', 'relation_id');
+  $query->addField('r', 'predicate');
+  $conds = db_or();
+  $conds->condition('rd.entity_id', $entity_id);
+  foreach ($predicates as $predicate) {
+    $conds->condition('r.predicate', $predicates);
+  }
+  $query->condition($conds);
+  $results = $query->execute();
+  $relation_data = $results->fetchAll();
+
+  foreach ($relation_data as $data) {
+    $relations[$data->relation_id] = entity_load('relation', array($data->relation_id));
+  }
+
+  return $relations;
+}
