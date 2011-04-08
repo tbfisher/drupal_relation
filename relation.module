@@ -293,16 +293,16 @@ function relation_multiple_load($relation_ids) {
 }
 
 function relation_page($relation) {
-  $left_entity = reset(entity_load($relation->left_entity_type, array($relation->left_entity_id)));
-  $left_uri = entity_uri($relation->left_entity_type, $left_entity);
-  $right_entity = reset(entity_load($relation->right_entity_type, array($relation->right_entity_id)));
-  $right_uri = entity_uri($relation->right_entity_type, $right_entity);
+  foreach ($relation->entities as $r_index => $entity_data) {
+    $entities = entity_load($entity_data['entity_type'], array($entity_data['entity_id']));
+    $entity = $entities[$entity_data['entity_id']];
+    $label = entity_label($entity_data['entity_type'], $entity);
+    $uri = entity_uri($entity_data['entity_type'], $entity);
+    $items[$r_index] = l($label, $uri['path'], $uri['options']);
+  }
   $build['link_list'] = array(
     '#theme' => 'item_list',
-    '#items' => array(
-      l(entity_label($relation->left_entity_type, $left_entity), $left_uri['path'], $left_uri['options']),
-      l(entity_label($relation->right_entity_type, $right_entity), $right_uri['path'], $right_uri['options']),
-    ),
+    '#items' => $items,
   );
   return $build;
 }
@@ -315,22 +315,28 @@ function relation_page($relation) {
  * right entities are identical.
  */
 class RelationEntityController extends DrupalDefaultEntityController {
-  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
-    $query = parent::buildQuery($ids, $conditions, $revision_id);
-    _relation_entity_query_helper($query);
-    return $query;
+  protected function attachLoad(&$queried_entities, $revision_id = FALSE) {
+    parent::attachLoad($queried_entities, $revision_id);
+    foreach ($queried_entities as $id => $entity) {
+      $query = db_select('relation', 'r');
+      $query->condition('r.relation_id', $id);
+      $query->innerJoin('relation_data', 'rd', 'r.relation_id = rd.relation_id');
+      $query->addField('r', 'relation_id');
+      $query->addField('r', 'predicate');
+      $query->addField('rd', 'entity_type', 'entity_type');
+      $query->addField('rd', 'entity_id', 'entity_id');
+      $query->addField('rd', 'r_index', 'r_index');
+      $results = $query->execute();
+      $rows = $results->fetchAll();
+      foreach ($rows as $row) {
+        $queried_entities[$id]->entities[$row->r_index] = array(
+          'entity_type' => $row->entity_type,
+          'entity_id' => $row->entity_id,
+          'r_index' => $row->r_index,
+        );
+      }
+    }
   }
-}
-
-function _relation_entity_query_helper($query) {
-  $query->innerJoin('relation_data', 'l', 'base.relation_id = l.relation_id');
-  $query->innerJoin('relation_data', 'r', 'base.relation_id = r.relation_id AND NOT (l.entity_type = r.entity_type AND l.entity_id = r.entity_id)');
-  $query->addField('base', 'relation_id');
-  $query->addField('base', 'predicate');
-  $query->addField('l', 'entity_type', 'left_entity_type');
-  $query->addField('l', 'entity_id', 'left_entity_id');
-  $query->addField('r', 'entity_type', 'right_entity_type');
-  $query->addField('r', 'entity_id', 'right_entity_id');
 }
 
 /**
