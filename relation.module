@@ -417,19 +417,20 @@ function relation_create($predicate, $entity_keys) {
 
 function relation_validate($predicate, $entity_keys) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
-
+  // Check that predicate exists.
   if (!$relation_type) {
     return array(FALSE, t("The :predicate relation type does not exist!", array(':predicate' => $predicate)));
   }
-
-  $bundles = db_query('SELECT entity_type, bundle, r_index FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchAll();
-
+  // Check that arity is within acceptable bounds.
   if (count($entity_keys) < $relation_type->min_arity) {
     return array(FALSE, t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity)));
   }
   if (count($entity_keys) > $relation_type->max_arity) {
     return array(FALSE, t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity)));
   }
+  //Check that each entity is has acceptable bundle type and index.
+  $bundles = relation_get_bundles($predicate);
+  // TODO: check that indexes and bundles are acceptable.
   return array(TRUE, NULL);
 }
 
@@ -475,7 +476,7 @@ function relation_dropzone($form) {
       '#type'          => 'textfield',
       '#title'         => t('Predicate'),
       '#description'   => 'Name of the relation',
-    '#autocomplete_path' => 'relation/autocomplete/bundles',
+      '#autocomplete_path' => 'relation/autocomplete/bundles',
       '#default_value' => isset($_SESSION['relation_predicate']) ? $_SESSION['relation_predicate'] : '',
       '#required'      => TRUE,
     );
@@ -545,10 +546,10 @@ function relation_dropzone_pick($form, &$form_state) {
 }
 
 function relation_dropzone_validate($form, &$form_state) {
-  $predicate = $_SESSION['relation_predicate'] ? $_SESSION['relation_predicate'] :$form_state['values']['predicate'];
-
-  $validation = relation_validate($predicate, $_SESSION['relation_entity_keys']);
+  $predicate = $form_state['values']['predicate'];
+  // May need some separate validation for "pick"
   if ($form_state['clicked_button']['#value']=='Create relation') {
+    $validation = relation_validate($predicate, $_SESSION['relation_entity_keys']);
     if ($predicate) {
       if (!$validation[0]) {
         form_set_error('predicate', $validation[1]);
@@ -612,12 +613,12 @@ function relation_entity_load($entities, $type) {
  */
 function relation_predicate_autocomplete($string='') {
   // need to add label when we store it..
-  $sql = "SELECT DISTINCT predicate FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
+  $sql = "SELECT predicate, label FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
 
   $resource = db_query($sql);
   $results = array();
   foreach ($resource as $row) {
-    $results[$row->predicate] = $row->predicate;
+    $results[$row->predicate] = $row->label;
   }
   print drupal_json_encode($results);
   exit();
@@ -647,4 +648,20 @@ function relation_get_relations($entity_type, $entity_id, $predicates = array(),
   }
 
   return $relations;
+}
+
+/**
+ * Helper query to get all bundles available to relation. non-directional
+ */
+function relation_get_bundles($predicate) {
+  $bundles = db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchAll();
+  $relation = array('source_bundles' => array(), 'target_bundles' => array());
+  foreach ($bundles as $bundle) {
+    $endpoint = $bundle->r_index ? 'target_bundles' : 'source_bundles';
+    $relation[$endpoint][] = array(
+      'entity_type' => $bundles->entity_type,
+      'bundle'      => $bundles->bundle,
+    );
+  }
+  return $relation;
 }
