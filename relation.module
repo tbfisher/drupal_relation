@@ -415,7 +415,7 @@ function relation_create($predicate, $entity_keys) {
   return $relation_id;
 }
 
-function relation_validate($predicate, $entity_keys) {
+function relation_validate($predicate, $entity_keys, $directional = FALSE) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
@@ -429,8 +429,27 @@ function relation_validate($predicate, $entity_keys) {
     return array(FALSE, t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity)));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $bundles = relation_get_bundles($predicate);
-  // TODO: check that indexes and bundles are acceptable.
+  $relation_bundles = relation_get_bundles($predicate);
+  foreach ($entity_keys as $e_key) {
+    $acceptable = FALSE;
+    // Is this this only way have to get bundles from entity type and ID?
+    $entities = entity_load($e_key['entity_type'], array($e_key['entity_id']));
+    $entity = $entities[$e_key['entity_id']];
+    list(, , $e_bundle) = entity_extract_ids($e_key['entity_type'], $entity);
+    $direction = isset($e_key['r_index']) ? $e_key['r_index'] : 0;
+    $endpoint =  ($direction > 0) ? 'target' : 'source';
+    foreach ($relation_bundles[$endpoint . '_bundles'] as $bundle) {
+      if (($e_key['entity_type'] == $bundle['entity_type']) && ($e_bundle == $bundle['bundle'])) {
+        $acceptable = TRUE;
+        break;
+      }
+    }
+    if ($acceptable == FALSE) {
+      $endpoint = $directional ? $endpoint . ' endpoints' : 'an endpoint';
+      return array(FALSE, t("The <em>$predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':bundle' => $e_bundle)));
+    }
+  }
+  return array(FALSE, 'testing validation');
   return array(TRUE, NULL);
 }
 
@@ -520,7 +539,7 @@ function _relation_stored_entity_keys_list() {
   $list = array();
   foreach ($_SESSION['relation_entity_keys'] as $entity_key) {
     // The structure is (entity_type, entity_id, entity label).
-    $list[] = $entity_key[2];
+    $list[] = $entity_key['entity_key'];
   }
   return array(
     '#theme' => 'item_list',
@@ -535,10 +554,14 @@ function relation_dropzone_pick($form, &$form_state) {
   if ($entity_key = $form_state['values']['entity_key']) {
     $form_state['values']['entity_key'] = '';
     // Here we get (entity_type, entity_id).
-    $pick = explode(':', $entity_key);
+    $break = explode(':', $entity_key);
     // Add the label for later display. #options is check_plain'd but we need
     // to do that ourselves.
-    $pick[] = check_plain($form['entity_key']['#options'][$entity_key]);
+    $pick = array(
+      'entity_type' => $break[0],
+      'entity_id' => $break[1],
+      'entity_key' => check_plain($form['entity_key']['#options'][$entity_key]),
+    );
     $_SESSION += array('relation_entity_keys' => array());
     $_SESSION['relation_entity_keys'][] = $pick;
     $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
@@ -659,8 +682,8 @@ function relation_get_bundles($predicate) {
   foreach ($bundles as $bundle) {
     $endpoint = $bundle->r_index ? 'target_bundles' : 'source_bundles';
     $relation[$endpoint][] = array(
-      'entity_type' => $bundles->entity_type,
-      'bundle'      => $bundles->bundle,
+      'entity_type' => $bundle->entity_type,
+      'bundle'      => $bundle->bundle,
     );
   }
   return $relation;
