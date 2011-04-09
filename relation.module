@@ -24,10 +24,11 @@ function relation_entity_info() {
     'bundles' => array(),
     'view modes' => array(),
   );
-  foreach (db_query('SELECT predicate, label, directional, min_arity, max_arity FROM {relation_type}') as $record) {
+  foreach (db_query('SELECT predicate, label, directional, transitive, min_arity, max_arity FROM {relation_type}') as $record) {
     $entities['relation']['bundles'][$record->predicate] = array(
       'label' => $record->label ? $record->label : $record->predicate,
       'directional' => $record->directional,
+      'transitive' => $record->transitive,
       'min_arity' => $record->min_arity,
       'max_arity' => $record->max_arity,
     );
@@ -140,27 +141,28 @@ function relation_config_page($form, $form_state, $predicate = '') {
     }
   }
   if (empty($relation_type)) {
-    $relation_type = (object) array('predicate' => $predicate, 'bundles' => array(), 'directional' => FALSE);
+    $relation_type = (object) array(
+      'predicate' => $predicate,
+      'label' => '',
+      'bundles' => array(),
+      'directional' => FALSE,
+      'transitive' => FALSE,
+      'min_arity' => 2,
+      'max_arity' => 2,
+      'source_bundles' => array(),
+      'target_bundles' => array(),
+    );
   }
   $predicate = $relation_type->predicate;
+  $form['predicate'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Machine Name'),
+    '#description'   => t('Machine name of the relation'),
+    '#default_value' => $predicate,
+    '#required'      => TRUE,
+  );
   if ($predicate) {
-    $form['predicate'] = array(
-      '#type'          => 'textfield',
-      '#title'         => t('Predicate'),
-      '#description'   => t('Machine name of the relation'),
-      '#default_value' => $predicate,
-      '#required'      => TRUE,
-      '#disabled'      => TRUE,
-    );
-  }
-  else {
-    $form['predicate'] = array(
-      '#type'          => 'textfield',
-      '#title'         => t('Machine Name'),
-      '#description'   => t('Machine name of the relation'),
-      '#default_value' => $predicate,
-      '#required'      => TRUE,
-    );
+    $form['predicate']['#disabled'] = TRUE;
   }
   $form['label'] = array(
     '#type'          => 'textfield',
@@ -171,8 +173,13 @@ function relation_config_page($form, $form_state, $predicate = '') {
   );
   $form['directional'] = array(
     '#type'           => 'checkbox',
-    '#title'          => 'Directional?',
+    '#title'          => 'Directional',
     '#default_value'  => $relation_type->directional,
+  );
+  $form['transitive'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => 'Transitive',
+    '#default_value'  => $relation_type->transitive,
   );
   // these should probably be changed to numerical (validated) textfields.
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8');
@@ -258,6 +265,7 @@ function relation_config_page_submit($form, &$form_state) {
     'max_arity'   => $max_arity,
     'label' => $form_state['values']['label'],
     'directional' => $form_state['values']['directional'],
+    'transitive' => $form_state['values']['transitive'],
   );
   $transaction = db_transaction();
   drupal_write_record('relation_type', $record, $form['#write_record_keys']);

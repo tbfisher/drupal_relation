@@ -100,6 +100,13 @@ function relation_schema() {
         'default' => 0,
         'description' => 'Whether this relation type is directional. If not, all indexes are ignored.',
       ),
+      'transitive' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether this relation type is transitive.',
+      ),
       'min_arity' => array(
         'type' => 'int',
         'unsigned' => TRUE,
