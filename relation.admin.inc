@@ -30,21 +30,9 @@ function relation_list() {
 function relation_config_page($form, $form_state, $predicate = '') {
   $form['#write_record_keys'] = array();
   if ($predicate) {
-    $relation_type = db_query('SELECT * FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
+    $relation_type = relation_type_load($predicate);
     if ($relation_type) {
       $form['#write_record_keys'][] = 'predicate';
-      $relation_type->source_bundles = array();
-      $relation_type->target_bundles = array();
-      foreach (db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
-        // if relation is non-directional, all indexes should be 0.
-        if ($record->r_index == 0) {
-          $relation_type->source_bundles[] = "$record->entity_type:$record->bundle";
-        }
-        elseif ($record->r_index == 1) {
-          $relation_type->target_bundles[] = "$record->entity_type:$record->bundle";
-        }
-
-      }
     }
   }
   if (empty($relation_type)) {
@@ -68,6 +56,9 @@ function relation_config_page($form, $form_state, $predicate = '') {
     '#default_value' => $predicate,
     '#required'      => TRUE,
     '#disabled'      => $predicate,
+    '#machine_name' => array(
+      'exists' => 'relation_type_load',
+    ),
   );
   $form['label'] = array(
     '#type'          => 'textfield',

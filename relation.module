@@ -152,6 +152,28 @@ function relation_type_save($record, $write_record_keys = array()) {
 }
 
 /**
+ * Loads a relation type.
+ *
+ * @param $predicate
+ *   The relation type (bundle) of the relation to be created.
+ * @return
+ *   A relation type record in the same format as expected by
+ *   relation_type_save().
+ */
+function relation_type_load($predicate) {
+  $relation_type = db_query('SELECT predicate, label, directional, transitive, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
+  if ($relation_type) {
+    $relation_type->source_bundles = array();
+    $relation_type->target_bundles = array();
+    foreach (db_query('SELECT predicate, entity_type, bundle, r_index  FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
+      $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
+      $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+    }
+  }
+  return $relation_type;
+}
+
+/**
  * Load a relation from a relation_id.
  *
  * @param $relation_id
@@ -401,50 +423,55 @@ function relation_block_view() {
 /**
  * The dropzone form.
  */
-function relation_dropzone($form) {
-  $options = array();
-  foreach (drupal_static('relation_entities', array()) as $entity_type => $entities) {
-    foreach ($entities as $entity_id => $entity) {
-      $options["$entity_type:$entity_id"] = "$entity_type: " . entity_label($entity_type, $entity);
-    }
-  }
-  if ($options) {
-    $form['predicate'] = array(
-      '#type'          => 'textfield',
-      '#title'         => t('Predicate'),
-      '#description'   => 'Name of the relation',
-      '#autocomplete_path' => 'relation/autocomplete/bundles',
-      '#default_value' => isset($_SESSION['relation_predicate']) ? $_SESSION['relation_predicate'] : '',
-      '#required'      => TRUE,
-    );
-    $form['entity_key'] = array(
-      '#type'         => 'select',
-      '#options'      => $options,
-      '#default_value' => '',
-    );
-    if (count($options) > 1) {
-      $form['entity_key']['#empty_value'] = '';
-      $form['entity_key']['#empty_option'] = t('Select an entity');
-    }
-    $form['pick'] = array(
-      '#type' => 'submit',
-      '#submit' => array('relation_dropzone_pick'),
-      '#value' => t('Pick'),
-    );
-    if (!empty($_SESSION['relation_entity_keys'])) {
-      $form['stored'] = _relation_stored_entity_keys_list();
-      $form['save'] = array(
-        '#type' => 'submit',
-        '#value' => t('Create relation'),
-        '#submit' => array('relation_dropzone_save'),
-      );
-      if (isset($_SESSION['relation_entity_keys'])) {
-        $form['clear'] = array(
-          '#type' => 'submit',
-          '#value' => t('Clear'),
-          '#submit' => array('relation_dropzone_clear'),
-        );
+function relation_dropzone($form, &$form_state) {
+  if ($relation_entities = drupal_static('relation_entities', array())) {
+    foreach ($relation_entities as $entity_type => $entities) {
+      foreach ($entities as $entity_id => $entity) {
+        $options["$entity_type:$entity_id"] = "$entity_type: " . entity_label($entity_type, $entity);
       }
+    }
+    $form_state['relation_entities_options'] = $options;
+  }
+  if (empty($form_state['relation_entities_options'])) {
+    return $form;
+  }
+  $form['predicate'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Predicate'),
+    '#description'   => 'Name of the relation',
+    '#autocomplete_path' => 'relation/autocomplete/bundles',
+    '#default_value' => isset($_SESSION['relation_predicate']) ? $_SESSION['relation_predicate'] : '',
+    '#required'      => TRUE,
+  );
+  $form['entity_key'] = array(
+    '#type'         => 'select',
+    '#options'      => $form_state['relation_entities_options'],
+    '#default_value' => '',
+  );
+  if (count($options) > 1) {
+    $form['entity_key']['#empty_value'] = '';
+    $form['entity_key']['#empty_option'] = t('Select an entity');
+  }
+  $form['pick'] = array(
+    '#type' => 'submit',
+    '#submit' => array('relation_dropzone_pick'),
+    '#value' => t('Pick'),
+  );
+  $form['reload']['#prefix'] = '<span id="relation_dropzone_reload">';
+  $form['reload']['#postfix'] = '</span>';
+  if (!empty($_SESSION['relation_entity_keys'])) {
+    $form['reload']['stored'] = _relation_stored_entity_keys_list();
+    $form['reload']['save'] = array(
+      '#type' => 'submit',
+      '#value' => t('Create relation'),
+      '#submit' => array('relation_dropzone_save'),
+    );
+    if (isset($_SESSION['relation_entity_keys'])) {
+      $form['reload']['clear'] = array(
+        '#type' => 'submit',
+        '#value' => t('Clear'),
+        '#submit' => array('relation_dropzone_clear'),
+      );
     }
   }
   return $form;
