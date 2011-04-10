@@ -334,7 +334,18 @@ dpm($write_record_keys, 'WRK');
  *   Numerical relation_id of the relation to be loaded.
  *
  * @return
- *   Loaded relation object.
+ *   Loaded relation object. Relation objects are stdClass Object of the form:
+ *   - relation_id: numeric relation_id.
+ *   - predicate: relation bundle machine name.
+ *   - arity: the number of entities in the relation
+ *   - rdf_mapping: not yet implemented (empty array)
+ *   - entity_keys: Array of keys for entities that make up the relation.
+ *     Keys are arrays are of the form:
+ *     - entity_type: The type of the entity (eg. node).
+ *     - entity_id: Numeric entity ID.
+ *     - r_index: Numeric index of the entity in the relation. Always 0 for
+ *       non-directional relations, in directional relations this is 0 for
+ *       source entities, and 1 for target entities.
  */
 function relation_load($relation_id) {
   return reset(relation_multiple_load(array($relation_id)));
@@ -348,6 +359,8 @@ function relation_load($relation_id) {
  *
  * @return
  *   Associative array of loaded relation objects, keyed by relation_id.
+ *
+ * @see relation_load()
  */
 function relation_multiple_load($relation_ids) {
   // Entity load handles field_attach_load for us.
