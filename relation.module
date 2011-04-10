@@ -155,15 +155,13 @@ function relation_config_page($form, $form_state, $predicate = '') {
   }
   $predicate = $relation_type->predicate;
   $form['predicate'] = array(
-    '#type'          => 'textfield',
+    '#type'          => 'machine_name',
     '#title'         => t('Machine Name'),
-    '#description'   => t('Machine name of the relation'),
+    '#description'   => t('Machine name (predicate) of the relation'),
     '#default_value' => $predicate,
     '#required'      => TRUE,
+    '#disabled'      => $predicate,
   );
-  if ($predicate) {
-    $form['predicate']['#disabled'] = TRUE;
-  }
   $form['label'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Label'),
@@ -259,13 +257,6 @@ function relation_config_page_submit($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
   $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
-  if (max_arity > 2) {
-    variable_set("relation_multiple_$predicate", TRUE);
-  }
-  elseif (variable_get("relation_multiple_$predicate")) {
-    variable_del("relation_multiple_$predicate");
-  }
-
   $record = array(
     'predicate'   => $predicate,
     'min_arity'   => $min_arity,
@@ -273,23 +264,47 @@ function relation_config_page_submit($form, &$form_state) {
     'label' => $form_state['values']['label'],
     'directional' => $form_state['values']['directional'],
     'transitive' => $form_state['values']['transitive'],
+    'source_bundles' => $form_state['values']['source_bundles'],
+    'target_bundles' => $form_state['values']['target_bundles'],
   );
+  relation_type_save($record, $form['#write_record_keys']);
+  $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
+}
+
+function relation_type_save($record, $write_record_keys = array()) {
+  $record += array(
+    'min_arity' => 2,
+    'max_arity' => 2,
+    'directional' => FALSE,
+    'transitive' => FALSE,
+  );
+  $source_bundles = $record['source_bundles'];
+  if ($record['directional']) {
+    $target_bundles = $record['target_bundles'];
+  }
+  unset($record['source_bundles'], $record['target_bundles']);
+  $predicate = $record['predicate'];
   $transaction = db_transaction();
-  drupal_write_record('relation_type', $record, $form['#write_record_keys']);
+  if ($record['max_arity'] > 2) {
+    variable_set("relation_multiple_$predicate", TRUE);
+  }
+  elseif (variable_get("relation_multiple_$predicate")) {
+    variable_del("relation_multiple_$predicate");
+  }
+  drupal_write_record('relation_type', $record, $write_record_keys);
   db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
   $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle', 'r_index'));
-  foreach ($form_state['values']['source_bundles'] as $entity_bundles) {
+  foreach ($source_bundles as $entity_bundles) {
     list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
     $query->values(array($predicate, $entity_type, $bundle, 0));
   }
-  if ($form_state['values']['directional'] = TRUE) {
-    foreach ($form_state['values']['target_bundles'] as $entity_bundles) {
+  if ($record['directional']) {
+    foreach ($target_bundles as $entity_bundles) {
       list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
       $query->values(array($predicate, $entity_type, $bundle, 1));
     }
   }
   $query->execute();
-  $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
 }
 
 function relation_load($relation_id) {
@@ -406,29 +421,29 @@ class RelationHandler implements RelationInterface {
 function relation_create($predicate, $entity_keys) {
   $relation_id = db_insert('relation')
     ->useDefaults(array('relation_id'))
-    ->fields(array('predicate' => $predicate, 'arity' => count($entity_keys) - 1))
+    ->fields(array('predicate' => $predicate, 'arity' => count($entity_keys)))
     ->execute();
   $query = db_insert('relation_data')
     ->fields(array('relation_id', 'entity_type', 'entity_id', 'r_index'));
   foreach ($entity_keys as $index => $entity_key) {
-    $query->values(array($relation_id, $entity_key[0], $entity_key[1], $index));
+    $query->values(array($relation_id, $entity_key['entity_type'], $entity_key['entity_id'], $index));
   }
   $query->execute();
   return $relation_id;
 }
 
-function relation_validate($predicate, $entity_keys, $directional = FALSE) {
+function relation_validate($predicate, $entity_keys, &$errors, $directional = FALSE) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
-    return array(FALSE, t("The :predicate relation type does not exist!", array(':predicate' => $predicate)));
+    $errors[] = t("The :predicate relation type does not exist!", array(':predicate' => $predicate));
   }
   // Check that arity is within acceptable bounds.
   if (count($entity_keys) < $relation_type->min_arity) {
-    return array(FALSE, t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity)));
+    $errors[] = t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity));
   }
   if (count($entity_keys) > $relation_type->max_arity) {
-    return array(FALSE, t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity)));
+    $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
   $relation_bundles = relation_get_bundles($predicate);
@@ -447,13 +462,11 @@ function relation_validate($predicate, $entity_keys, $directional = FALSE) {
         break;
       }
     }
-    if ($acceptable == FALSE) {
+    if (!$acceptable) {
       $endpoint = $directional ? $endpoint . ' endpoints' : 'an endpoint';
-      return array(FALSE, t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate', => $predicate, ':bundle' => $entity_bundle)));
+      $errors[] = t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate' => $predicate, ':bundle' => $entity_bundle));
     }
   }
-  return array(FALSE, 'testing validation');
-  return array(TRUE, NULL);
 }
 
 /**
@@ -575,11 +588,10 @@ function relation_dropzone_validate($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   // May need some separate validation for "pick"
   if ($form_state['clicked_button']['#value']=='Create relation') {
-    $validation = relation_validate($predicate, $_SESSION['relation_entity_keys']);
-    if ($predicate) {
-      if (!$validation[0]) {
-        form_set_error('predicate', $validation[1]);
-      }
+    $errors = array();
+    relation_validate($predicate, $_SESSION['relation_entity_keys'], $errors);
+    foreach ($errors as $error) {
+      form_set_error('predicate', $error);
     }
   }
 }
@@ -638,8 +650,7 @@ function relation_entity_load($entities, $type) {
  * Autocomplete page for listing bundles.
  */
 function relation_predicate_autocomplete($string='') {
-  // @TODO: add label when we store it..
-  $sql = "SELECT predicate, predicate AS label FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
+  $sql = "SELECT predicate, label FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
 
   $resource = db_query($sql);
   $results = array();
@@ -652,13 +663,11 @@ function relation_predicate_autocomplete($string='') {
 
 /**
  * Helper query to get all relations tied to an entity.
- *
- * @TODO how to use $index?
  */
 function relation_get_relations($entity_type, $entity_id, $predicates = array(), $index = NULL) {
   $query = db_select('relation_data', 'rd')
     ->fields('r', array('relation_id'))
-    ->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id');
+    ->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id')
     ->condition('rd.entity_id', $entity_id);
   if ($predicates) {
     $query->condition('r.predicate', $predicates);
