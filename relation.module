@@ -195,6 +195,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
       ),
     ),
   );
+
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8', '0' => t('Infinite'));
   $form['max_arity'] = array(
     '#type' => 'select',
@@ -258,6 +259,12 @@ function relation_config_page_submit($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
   $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
+  if (max_arity > 2) {
+    variable_set("relation_multiple_$predicate", TRUE);
+  }
+  elseif (variable_get("relation_multiple_$predicate")) {
+    variable_del("relation_multiple_$predicate");
+  }
 
   $record = array(
     'predicate'   => $predicate,
@@ -290,12 +297,7 @@ function relation_load($relation_id) {
 }
 
 function relation_multiple_load($relation_ids) {
-  if (is_array($relation_ids)) {
-    $entities = entity_load('relation', $relation_ids);
-  }
-  else {
-    $entities = entity_load('relation', array($relation_ids));
-  }
+  $entities = entity_load('relation', $relation_ids);
   field_attach_load('relation_type', $entities);
   return $entities;
 }
