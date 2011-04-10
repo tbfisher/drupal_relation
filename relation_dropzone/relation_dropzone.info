@@ -1,4 +1,6 @@
 name = Relation block
 description = A block to create relation from entities loaded on the page
 core = 7.x
+files[] = relation_dropzone.module
+files[] = tests/relation_dropzone.test
 stylesheets[all][] = relation_dropzone.css

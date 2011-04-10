@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Tests for Relation Dropzone module.
+ */
+
+/**
+ * Test relation.
+ */
+class RelationDropzoneTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Relation Dropzone test',
+      'description' => 'Test the relation dropzone.',
+      'group' => 'Relation',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('relation_dropzone');
+    $web_user = $this->drupalCreateUser(array('create article content', 'create page content'));
+    $this->drupalLogin($web_user);
+    $edit = array('blocks[relation_dropzone][region]' => 'sidebar-second');
+    $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
+  }
+
+  /**
+   * Create some nodes, add some relations and check they are related.
+   */
+  function testDropzonePickCreate() {
+    $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
+    $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
+    $node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
+    $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
+    $node1key = $node1->type . ':' . $node1->id;
+    $node2key = $node2->type . ':' . $node2->id;
+    $node3key = $node3->type . ':' . $node3->id;
+    $node4key = $node4->type . ':' . $node4->id;
+
+    $relation_type = array(
+      'predicate'   => 'symmetric',
+      'label' => $this->randomString(),
+      'source_bundles' => array('node:article', 'node:page'),
+    );
+    relation_type_save($relation_type);
+    $relation_type = array(
+      'predicate'   => 'directional',
+      'label' => $this->randomString(),
+      'directional' => TRUE,
+      'source_bundles' => array('node:article'),
+      'target_bundles' => array('node:page'),
+    );
+    relation_type_save($relation_type);
+    $relation_type = array(
+      'predicate'   => 'octopus',
+      'label' => $this->randomString(),
+      'min_arity' => 2,
+      'max_arity' => 8,
+      'source_bundles' => array('node:article', 'node:page'),
+    );
+    relation_type_save($relation_type);
+
+    $predicate = 'symmetric';
+    $edit = array(
+      "relation_dropzone['predicate']" => $predicate,
+      "relation_dropzone['entity_key']" => $node1key,
+    );
+    $this->drupalPost('/', $edit, t('Pick'));
+    $edit = array(
+      "relation_dropzone['predicate']" => $predicate,
+      "relation_dropzone['entity_key']" => $node2key,
+    );
+    $this->drupalPost('/', $edit, t('Pick'));
+    $this->drupalPost('/', array(), t('Create relation'));
+    $this->assertNoText(t('The :predicate relation type does not exist!', array(':predicate' => $predicate)), 'Chose a bad relation predicate');
+    $this->assertText(t('Created new :predicate from', array(':predicate' => $predicate)), 'Block successfully moved to footer region.');
+
+  }
