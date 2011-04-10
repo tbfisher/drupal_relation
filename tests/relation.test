@@ -25,7 +25,7 @@ class RelationTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Create some nodes, add some relatand check they are related.
+   * Create some nodes, add some relations and check they are related.
    */
   function testNodeMultipleLoad() {
     $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
