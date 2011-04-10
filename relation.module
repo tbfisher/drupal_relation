@@ -220,10 +220,10 @@ function relation_multiple_load($relation_ids) {
  */
 function relation_page($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entity_keys = entity_load($entity_data['entity_type'], array($entity_data['entity_id']));
-    $entity = $entity_keys[$entity_data['entity_id']];
-    $label = entity_label($entity_data['entity_type'], $entity);
-    $uri = entity_uri($entity_data['entity_type'], $entity);
+    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+    $entity = $entities[$entity_key['entity_id']];
+    $label = entity_label($entity_key['entity_type'], $entity);
+    $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = l($label, $uri['path'], $uri['options']);
   }
   $build['link_list'] = array(
