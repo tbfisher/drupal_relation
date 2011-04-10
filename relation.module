@@ -296,8 +296,6 @@ function relation_config_page_submit($form, &$form_state) {
  *   updating a relation, or an empty array if we are creating a new relation.
  */
 function relation_type_save($record, $write_record_keys = array()) {
-dpm($record, 'record');
-dpm($write_record_keys, 'WRK');
   $record += array(
     'min_arity' => 2,
     'max_arity' => 2,
