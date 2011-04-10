@@ -323,6 +323,7 @@ function relation_type_save($record, $write_record_keys = array()) {
     }
   }
   $query->execute();
+  entity_info_cache_clear();
 }
 
 /**
@@ -506,7 +507,7 @@ function relation_create($predicate, $entity_keys) {
  *   - r_index: integer index of the entity to be added. This should be zero if
  *     the relation is non-directional.
  * @param $error
- *   Array of errors passed by reference.
+ *   Array of errors to be filled in, passed by reference.
  */
 function relation_validate($predicate, $entity_keys, &$errors) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
@@ -783,14 +784,6 @@ function relation_get_relations($entity_type, $entity_id, $predicates = array(),
  *   is non-directional, all bundles are returned in 'source_bundles'.
  */
 function relation_get_bundles($predicate) {
-  $bundles = db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchAll();
-  $relation = array('source_bundles' => array(), 'target_bundles' => array());
-  foreach ($bundles as $bundle) {
-    $endpoint = $bundle->r_index ? 'target_bundles' : 'source_bundles';
-    $relation[$endpoint][] = array(
-      'entity_type' => $bundle->entity_type,
-      'bundle'      => $bundle->bundle,
-    );
-  }
-  return $relation;
+  $entity_info = entity_get_info('relation');
+  return $entity_info['bundles'][$predicate];
 }
