@@ -70,7 +70,7 @@ function relation_schema() {
         'description' => 'The index of this row in this relation. The highest index in the relation is stored as "arity" in the relation table.',
       ),
     ),
-    'primary key' => array('relation_id', 'entity_type', 'entity_id'),
+    'primary key' => array('relation_id', 'entity_type', 'entity_id', 'r_index'),
     'indexes' => array(
       'relation_id' => array('relation_id', 'r_index'),
       'entity' => array('entity_type', 'entity_id'),
