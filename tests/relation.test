@@ -39,6 +39,14 @@ class RelationTestCase extends DrupalWebTestCase {
       'source_bundles' => array('node:article', 'node:page'),
     );
     relation_type_save($relation_type);
+    $predicate_directional = $this->randomName();
+    $relation_type = array(
+      'predicate'   => $predicate_directional,
+      'label' => $this->randomString(),
+      'source_bundles' => array('node:article'),
+      'target_bundles' => array('node:page'),
+    );
+    relation_type_save($relation_type);
     $errors = array();
     $entity_keys = array(
       array(
@@ -50,7 +58,15 @@ class RelationTestCase extends DrupalWebTestCase {
         'entity_id' => $node4->nid,
       )
     );
-    relation_validate($predicate, $entity_keys, $errors);
+    $this->RelationSaveHelper($predicate, $entity_keys);
+    $relations = relation_get_relations('node', $node4->nid);
+    $this->assertEqual(count($relations), 1, 'One relation found');
+    $relation = reset($relations);
+    $this->assertEqual($relation->entity_keys[0]['entity_id'], $node1->nid, 'Correct entity is related');
+  }
+
+  function RelationSaveHelper($predicate, $entity_keys) {
+      relation_validate($predicate, $entity_keys, $errors);
     if ($errors) {
       foreach ($errors as $error) {
         $this->fail($error);
@@ -64,7 +80,9 @@ class RelationTestCase extends DrupalWebTestCase {
     $this->assertEqual(count($relation->entity_keys), 2, 'There are two entities');
     $this->assertEqual($relation->arity, 2, 'Arity is 2.');
     $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct');
-    $need_ids = array_flip(array($node1->nid, $node4->nid));
+    foreach ($entity_keys as $entity_key) {
+      $need_ids[$entity_key['entity_id']] = TRUE;
+    }
     foreach ($relation->entity_keys as $entity_key) {
       $this->assertEqual($entity_key['entity_type'], 'node', 'The entity type is node.');
       $this->assertTrue(isset($need_ids[$entity_key['entity_id']]), 'The entity ID is correct');

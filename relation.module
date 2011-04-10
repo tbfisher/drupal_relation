@@ -664,17 +664,17 @@ function relation_predicate_autocomplete($string='') {
  * Helper query to get all relations tied to an entity.
  */
 function relation_get_relations($entity_type, $entity_id, $predicates = array(), $index = NULL) {
-  $query = db_select('relation_data', 'rd')
-    ->fields('r', array('relation_id'))
-    ->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id')
-    ->condition('rd.entity_id', $entity_id);
+  $query = db_select('relation_data', 'rd');
+  $query->addField('r', 'relation_id');
+  $query->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id');
+  $query->condition('rd.entity_id', $entity_id);
   if ($predicates) {
     $query->condition('r.predicate', $predicates);
   }
   if (isset($index)) {
     $query->condition('rd.index', $index);
   }
-  $relation_ids = $query->execute->fetchCol();
+  $relation_ids = $query->execute()->fetchCol();
   return $relation_ids ? entity_load('relation', $relation_ids) : array();
 }
 
