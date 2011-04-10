@@ -1,0 +1,4 @@
+name = Relation block
+description = A block to create relation from entities loaded on the page
+core = 7.x
+stylesheets[all][] = relation_dropzone.css
