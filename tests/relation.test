@@ -61,14 +61,14 @@ class RelationTestCase extends DrupalWebTestCase {
     }
     $relation_id = relation_create($predicate, $entity_keys);
     $relation = relation_load($relation_id);
-    $this->assertEqual(count($relation->entities), 2, 'There are two entities');
+    $this->assertEqual(count($relation->entity_keys), 2, 'There are two entities');
     $this->assertEqual($relation->arity, 2, 'Arity is 2.');
     $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct');
     $need_ids = array_flip(array($node1->nid, $node4->nid));
-    foreach ($relation->entities as $entity) {
-      $this->assertEqual($entity['entity_type'], 'node', 'The entity type is node.');
-      $this->assertTrue(isset($need_ids[$entity['entity_id']]), 'The entity ID is correct');
-      unset($need_ids[$entity['entity_id']]);
+    foreach ($relation->entity_keys as $entity_key) {
+      $this->assertEqual($entity_key['entity_type'], 'node', 'The entity type is node.');
+      $this->assertTrue(isset($need_ids[$entity_key['entity_id']]), 'The entity ID is correct');
+      unset($need_ids[$entity_key['entity_id']]);
     }
     $this->assertFalse($need_ids, 'All ids found');
   }

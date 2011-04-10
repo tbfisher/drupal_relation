@@ -312,15 +312,14 @@ function relation_load($relation_id) {
 }
 
 function relation_multiple_load($relation_ids) {
-  $entities = entity_load('relation', $relation_ids);
-  field_attach_load('relation_type', $entities);
-  return $entities;
+  // Entity load handles field_attach_load for us.
+  return entity_load('relation', $relation_ids);
 }
 
 function relation_page($relation) {
-  foreach ($relation->entities as $r_index => $entity_data) {
-    $entities = entity_load($entity_data['entity_type'], array($entity_data['entity_id']));
-    $entity = $entities[$entity_data['entity_id']];
+  foreach ($relation->entity_keys as $r_index => $entity_key) {
+    $entity_keys = entity_load($entity_data['entity_type'], array($entity_data['entity_id']));
+    $entity = $entity_keys[$entity_data['entity_id']];
     $label = entity_label($entity_data['entity_type'], $entity);
     $uri = entity_uri($entity_data['entity_type'], $entity);
     $items[$r_index] = l($label, $uri['path'], $uri['options']);
@@ -354,7 +353,7 @@ class RelationEntityController extends DrupalDefaultEntityController {
       $results = $query->execute();
       $rows = $results->fetchAll();
       foreach ($rows as $row) {
-        $queried_entities[$id]->entities[$row->r_index] = array(
+        $queried_entities[$id]->entity_keys[$row->r_index] = array(
           'entity_type' => $row->entity_type,
           'entity_id' => $row->entity_id,
           'r_index' => $row->r_index,
