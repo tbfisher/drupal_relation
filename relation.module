@@ -285,12 +285,6 @@ function relation_type_save($record, $write_record_keys = array()) {
   unset($record['source_bundles'], $record['target_bundles']);
   $predicate = $record['predicate'];
   $transaction = db_transaction();
-  if ($record['max_arity'] > 2) {
-    variable_set("relation_multiple_$predicate", TRUE);
-  }
-  elseif (variable_get("relation_multiple_$predicate")) {
-    variable_del("relation_multiple_$predicate");
-  }
   drupal_write_record('relation_type', $record, $write_record_keys);
   db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
   $query = db_insert('relation_bundles')->fields(array('predicate', 'entity_type', 'bundle', 'r_index'));
