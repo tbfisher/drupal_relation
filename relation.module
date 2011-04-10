@@ -97,7 +97,7 @@ function relation_menu() {
 }
 
 /**
- * List all relation predicates
+ * List all relation predicates.
  */
 function relation_list() {
   $relation = relation_entity_info();
@@ -117,8 +117,11 @@ function relation_list() {
 }
 
 /**
- * Relation settings page, proof of concept, most will need to be moved
- * to relation bundle settings pages.
+ * Relation bundle settings page.
+ *
+ * @param $predicate
+ *   Relation type machine name. If this is not provided, assume that we're
+ *   creating a new relation type.
  */
 function relation_config_page($form, $form_state, $predicate = '') {
   $form['#write_record_keys'] = array();
@@ -251,7 +254,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
 }
 
 /**
- * Submit data from settings page.
+ * Submit data from bundle settings page.
  */
 function relation_config_page_submit($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
@@ -271,7 +274,30 @@ function relation_config_page_submit($form, &$form_state) {
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
 }
 
+/**
+ * Save relation bundle.
+ *
+ * @param $record
+ *   Array containing:
+ *   - predicate: Relation type machine name (string).
+ *   - label: Relation type human-readable name (string).
+ *   - directional: whether relation is directional (boolean) .
+ *   - transitive: whether relation is transitive (boolean).
+ *   - min_arity: minimum number of entities in relations of this type (int>=2).
+ *   - max_arity: maximum number of entities in relations of this type (int>=min_arity).
+ *   - source_bundles: array containing allowed bundle keys. This is used for
+ *     both directional and non-directional relations. Bundle key arrays are
+ *     made up of of the form 'entity:bundle', eg. 'node:article'.
+ *   - target_bundles: array containing arrays allowed target bundle keys.
+ *     This is the same format as source_bundles, but is only used for
+ *     directional relations.
+ * @param $write_record_keys
+ *   Array containing the primary key of the relation ('predicate'), if we are
+ *   updating a relation, or an empty array if we are creating a new relation.
+ */
 function relation_type_save($record, $write_record_keys = array()) {
+dpm($record, 'record');
+dpm($write_record_keys, 'WRK');
   $record += array(
     'min_arity' => 2,
     'max_arity' => 2,
@@ -301,15 +327,38 @@ function relation_type_save($record, $write_record_keys = array()) {
   $query->execute();
 }
 
+/**
+ * Load a relation from a relation_id.
+ *
+ * @param $relation_id
+ *   Numerical relation_id of the relation to be loaded.
+ *
+ * @return
+ *   Loaded relation object.
+ */
 function relation_load($relation_id) {
   return reset(relation_multiple_load(array($relation_id)));
 }
 
+/**
+ * Load an set of relations from an array of relation_ids.
+ *
+ * @param $relation_ids
+ *   Array of numerical relation_ids of the relations to be loaded.
+ *
+ * @return
+ *   Associative array of loaded relation objects, keyed by relation_id.
+ */
 function relation_multiple_load($relation_ids) {
   // Entity load handles field_attach_load for us.
   return entity_load('relation', $relation_ids);
 }
 
+/**
+ * Relation display page. Currently only displays related entities.
+ *
+ * @TODO: implement directionality, possibly give more details on entities?
+ */
 function relation_page($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
     $entity_keys = entity_load($entity_data['entity_type'], array($entity_data['entity_id']));
@@ -333,6 +382,11 @@ function relation_page($relation) {
  * right entities are identical.
  */
 class RelationEntityController extends DrupalDefaultEntityController {
+
+  /**
+   * Add related entity data to relation. Each entity is saved as an
+   * (entity_type, entity_id, r_index) triple.
+   */
   protected function attachLoad(&$queried_entities, $revision_id = FALSE) {
     parent::attachLoad($queried_entities, $revision_id);
     foreach ($queried_entities as $id => $entity) {
@@ -403,11 +457,15 @@ class RelationHandler implements RelationInterface {
   function get_right() {
   }
 }
+
 /**
  * Create a relation.
  *
+ * @param $predicate
+ *   The relation type (bundle) of the relation to be created.
  * @param $entity_keys
  *   A list of (entity_type, entity_id) pairs.
+ *
  * @return
  *   The new relation id.
  */
@@ -425,7 +483,21 @@ function relation_create($predicate, $entity_keys) {
   return $relation_id;
 }
 
-function relation_validate($predicate, $entity_keys, &$errors, $directional = FALSE) {
+/**
+ * Generic relation validation.
+ *
+ * @param $predicate
+ *   Relation type machine name (predicate).
+ * @param $entity_keys
+ *   An array of entity key arrays of the form:
+ *   - entity_type: type of the entity to be added to the relation (eg. node)
+ *   - entity_id: numerical id of the entity to be added to the relation.
+ *   - r_index: integer index of the entity to be added. This should be zero if
+ *     the relation is non-directional.
+ * @param $error
+ *   Array of errors passed by reference.
+ */
+function relation_validate($predicate, $entity_keys, &$errors) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
@@ -456,7 +528,7 @@ function relation_validate($predicate, $entity_keys, &$errors, $directional = FA
       }
     }
     if (!$acceptable) {
-      $endpoint = $directional ? $endpoint . ' endpoints' : 'an endpoint';
+      $endpoint = $relation_type->directional ? $endpoint . ' endpoints' : 'an endpoint';
       $errors[] = t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate' => $predicate, ':bundle' => $entity_bundle));
     }
   }
@@ -577,6 +649,9 @@ function relation_dropzone_pick($form, &$form_state) {
   }
 }
 
+/**
+ * Validate form submission for the dropzone.
+ */
 function relation_dropzone_validate($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   // May need some separate validation for "pick"
@@ -656,6 +731,20 @@ function relation_predicate_autocomplete($string='') {
 
 /**
  * Helper query to get all relations tied to an entity.
+ *
+ * @param $entity_type
+ *   The type of the entity (eg. node).
+ * @param $entity_id
+ *   The numerical entity id.
+ * @param $predicates
+ *   Array of relation types to look for.
+ * @param $index
+ *   The index of the entity in the relation, ie. for finding only relations
+ *   for which the given entity is a target endpoint.
+ *
+ * @return
+ *   Array of relation entity objects (which contain all the entities that they
+ *   relate). Array is empty if no relations are found.
  */
 function relation_get_relations($entity_type, $entity_id, $predicates = array(), $index = NULL) {
   $query = db_select('relation_data', 'rd');
@@ -673,7 +762,14 @@ function relation_get_relations($entity_type, $entity_id, $predicates = array(),
 }
 
 /**
- * Helper query to get all bundles available to relation. non-directional
+ * Helper query to get all bundles available to relation.
+ *
+ * @param $predicate
+ *   Machine name of the relation.
+ *
+ * @return
+ *   An array with two sub-arrays, for source and target bundles. If relation
+ *   is non-directional, all bundles are returned in 'source_bundles'.
  */
 function relation_get_bundles($predicate) {
   $bundles = db_query('SELECT * FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchAll();
