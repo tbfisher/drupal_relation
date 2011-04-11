@@ -30,7 +30,7 @@ function relation_dropzone_block_view() {
 /**
  * Implements hook_entity_load().
  */
-function relation_entity_load($entities, $type) {
+function relation_dropzone_entity_load($entities, $type) {
   $entities_store = &drupal_static('relation_entities', array());
   $enabled = &drupal_static(__FUNCTION__);
   // Recursion protection.
@@ -43,7 +43,7 @@ function relation_entity_load($entities, $type) {
     $block_info = _block_load_blocks();
     $enabled = FALSE;
     foreach ($block_info as $region => $blocks) {
-      if (isset($blocks['relation_dropzone'])) {
+      if (isset($blocks['relation_dropzone_dropzone'])) {
         $enabled = TRUE;
         break;
       }
@@ -172,7 +172,7 @@ function relation_dropzone_save($form, $form_state) {
     $relation_id = relation_create($predicate, $_SESSION['relation_entity_keys']);
     $link = l($predicate, "relation/$relation_id");
     $list = drupal_render(_relation_stored_entity_keys_list());
-    $message = t('Created new !link from !list.', array('!link' => $link, '!list' => $list));
+    $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
     drupal_set_message($message);
     relation_dropzone_clear($form, $form_state);
   }

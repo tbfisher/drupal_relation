@@ -19,11 +19,13 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
   }
 
   function setUp() {
-    parent::setUp('relation_dropzone');
-    $web_user = $this->drupalCreateUser(array('create article content', 'create page content'));
-    $this->drupalLogin($web_user);
+    parent::setUp('relation', 'relation_dropzone');
+    $admin_user = $this->drupalCreateUser(array('administer blocks'));
+    $this->drupalLogin($admin_user);
     $edit = array('blocks[relation_dropzone_dropzone][region]' => 'sidebar_second');
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
+    $web_user = $this->drupalCreateUser(array('create article content', 'create page content'));
+    $this->drupalLogin($web_user);
   }
 
   /**
@@ -34,10 +36,10 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
     $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
     $node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
-    $node1key = $node1->type . ':' . $node1->nid;
-    $node2key = $node2->type . ':' . $node2->nid;
-    $node3key = $node3->type . ':' . $node3->nid;
-    $node4key = $node4->type . ':' . $node4->nid;
+    $node1key = 'node:' . $node1->nid;
+    $node2key = 'node:' . $node2->nid;
+    $node3key = 'node:' . $node3->nid;
+    $node4key = 'node:' . $node4->nid;
 
     $relation_type = array(
       'predicate'   => 'symmetric',
@@ -64,18 +66,39 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
 
     $predicate = 'symmetric';
     $edit = array(
-      "relation_dropzone['predicate']" => $predicate,
-      "relation_dropzone['entity_key']" => $node1key,
+      "predicate" => $predicate,
+      "entity_key" => $node1key,
     );
-    $this->drupalPost('/', $edit, t('Pick'));
+    $this->drupalPost('node', $edit, t('Pick'));
     $edit = array(
-      "relation_dropzone['predicate']" => $predicate,
-      "relation_dropzone['entity_key']" => $node2key,
+      "predicate" => $predicate,
+      "entity_key" => $node2key,
     );
-    $this->drupalPost('/', $edit, t('Pick'));
-    $this->drupalPost('/', array(), t('Create relation'));
-    $this->assertNoText(t('The :predicate relation type does not exist!', array(':predicate' => $predicate)), 'Chose a bad relation predicate');
-    $this->assertText(t('Created new :predicate from', array(':predicate' => $predicate)), 'Block successfully moved to footer region.');
-
+    $this->drupalPost('node', $edit, t('Pick'));
+    $this->drupalPost('node', array(), t('Create relation'));
+    // Now figure out the new relation_id.
+    $relation = reset(relation_get_relations('node', $node1->nid, array($predicate)));
+    $path = "relation/$relation->relation_id";
+    $link = l($predicate, $path);
+    // Rebuild the message. Use the knoew node labels to make sure the message
+    // contains those.
+    $node1_label = entity_label('node', $node1);
+    $node2_label = entity_label('node', $node2);
+    $items = array(
+      "node: " . $node1_label,
+      "node: " . $node2_label,
+    );
+    $item_list = array(
+      '#theme' => 'item_list',
+      '#items' => $items,
+    );
+    $list = drupal_render($item_list);
+    $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
+    $this->assertRaw($message, 'Created a new relation.');
+    $this->drupalGet($path);
+    $node1_uri = entity_uri('node', $node1);
+    $node2_uri = entity_uri('node', $node2);
+    $this->assertRaw(l($node1_label, $node1_uri['path'], $node1_uri['options']), 'Node1 link found');
+    $this->assertRaw(l($node2_label, $node2_uri['path'], $node2_uri['options']), 'Node1 link found');
   }
 }

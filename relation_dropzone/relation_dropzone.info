@@ -5,3 +5,4 @@ dependencies[] = relation
 files[] = relation_dropzone.module
 files[] = tests/relation_dropzone.test
 stylesheets[all][] = relation_dropzone.css
+dependencies[] = relation

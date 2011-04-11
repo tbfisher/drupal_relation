@@ -360,7 +360,7 @@ function relation_validate($predicate, $entity_keys, &$errors) {
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
-    $errors[] = t("The :predicate relation type does not exist!", array(':predicate' => $predicate));
+    $errors[] = t("The !predicate relation type does not exist!", array('!predicate' => $predicate));
   }
   // Check that arity is within acceptable bounds.
   if (count($entity_keys) < $relation_type->min_arity) {
