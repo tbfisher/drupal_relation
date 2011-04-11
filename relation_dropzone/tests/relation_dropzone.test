@@ -80,7 +80,7 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
     $relation = reset(relation_get_relations('node', $node1->nid, array($predicate)));
     $path = "relation/$relation->relation_id";
     $link = l($predicate, $path);
-    // Rebuild the message. Use the knoew node labels to make sure the message
+    // Rebuild the message. Use the known node labels to make sure the message
     // contains those.
     $node1_label = entity_label('node', $node1);
     $node2_label = entity_label('node', $node2);

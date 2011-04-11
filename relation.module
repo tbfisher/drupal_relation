@@ -100,7 +100,7 @@ function relation_menu() {
 }
 
 /**
- * Save relation bundle.
+ * Saves a relation bundle.
  *
  * @param $record
  *   Array containing:
@@ -152,7 +152,7 @@ function relation_type_save($record, $write_record_keys = array()) {
 }
 
 /**
- * Loads a relation type.
+ * Loads a relation type (bundle).
  *
  * @param $predicate
  *   The relation type (bundle) of the relation to be created.
@@ -174,7 +174,7 @@ function relation_type_load($predicate) {
 }
 
 /**
- * Load a relation from a relation_id.
+ * Loads a relation from a relation_id.
  *
  * @param $relation_id
  *   Numerical relation_id of the relation to be loaded.
@@ -198,7 +198,7 @@ function relation_load($relation_id) {
 }
 
 /**
- * Load an set of relations from an array of relation_ids.
+ * Loads a set of relations from an array of relation_ids.
  *
  * @param $relation_ids
  *   Array of numerical relation_ids of the relations to be loaded.
@@ -243,7 +243,7 @@ function relation_page($relation) {
 class RelationEntityController extends DrupalDefaultEntityController {
 
   /**
-   * Add related entity data to relation. Each entity is saved as an
+   * Adds related entity data to relation. Each entity is saved as an
    * (entity_type, entity_id, r_index) triple.
    */
   protected function attachLoad(&$queried_entities, $revision_id = FALSE) {
@@ -318,7 +318,7 @@ class RelationHandler implements RelationInterface {
 }
 
 /**
- * Create a relation.
+ * Creates a relation.
  *
  * @param $predicate
  *   The relation type (bundle) of the relation to be created.
@@ -343,7 +343,7 @@ function relation_create($predicate, $entity_keys) {
 }
 
 /**
- * Generic relation validation.
+ * Validates relations against relation bundle settings.
  *
  * @param $predicate
  *   Relation type machine name (predicate).
