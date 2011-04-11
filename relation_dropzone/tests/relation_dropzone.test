@@ -22,7 +22,7 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
     parent::setUp('relation_dropzone');
     $web_user = $this->drupalCreateUser(array('create article content', 'create page content'));
     $this->drupalLogin($web_user);
-    $edit = array('blocks[relation_dropzone][region]' => 'sidebar-second');
+    $edit = array('blocks[relation_dropzone_dropzone][region]' => 'sidebar_second');
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
   }
 
@@ -34,10 +34,10 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
     $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
     $node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
-    $node1key = $node1->type . ':' . $node1->id;
-    $node2key = $node2->type . ':' . $node2->id;
-    $node3key = $node3->type . ':' . $node3->id;
-    $node4key = $node4->type . ':' . $node4->id;
+    $node1key = $node1->type . ':' . $node1->nid;
+    $node2key = $node2->type . ':' . $node2->nid;
+    $node3key = $node3->type . ':' . $node3->nid;
+    $node4key = $node4->type . ':' . $node4->nid;
 
     $relation_type = array(
       'predicate'   => 'symmetric',
@@ -78,3 +78,4 @@ class RelationDropzoneTestCase extends DrupalWebTestCase {
     $this->assertText(t('Created new :predicate from', array(':predicate' => $predicate)), 'Block successfully moved to footer region.');
 
   }
+}
