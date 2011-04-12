@@ -93,7 +93,7 @@ function relation_dropzone($form, &$form_state) {
     '#value' => t('Pick'),
   );
   $form['reload']['#prefix'] = '<span id="relation_dropzone_reload">';
-  $form['reload']['#postfix'] = '</span>';
+  $form['reload']['#suffix'] = '</span>';
   if (!empty($_SESSION['relation_entity_keys'])) {
     $form['reload']['stored'] = _relation_stored_entity_keys_list();
     $form['reload']['save'] = array(
