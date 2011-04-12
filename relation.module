@@ -172,7 +172,8 @@ function relation_type_save($record, $write_record_keys = array()) {
  *   relation_type_save().
  */
 function relation_type_load($predicate) {
-  return reset(relation_get_types($predicate, TRUE));
+  $types = relation_get_types($predicate, TRUE);
+  return reset($types);
 }
 
 /**
