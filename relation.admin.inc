@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Administrative functions for Relation module.
+ */
+
+/**
  * List all relation predicates.
  */
 function relation_list() {

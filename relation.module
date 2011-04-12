@@ -21,25 +21,9 @@ function relation_entity_info() {
     'bundle keys' => array(
       'bundle' => 'predicate',
     ),
-    'bundles' => array(),
+    'bundles' => relation_get_types(NULL, TRUE),
     'view modes' => array(),
   );
-  foreach (db_query('SELECT predicate, label, directional, transitive, min_arity, max_arity FROM {relation_type}') as $record) {
-    $entities['relation']['bundles'][$record->predicate] = array(
-      'label' => $record->label ? $record->label : $record->predicate,
-      'directional' => $record->directional,
-      'transitive' => $record->transitive,
-      'min_arity' => $record->min_arity,
-      'max_arity' => $record->max_arity,
-    );
-  }
-  foreach (db_query('SELECT predicate, entity_type, bundle, r_index FROM {relation_bundles}') as $record) {
-    $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
-    $entities['relation']['bundles'][$record->predicate][$endpoint][] = array(
-      'entity_type' => $record->entity_type,
-      'bundle'      => $record->bundle,
-    );
-  }
   return $entities;
 }
 
@@ -155,22 +139,47 @@ function relation_type_save($record, $write_record_keys = array()) {
  * Loads a relation type (bundle).
  *
  * @param $predicate
- *   The relation type (bundle) of the relation to be created.
+ *   The machine name of the relation type (bundle) to be loaded.
  * @return
- *   A relation type record in the same format as expected by
+ *   A relation type record (stdClass) in the same format as expected by
  *   relation_type_save().
  */
 function relation_type_load($predicate) {
-  $relation_type = db_query('SELECT predicate, label, directional, transitive, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
-  if ($relation_type) {
+  return reset(relation_get_types($predicate));
+}
+
+/**
+ * Loads a relation type (bundle), or all relation bundles.
+ *
+ * @param $predicate
+ *   The machine name of the relation type (bundle) to be loaded. If $predicate
+ *   is NULL, load all relation entity types.
+ * @param $array
+ *   Boolean, whether to return an array of bundles as arrays (TRUE), or
+ *   an array of bundles as objects (FALSE).
+ *
+ * @return
+ *   A an array of relation type records in the same format as expected by
+ *   relation_type_save(), keyed by predicate.
+ */
+function relation_get_types($predicate = NULL, $array = FALSE) {
+  $query = db_select('relation_type', 'rt')
+  ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'min_arity', 'max_arity'));
+  if ($predicate) {
+    $query->condition('predicate', $predicate);
+  }
+  $results = $query->execute();
+  $relation_types = array();
+  foreach ($results as $relation_type) {
     $relation_type->source_bundles = array();
     $relation_type->target_bundles = array();
-    foreach (db_query('SELECT predicate, entity_type, bundle, r_index  FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $predicate)) as $record) {
+    foreach (db_query('SELECT predicate, entity_type, bundle, r_index  FROM {relation_bundles} WHERE predicate = :predicate', array(':predicate' => $relation_type->predicate)) as $record) {
       $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
       $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
     }
+    $relation_types[$relation_type->predicate] = $array ? (array) $relation_type : $relation_type;
   }
-  return $relation_type;
+  return $relation_types;
 }
 
 /**
@@ -370,7 +379,7 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $relation_bundles = relation_get_bundles($predicate);
+  $relation_bundles = relation_type_load($predicate);
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
     // This is the only way have to get bundles from entity type and id as the
@@ -378,10 +387,12 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
     $entity = $entities[$entity_key['entity_id']];
     list(, , $entity_bundle) = entity_extract_ids($entity_key['entity_type'], $entity);
+    $entity_bundle = $entity_key['entity_type'] . ':' . $entity_bundle;
     $direction = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
-    $endpoint =  ($direction > 0) ? 'target' : 'source';
-    foreach ($relation_bundles[$endpoint . '_bundles'] as $relation_bundle) {
-      if (($entity_key['entity_type'] == $relation_bundle['entity_type']) && ($entity_bundle == $relation_bundle['bundle'])) {
+    $endpoint =  ($direction > 0) ? 'target_bundles' : 'source_bundles';
+    foreach ($relation_bundles->$endpoint as $relation_bundle) {
+      return FALSE;
+      if ($relation_bundle == $entity_bundle) {
         $acceptable = TRUE;
         break;
       }
@@ -438,19 +449,4 @@ function relation_get_relations($entity_type, $entity_id, $predicates = array(),
   }
   $relation_ids = $query->execute()->fetchCol();
   return $relation_ids ? entity_load('relation', $relation_ids) : array();
-}
-
-/**
- * Helper query to get all bundles available to relation.
- *
- * @param $predicate
- *   Machine name of the relation.
- *
- * @return
- *   An array with two sub-arrays, for source and target bundles. If relation
- *   is non-directional, all bundles are returned in 'source_bundles'.
- */
-function relation_get_bundles($predicate) {
-  $entity_info = entity_get_info('relation');
-  return $entity_info['bundles'][$predicate];
 }
