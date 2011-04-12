@@ -59,6 +59,16 @@ function relation_menu() {
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
+  $items['relation/%relation/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['relation/%relation/edit'] = array(
+    'title' => 'Edit',
+    'access arguments' => array('administer relation'),
+    'page callback' => 'relation_edit',
+  );
   $items['admin/structure/relation'] = array(
     'title' => 'Relation',
     'access arguments' => array('administer relation'),
