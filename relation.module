@@ -66,8 +66,10 @@ function relation_menu() {
   );
   $items['relation/%relation/edit'] = array(
     'title' => 'Edit',
-    'access arguments' => array('administer relation'),
+    'access arguments' => array('access content'),
     'page callback' => 'relation_edit',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
   );
   $items['admin/structure/relation'] = array(
     'title' => 'Relation',
@@ -283,6 +285,29 @@ function relation_page($relation) {
  */
 function relation_page_title($relation) {
   return 'Relation ' . $relation->relation_id;
+}
+
+/**
+ * Relation edit page.
+ */
+function relation_edit($relation) {
+  foreach ($relation->entity_keys as $r_index => $entity_key) {
+    $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+    $label = entity_label($entity_key['entity_type'], $entity);
+    $uri = entity_uri($entity_key['entity_type'], $entity);
+    $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
+  }
+  $headers = array('Entity','Entity_type');
+  $build['link_list'] = array(
+    '#theme' => 'table',
+    '#caption' => 'Related Entities',
+    '#header' => $headers,
+    '#rows' => $items,
+  );
+
+  field_attach_form('relation', $relation, $build, $form_state = array());
+
+  return $build;
 }
 
 /**
