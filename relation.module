@@ -12,7 +12,7 @@ function relation_entity_info() {
   $entities['relation'] = array(
     'label' => t('Relation'),
     'base table' => 'relation',
-    'fieldable' => FALSE,
+    'fieldable' => TRUE,
     'controller class' => 'RelationEntityController',
     'entity keys' => array(
       'id' => 'relation_id',
@@ -21,9 +21,18 @@ function relation_entity_info() {
     'bundle keys' => array(
       'bundle' => 'predicate',
     ),
-    'bundles' => relation_get_types(NULL, TRUE),
+    'bundles' => array(),
     'view modes' => array(),
   );
+  foreach (relation_get_types(NULL, TRUE) as $type => $info) {
+    $entities['relation']['bundles'][$type] = $info;
+    $entities['relation']['bundles'][$type]['admin'] = array(
+      'path' => 'admin/structure/relation/manage/%relation_type',
+      'real path' => 'admin/structure/relation/manage/' . $type,
+      'bundle argument' => 4,
+      'access arguments' => array('administer relation'),
+    );
+  }
   return $entities;
 }
 
@@ -54,6 +63,12 @@ function relation_menu() {
     'page callback' => 'relation_list',
     'file' => 'relation.admin.inc',
   );
+  $items['admin/structure/relation/manage'] = array(
+    'title' => 'Relation',
+    'access arguments' => array('administer relation'),
+    'page callback' => 'relation_list',
+    'file' => 'relation.admin.inc',
+  );
   $items['admin/structure/relation/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -63,17 +78,21 @@ function relation_menu() {
     'title' => 'Add',
     'access arguments' => array('administer relation'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_config_page'),
+    'page arguments' => array('relation_type_form'),
     'type' => MENU_LOCAL_ACTION,
     'file' => 'relation.admin.inc',
   );
-  $items['admin/structure/relation/edit/%'] = array(
+  $items['admin/structure/relation/manage/%relation_type'] = array(
     'title' => 'Edit relation type',
     'access arguments' => array('administer relation'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_config_page', 4),
+    'page arguments' => array('relation_type_form', 4),
     'type' => MENU_CALLBACK,
     'file' => 'relation.admin.inc',
+  );
+  $items['admin/structure/types/manage/%relation_type/edit'] = array(
+    'title' => 'Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['relation/autocomplete/bundles'] = array(
     'type' => MENU_CALLBACK,
@@ -141,11 +160,11 @@ function relation_type_save($record, $write_record_keys = array()) {
  * @param $predicate
  *   The machine name of the relation type (bundle) to be loaded.
  * @return
- *   A relation type record (stdClass) in the same format as expected by
+ *   A relation type record (as an Array) in the same format as expected by
  *   relation_type_save().
  */
 function relation_type_load($predicate) {
-  return reset(relation_get_types($predicate));
+  return reset(relation_get_types($predicate, TRUE));
 }
 
 /**
@@ -379,7 +398,7 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $relation_bundles = relation_type_load($predicate);
+  $relation_bundles = reset(relation_get_types($predicate));
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
     // This is the only way have to get bundles from entity type and id as the

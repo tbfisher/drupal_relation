@@ -10,12 +10,14 @@
  */
 function relation_list() {
   $relation = relation_entity_info();
-  $headers = array(t('Name'));
+  $headers = array(t('Name'), t('Actions'));
   $rows = array();
   foreach ($relation['relation']['bundles'] as $name => $bundle) {
-    $url = url('admin/structure/relation/edit/' . $name);
-    $link = t('<a href="!url">@label</a>', array('!url' => $url, '@label' => $bundle['label']));
-    $rows[] = array($link);
+    $url = 'admin/structure/relation/manage/' . $name;
+    $label = $bundle['label'] ? $bundle['label'] : $name;
+    $link = l($label, $url);
+    $edit_link = l(t('edit'), $url . '/edit');
+    $rows[] = array($link, $edit_link);
   }
   $output = array(
     '#theme' => 'table',
@@ -26,16 +28,16 @@ function relation_list() {
 }
 
 /**
- * Relation bundle settings page.
+ * Relation relation type bundle settings form.
  *
  * @param $predicate
  *   Relation type machine name. If this is not provided, assume that we're
  *   creating a new relation type.
  */
-function relation_config_page($form, $form_state, $predicate = '') {
+function relation_type_form($form, &$form_state, $predicate = array(), $op = 'edit') {
   $form['#write_record_keys'] = array();
   if ($predicate) {
-    $relation_type = relation_type_load($predicate);
+    $relation_type = (object) $predicate;
     if ($relation_type) {
       $form['#write_record_keys'][] = 'predicate';
     }
@@ -156,7 +158,7 @@ function relation_config_page($form, $form_state, $predicate = '') {
 /**
  * Submit data from bundle settings page.
  */
-function relation_config_page_submit($form, &$form_state) {
+function relation_type_form_submit($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
   $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
