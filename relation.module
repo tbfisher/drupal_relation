@@ -77,12 +77,6 @@ function relation_menu() {
     'page callback' => 'relation_list',
     'file' => 'relation.admin.inc',
   );
-  $items['admin/structure/relation/manage'] = array(
-    'title' => 'Relation',
-    'access arguments' => array('administer relation'),
-    'page callback' => 'relation_list',
-    'file' => 'relation.admin.inc',
-  );
   $items['admin/structure/relation/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
