@@ -54,7 +54,7 @@ function relation_permission() {
 function relation_menu() {
   $items['relation/%relation'] = array(
     'access arguments' => array('access content'),
-    'page callback' => 'relation_page',
+    'page callback' => 'relation_view',
     'page arguments' => array(1),
   );
   $items['admin/structure/relation'] = array(
@@ -246,10 +246,9 @@ function relation_multiple_load($relation_ids) {
  *
  * @TODO: implement directionality, possibly give more details on entities?
  */
-function relation_page($relation) {
+function relation_view($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
-    $entity = $entities[$entity_key['entity_id']];
+    $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
     $label = entity_label($entity_key['entity_type'], $entity);
     $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = l($label, $uri['path'], $uri['options']);
