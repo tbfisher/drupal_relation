@@ -53,8 +53,10 @@ function relation_permission() {
  */
 function relation_menu() {
   $items['relation/%relation'] = array(
+    'title callback' => 'relation_page_title',
+    'title arguments' => array(1),
     'access arguments' => array('access content'),
-    'page callback' => 'relation_view',
+    'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
   $items['admin/structure/relation'] = array(
@@ -246,18 +248,31 @@ function relation_multiple_load($relation_ids) {
  *
  * @TODO: implement directionality, possibly give more details on entities?
  */
-function relation_view($relation) {
+function relation_page($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
     $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
     $label = entity_label($entity_key['entity_type'], $entity);
     $uri = entity_uri($entity_key['entity_type'], $entity);
-    $items[$r_index] = l($label, $uri['path'], $uri['options']);
+    $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
   }
+  $headers = array('Entity','Entity_type');
   $build['link_list'] = array(
-    '#theme' => 'item_list',
-    '#items' => $items,
+    '#theme' => 'table',
+    '#caption' => 'Related Entities',
+    '#header' => $headers,
+    '#rows' => $items,
   );
+
+  field_attach_prepare_view('relation', array($relation->relation_id => $relation), 'full');
+
   return $build;
+}
+
+/**
+ * Relation display page title.
+ */
+function relation_page_title($relation) {
+  return 'Relation ' . $relation->relation_id;
 }
 
 /**
