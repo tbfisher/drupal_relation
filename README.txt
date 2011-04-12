@@ -73,7 +73,8 @@ See TODO.txt
 
 -- INSTALLATION --
 
-* Install as usual, see http://drupal.org/node/70151 for further information.
+* Install as usual, for further information see:
+  http://drupal.org/documentation/install/modules-themes/modules-7
 * By default, the module is an API module only. If you want a UI, enable the
   relation_dropzone module.
 
