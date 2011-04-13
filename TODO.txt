@@ -1,6 +1,3 @@
-- Allow users to select content types as acceptable bundles for relation types,
-  expand to all bundle on load (so that future bundles are included).
-
 - Field API relation display (using tokens?), and creation and editing?
 
 - The relation module should be able to ask the relation bundle provider things
