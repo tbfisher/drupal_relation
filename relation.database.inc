@@ -9,7 +9,8 @@ function relation_query($entity_type, $entity) {
  */
 class RelationQuery {
 
-  function __construct($entity_type, $entity) {
+  function __construct($entity_type, $entity_id) {
+    $entity = reset(entity_load($entity_type, array($entity_id)));
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $this->entity_id = $id;
     $this->entity_bundle = $bundle;

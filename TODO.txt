@@ -1,4 +1,7 @@
+- ipmplement hook_entity_delete()
+
 - Field API relation display (using tokens?), and creation and editing?
+  - with natural language formatters..
 
 - The relation module should be able to ask the relation bundle provider things
   like:
