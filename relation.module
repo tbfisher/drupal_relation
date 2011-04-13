@@ -16,6 +16,7 @@ function relation_entity_info() {
     'base table' => 'relation',
     'fieldable' => TRUE,
     'controller class' => 'RelationEntityController',
+    'uri callback' => 'relation_uri',
     'entity keys' => array(
       'id' => 'relation_id',
       'bundle' => 'predicate',
@@ -538,4 +539,13 @@ function relation_delete_confirm_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = '<front>';
+}
+
+/**
+ * get a relation's URI.
+ *
+ * @see entity_uri()
+ */
+function relation_uri($relation) {
+  return array('path' => 'relation/' . $relation->relation_id);
 }
