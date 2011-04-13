@@ -20,14 +20,15 @@ class RelationTestCase extends DrupalWebTestCase {
 
   function setUp() {
     parent::setUp('relation');
-    $web_user = $this->drupalCreateUser(array(
+    $perms = array(
       'create article content',
       'create page content',
       'administer relation types',
       'create relations',
       'edit relations',
-      'delete relations'),
-    );
+      'delete relations',
+      );
+    $web_user = $this->drupalCreateUser($perms);
     $this->drupalLogin($web_user);
   }
 
