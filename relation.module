@@ -98,9 +98,18 @@ function relation_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'relation.admin.inc',
   );
-  $items['admin/structure/types/manage/%relation_type/edit'] = array(
+  $items['admin/structure/relation/manage/%relation_type/edit'] = array(
     'title' => 'Edit',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/structure/relation/manage/%relation_type/delete'] = array(
+    'title' => 'Delete',
+    'page arguments' => array('relation_type_delete_confirm', 4),
+    'access arguments' => array('administer relation'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'relation.admin.inc',
+    'weight' => 10,
   );
   $items['relation/autocomplete/bundles'] = array(
     'type' => MENU_CALLBACK,
@@ -208,6 +217,17 @@ function relation_get_types($predicate = NULL, $array = FALSE) {
     $relation_types[$relation_type->predicate] = $array ? (array) $relation_type : $relation_type;
   }
   return $relation_types;
+}
+
+/**
+ * Deletes a relation type (bundle).
+ *
+ * @param $predicate
+ *   The machine name of the relation type (bundle) to be deleted.
+ */
+function relation_type_delete($predicate) {
+  db_delete('relation_type')->condition('predicate', $predicate)->execute();
+  db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
 }
 
 /**

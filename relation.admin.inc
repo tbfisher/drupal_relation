@@ -175,3 +175,40 @@ function relation_type_form_submit($form, &$form_state) {
   relation_type_save($record, $form['#write_record_keys']);
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
 }
+
+/**
+ * Menu callback; deletes a single relation type.
+ */
+function relation_type_delete_confirm($form, &$form_state, $predicate) {
+  $form['predicate'] = array('#type' => 'value', '#value' => $predicate['predicate']);
+  $form['label'] = array('#type' => 'value', '#value' => $predicate['label']);
+
+  $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $predicate['label']));
+  $caption = '';
+
+  $num_relations = db_query("SELECT COUNT(*) FROM {relation} WHERE predicate = :predicate", array(':predicate' => $predicate['predicate']))->fetchField();
+  if ($num_relations) {
+    $caption .= '<p>' . format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $predicate['label'])) . '</p>';
+  }
+
+  $caption .= '<p>' . t('This action cannot be undone.') . '</p>';
+
+  return confirm_form($form, $message, 'admin/structure/relation', $caption, t('Delete'));
+}
+
+/**
+ * Process relation type delete confirm submissions.
+ */
+function relation_type_delete_confirm_submit($form, &$form_state) {
+  relation_type_delete($form_state['values']['predicate']);
+
+  $t_args = array('%label' => $form_state['values']['label']);
+  drupal_set_message(t('The %label relation type has been deleted.', $t_args));
+  watchdog('menu', 'Deleted the %name relation type.', $t_args, WATCHDOG_NOTICE);
+
+  // TODO: relation_types_rebuild() ?;
+  menu_rebuild();
+
+  $form_state['redirect'] = 'admin/structure/relation';
+  return;
+}
