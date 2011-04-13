@@ -212,7 +212,7 @@ function relation_type_delete_confirm_submit($form, &$form_state) {
 
   $t_args = array('%label' => $form_state['values']['label']);
   drupal_set_message(t('The %label relation type has been deleted.', $t_args));
-  watchdog('menu', 'Deleted the %name relation type.', $t_args, WATCHDOG_NOTICE);
+  watchdog('relation', 'Deleted the %name relation type.', $t_args, WATCHDOG_NOTICE);
 
   // TODO: relation_types_rebuild() ?;
   menu_rebuild();

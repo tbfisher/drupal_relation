@@ -30,7 +30,7 @@ function relation_entity_info() {
       'path' => 'admin/structure/relation/manage/%relation_type',
       'real path' => 'admin/structure/relation/manage/' . $type,
       'bundle argument' => 4,
-      'access arguments' => array('administer relation'),
+      'access arguments' => array('administer relation types'),
     );
   }
   return $entities;
@@ -41,9 +41,21 @@ function relation_entity_info() {
  */
 function relation_permission() {
   return array(
-    'administer relation' => array(
-      'title' => t('Administer Relations'),
-      'description' => t('Perform administration tasks for relations.'),
+    'administer relation types' => array(
+      'title' => t('Administer Relation types'),
+      'description' => t('Create, edit, delete, and perform administration tasks for relation types.'),
+    ),
+    'create relations' => array(
+      'title' => t('Create Relations'),
+      'description' => t('Create Relations between entities.'),
+    ),
+    'edit relations' => array(
+      'title' => t('Edit Relations'),
+      'description' => t('Edit fields on existing relations.'),
+    ),
+    'delete relations' => array(
+      'title' => t('Delete Relations'),
+      'description' => t('Delete existing relations.'),
     ),
   );
 }
@@ -66,14 +78,22 @@ function relation_menu() {
   );
   $items['relation/%relation/edit'] = array(
     'title' => 'Edit',
-    'access arguments' => array('access content'),
+    'access arguments' => array('edit relations'),
     'page callback' => 'relation_edit',
     'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
+  $items['relation/%relation/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('relation_delete_confirm', 1),
+    'access arguments' => array('delete relations'),
+    'weight' => 10,
+    'type' => MENU_LOCAL_TASK,
+  );
   $items['admin/structure/relation'] = array(
     'title' => 'Relation',
-    'access arguments' => array('administer relation'),
+    'access arguments' => array('administer relation types'),
     'page callback' => 'relation_list',
     'file' => 'relation.admin.inc',
   );
@@ -84,7 +104,7 @@ function relation_menu() {
   );
   $items['admin/structure/relation/add'] = array(
     'title' => 'Add',
-    'access arguments' => array('administer relation'),
+    'access arguments' => array('administer relation types'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_type_form'),
     'type' => MENU_LOCAL_ACTION,
@@ -92,7 +112,7 @@ function relation_menu() {
   );
   $items['admin/structure/relation/manage/%relation_type'] = array(
     'title' => 'Edit relation type',
-    'access arguments' => array('administer relation'),
+    'access arguments' => array('administer relation types'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_type_form', 4),
     'type' => MENU_CALLBACK,
@@ -106,7 +126,7 @@ function relation_menu() {
   $items['admin/structure/relation/manage/%relation_type/delete'] = array(
     'title' => 'Delete',
     'page arguments' => array('relation_type_delete_confirm', 4),
-    'access arguments' => array('administer relation'),
+    'access arguments' => array('administer relation types'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'relation.admin.inc',
     'weight' => 10,
@@ -435,6 +455,31 @@ function relation_create($predicate, $entity_keys) {
 }
 
 /**
+ * Deletes a relation.
+ *
+ * @param $relation_id
+ *   The relation_id (numeric) of the relation to be deleted.
+ */
+function relation_delete($relation_id) {
+  relation_multiple_delete(array($relation_id));
+}
+
+/**
+ * Deletes a relation.
+ *
+ * @param $relation_id
+ *   The relation_id (numeric) of the relation to be deleted.
+ */
+function relation_multiple_delete($relation_ids) {
+  $relations = relation_multiple_load($relation_id);
+  foreach ($relations as $relation_id => $relation) {
+    field_attach_delete('relation', $relation);
+    db_delete('relation')->condition('relation_id', $relation_id)->execute();
+    db_delete('relation_data')->condition('relation_', $relation_id)->execute();
+  }
+}
+
+/**
  * Validates relations against relation bundle settings.
  *
  * @param $predicate
@@ -532,4 +577,34 @@ function relation_get_relations($entity_type, $entity_id, $predicates = array(),
   }
   $relation_ids = $query->execute()->fetchCol();
   return $relation_ids ? entity_load('relation', $relation_ids) : array();
+}
+
+/**
+ * Menu callback -- ask for confirmation of relation deletion
+ */
+function relation_delete_confirm($form, &$form_state, $relation) {
+  $form['#relation'] = $relation;
+  // Always provide entity id in the same form key as in the entity edit form.
+  $form['relation_id'] = array('#value' => $relation['relation_id']);
+  return confirm_form($form,
+    t('Are you sure you want to delete relation %relation_id?', array('%relation_id' => $relation['relation_id'])),
+    'relation/' . $relation['relation_id'],
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Execute relation deletion
+ */
+function relation_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $relation = $form['#relation'];
+    relation_delete($form_state['values']['nid']);
+    watchdog('relation', '@type: deleted %title.', array('@type' => $relation['predicate'], '%title' => $relation['relation_id']));
+    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation['predicate'], '%title' => $relation['relation_id'])));
+  }
+
+  $form_state['redirect'] = '<front>';
 }
