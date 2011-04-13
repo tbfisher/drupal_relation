@@ -5,6 +5,8 @@
  * Describes relations between entities.
  */
 
+module_load_include('inc', 'relation', 'relation.database');
+
 /**
  * Implements hook_entity_info().
  */
@@ -506,38 +508,6 @@ function relation_predicate_autocomplete($string='') {
   }
   print drupal_json_encode($results);
   exit();
-}
-
-/**
- * Helper query to get all relations tied to an entity.
- *
- * @param $entity_type
- *   The type of the entity (eg. node).
- * @param $entity_id
- *   The numerical entity id.
- * @param $predicates
- *   Array of relation types to look for.
- * @param $index
- *   The index of the entity in the relation, ie. for finding only relations
- *   for which the given entity is a target endpoint.
- *
- * @return
- *   Array of relation entity objects (which contain all the entities that they
- *   relate). Array is empty if no relations are found.
- */
-function relation_get_relations($entity_type, $entity_id, $predicates = array(), $index = NULL) {
-  $query = db_select('relation_data', 'rd');
-  $query->addField('r', 'relation_id');
-  $query->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id');
-  $query->condition('rd.entity_id', $entity_id);
-  if ($predicates) {
-    $query->condition('r.predicate', $predicates);
-  }
-  if (isset($index)) {
-    $query->condition('rd.index', $index);
-  }
-  $relation_ids = $query->execute()->fetchCol();
-  return $relation_ids ? entity_load('relation', $relation_ids) : array();
 }
 
 /**

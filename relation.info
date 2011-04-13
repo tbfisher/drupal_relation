@@ -2,4 +2,7 @@ name = Relation
 description = Describes relationships between entities.
 core = 7.x
 files[] = relation.module
+files[] = relation.install
+files[] = relation.admin.inc
+files[] = relation.database.inc
 files[] = tests/relation.test
