@@ -122,15 +122,13 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
   );
   $counter = 0;
   foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
+    $bundles[$entity['label']]["$entity_type:*"] = 'all ' . $entity['label'] . ' bundles';
+    $counter += 2;
     if (isset($entity['bundles'])) {
       foreach ($entity['bundles'] as $bundle_id => $bundle) {
         $bundles[$entity['label']]["$entity_type:$bundle_id"] = $bundle['label'];
         $counter++;
       }
-    }
-    else {
-      $bundles[$entity['label']]["$entity_type:$entity_type"] = $entity['label'];
-        $counter++;
     }
   }
   $form['source_bundles'] = array(
@@ -182,6 +180,8 @@ function relation_type_form_submit($form, &$form_state) {
   );
   relation_type_save($record, $form['#write_record_keys']);
   $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
+
+  drupal_set_message(t('The %predicate relation type has been saved.', array('%predicate' => $predicate)));
 }
 
 /**

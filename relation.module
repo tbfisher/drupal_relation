@@ -17,6 +17,7 @@ function relation_entity_info() {
     'entity keys' => array(
       'id' => 'relation_id',
       'bundle' => 'predicate',
+      'label' => 'relation_id',
     ),
     'bundle keys' => array(
       'bundle' => 'predicate',
@@ -152,7 +153,8 @@ function relation_menu() {
  *   - max_arity: maximum number of entities in relations of this type (int>=min_arity).
  *   - source_bundles: array containing allowed bundle keys. This is used for
  *     both directional and non-directional relations. Bundle key arrays are
- *     made up of of the form 'entity:bundle', eg. 'node:article'.
+ *     of the form 'entity:bundle', eg. 'node:article', or 'entity:*' for all
+ *     bundles of the type.
  *   - target_bundles: array containing arrays allowed target bundle keys.
  *     This is the same format as source_bundles, but is only used for
  *     directional relations.
@@ -524,8 +526,9 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $direction = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
     $endpoint =  ($direction > 0) ? 'target_bundles' : 'source_bundles';
     foreach ($relation_bundles->$endpoint as $relation_bundle) {
-      return FALSE;
-      if ($relation_bundle == $entity_bundle) {
+      $relation_bundle_array = explode(':', $relation_bundle, 2);
+      $entity_bundle_array = explode(':', $entity_bundle, 2);
+      if ($relation_bundle == $entity_bundle || ($entity_bundle_array[0] == $relation_bundle_array[0] && $entity_bundle_array[1] == '*')) {
         $acceptable = TRUE;
         break;
       }
