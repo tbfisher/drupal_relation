@@ -23,15 +23,19 @@ class RelationQuery {
   public $index = NULL;
 
   // default limits
-  public $from = 0;
+  public $start = 0;
 
-  public $count = 50;
+  public $length = 50;
+
+  // whether to return a count query
+  public $count = FALSE;
 
   /**
    * Defines the first row of the query to be returned.
    */
   public function predicates($predicates) {
     $this->predicates = $predicates;
+    return $this;
   }
 
   /**
@@ -39,28 +43,24 @@ class RelationQuery {
    */
   public function index($index) {
     $this->index = $index;
-  }
-
-  /**
-   * Defines the first row of the query to be returned.
-   */
-  public function start($from) {
-    $this->from = $from;
-  }
-
-  /**
-   * Limit the number of reows returned.
-   */
-  public function limit($limit) {
-    $this->limit = $limit;
+    return $this;
   }
 
   /**
    * Limit the query to a range.
    */
-  public function range($from, $to) {
-    $this->from = $from;
-    $this->limit = $to - $from;
+  public function range($start, $length) {
+    $this->from = $start;
+    $this->limit = $length;
+    return $this;
+  }
+
+  /**
+   * Return a count query result, instead of select.
+   */
+  public function count() {
+    $this->count = TRUE;
+    return $this;
   }
 
   /**
@@ -98,6 +98,10 @@ function relation_sql_relation_query($relationQuery) {
   }
   if (isset($relationQuery->index)) {
     $query->condition('rd.index', $relationQuery->index);
+  }
+  if ($relationQuery->count) {
+    $query = $query->countQuery();
+    return $query->execute()->fetchField();
   }
   $relation_ids = $query->execute()->fetchCol();
   return $relation_ids ? entity_load('relation', $relation_ids) : array();
