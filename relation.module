@@ -441,6 +441,11 @@ class RelationHandler implements RelationInterface {
  *   The new relation id.
  */
 function relation_create($predicate, $entity_keys) {
+  $errors = array();
+  relation_validate($predicate, $entity_keys, $errors);
+  if ($errors) {
+    return FALSE;
+  }
   $relation_id = db_insert('relation')
     ->useDefaults(array('relation_id'))
     ->fields(array('predicate' => $predicate, 'arity' => count($entity_keys)))
