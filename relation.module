@@ -282,7 +282,7 @@ function relation_page($relation) {
     $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
   }
-  $headers = array('Entity','Entity_type');
+  $headers = array('Entity', 'Entity_type');
   $build['link_list'] = array(
     '#theme' => 'table',
     '#caption' => 'Related Entities',
@@ -312,7 +312,7 @@ function relation_edit($relation) {
     $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
   }
-  $headers = array('Entity','Entity_type');
+  $headers = array('Entity', 'Entity_type');
   $build['link_list'] = array(
     '#theme' => 'table',
     '#caption' => 'Related Entities',

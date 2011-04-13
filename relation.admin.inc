@@ -10,14 +10,22 @@
  */
 function relation_list() {
   $relation = relation_entity_info();
-  $headers = array(t('Name'), t('Actions'));
+  $field_ui = module_exists('field_ui');
+  $headers = array(
+    array('data' => t('Name'), 'width' => '40%'),
+    array('data' => t('Operations'), 'colspan' => $field_ui ? '4' : '2'));
   $rows = array();
   foreach ($relation['relation']['bundles'] as $name => $bundle) {
     $url = 'admin/structure/relation/manage/' . $name;
     $label = $bundle['label'] ? $bundle['label'] : $name;
-    $link = l($label, $url);
-    $edit_link = l(t('edit'), $url . '/edit');
-    $rows[] = array($link, $edit_link);
+    $row = array(l($label, $url));
+    $row[] = l(t('edit'), $url . '/edit');
+    if ($field_ui) {
+      $row[] =  l(t('manage fields'), $url . '/fields');
+      $row[] =  l(t('display fields'), $url . '/display');
+    }
+    $row[] =  l(t('delete'), $url . '/delete');
+    $rows[] = $row;
   }
   $output = array(
     '#theme' => 'table',
