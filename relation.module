@@ -388,32 +388,94 @@ class RelationEntityController extends DrupalDefaultEntityController {
 }
 
 /**
- * Creates a relation.
+ * Creates a relation from a predicate and a set of entity keys.
  *
  * @param $predicate
  *   The relation type (bundle) of the relation to be created.
  * @param $entity_keys
- *   A list of (entity_type, entity_id) pairs.
+ *   A list of (entity_type, entity_id, index) pairs.
  *
  * @return
  *   The new relation id.
  */
 function relation_create($predicate, $entity_keys) {
+  global $user;
+  $relation = new stdClass();
+  $relation->relation_id = -1; //flag as creation
+  $relation->predicate = $predicate;
+  $relation->vid = 1;
+  $relation->uid = $user->uid;
+  $relation->created = REQUEST_TIME;
+  $relation->changed = REQUEST_TIME;
+  $relation->arity = count($entity_keys);
+  $relation->entity_keys = array();
+  foreach ($entity_keys as $index => $entity_key) {
+    $relation->entity_keys[$index] = array(
+      'relation_id' => -1,
+      'entity_type' => $entity_key['entity_type'],
+      'entity_id'   => $entity_key['entity_id'],
+      'r_index'     => $index,
+    );
+  }
+  $relation_id = relation_save($relation);
+  return $relation_id;
+}
+
+/**
+ * Saves a relation.
+ *
+ * @param $relation
+ *   The relation entity data object. See relation_create() for the appropriate
+ *   format (or just use it).
+ *
+ * @return
+ *   The new relation id.
+ */
+function relation_save($relation) {
   $errors = array();
-  relation_validate($predicate, $entity_keys, $errors);
+  relation_validate($relation->predicate, $relation->entity_keys, $errors);
+  dpm($errors, 'errors');
   if ($errors) {
     return FALSE;
   }
-  $relation_id = db_insert('relation')
-    ->useDefaults(array('relation_id'))
-    ->fields(array('predicate' => $predicate, 'arity' => count($entity_keys)))
-    ->execute();
+  if ($relation->relation_id == -1) {
+    $relation_id = db_insert('relation')
+      ->useDefaults(array('relation_id'))
+      ->fields(array(
+        'predicate' => $relation->predicate,
+        'arity'     => count($relation->entity_keys),
+        'vid'       => $relation->vid,
+        'uid'       => $relation->uid,
+        'created'   => REQUEST_TIME,
+        'changed'   => REQUEST_TIME,
+        ))
+      ->execute();
+    foreach (array_keys($relation->entity_keys) as $index) {
+      $relation->entity_keys[$index]['relation_id'] = $relation_id;
+    }
+  }
+  else {
+    $relation_id = $relation->relation_id;
+    db_insert('relation')
+      ->fields(array(
+        'relation_id' => $relation->relation_id,
+        'predicate'   => $relation->predicate,
+        'arity'       => count($relation->entity_keys),
+        'vid'         => $relation->vid,
+        'uid'         => $relation->uid,
+        'created'     => REQUEST_TIME,
+        'changed'     => REQUEST_TIME,
+        ))
+      ->execute();
+  }
+
   $query = db_insert('relation_data')
     ->fields(array('relation_id', 'entity_type', 'entity_id', 'r_index'));
-  foreach ($entity_keys as $index => $entity_key) {
-    $query->values(array($relation_id, $entity_key['entity_type'], $entity_key['entity_id'], $index));
+  foreach ($relation->entity_keys as $entity_key) {
+    $query->values($entity_key);
   }
   $query->execute();
+
   return $relation_id;
 }
 
@@ -457,6 +519,7 @@ function relation_multiple_delete($relation_ids) {
  *   Array of errors to be filled in, passed by reference.
  */
 function relation_validate($predicate, $entity_keys, &$errors) {
+dpm($entity_keys, 'entity keys');
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
@@ -473,18 +536,12 @@ function relation_validate($predicate, $entity_keys, &$errors) {
   $relation_bundles = reset(relation_get_types($predicate));
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
-    // This is the only way have to get bundles from entity type and id as the
-    // entity info is about the loaded entity not some database columns.
-    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
-    $entity = $entities[$entity_key['entity_id']];
-    list(, , $entity_bundle) = entity_extract_ids($entity_key['entity_type'], $entity);
-    $entity_bundle = $entity_key['entity_type'] . ':' . $entity_bundle;
-    $direction = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
-    $endpoint =  ($direction > 0) ? 'target_bundles' : 'source_bundles';
+    $directional = $relation_bundles->directional;
+    $r_index = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
+    $endpoint = ($directional && ($direction > 0)) ? 'target_bundles' : 'source_bundles';
     foreach ($relation_bundles->$endpoint as $relation_bundle) {
       $relation_bundle_array = explode(':', $relation_bundle, 2);
-      $entity_bundle_array = explode(':', $entity_bundle, 2);
-      if ($relation_bundle == $entity_bundle || ($entity_bundle_array[0] == $relation_bundle_array[0] && $entity_bundle_array[1] == '*')) {
+      if (($relation_bundle == $entity_key['entity_type'] . ':' . $entity_key['entity_bundle']) || (($entity_key['entity_type'] == $relation_bundle_array[0]) && ($relation_bundle_array[1] == '*'))) {
         $acceptable = TRUE;
         break;
       }

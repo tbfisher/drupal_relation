@@ -62,7 +62,8 @@ function relation_dropzone($form, &$form_state) {
   if ($relation_entities = drupal_static('relation_entities', array())) {
     foreach ($relation_entities as $entity_type => $entities) {
       foreach ($entities as $entity_id => $entity) {
-        $options["$entity_type:$entity_id"] = "$entity_type: " . entity_label($entity_type, $entity);
+        list( , , $entity_bundle) = entity_extract_ids($entity_type, $entity);
+        $options["$entity_type:$entity_id"] = "$entity_bundle: " . entity_label($entity_type, $entity);
       }
     }
     $form_state['relation_entities_options'] = $options;
@@ -137,10 +138,13 @@ function relation_dropzone_pick($form, &$form_state) {
     $break = explode(':', $entity_key);
     // Add the label for later display. #options is check_plain'd but we need
     // to do that ourselves.
+    $entity_key = check_plain($form['entity_key']['#options'][$entity_key]);
+    $entity_key_array = explode(':', $entity_key, 2);
     $pick = array(
       'entity_type' => $break[0],
       'entity_id' => $break[1],
-      'entity_key' => check_plain($form['entity_key']['#options'][$entity_key]),
+      'entity_bundle' => $entity_key_array[0],
+      'entity_key' => $entity_key,
     );
     $_SESSION += array('relation_entity_keys' => array());
     $_SESSION['relation_entity_keys'][] = $pick;
@@ -170,11 +174,16 @@ function relation_dropzone_save($form, $form_state) {
   if (isset($_SESSION['relation_predicate'])) {
     $predicate = $_SESSION['relation_predicate'];
     $relation_id = relation_create($predicate, $_SESSION['relation_entity_keys']);
-    $link = l($predicate, "relation/$relation_id");
-    $list = drupal_render(_relation_stored_entity_keys_list());
-    $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
-    drupal_set_message($message);
-    relation_dropzone_clear($form, $form_state);
+    if ($relation_id) {
+      $link = l($predicate, "relation/$relation_id");
+      $list = drupal_render(_relation_stored_entity_keys_list());
+      $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
+      drupal_set_message($message);
+      relation_dropzone_clear($form, $form_state);
+    }
+    else {
+    drupal_set_message('Relation not created', 'error');
+    }
   }
 }
 

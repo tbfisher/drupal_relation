@@ -59,7 +59,7 @@ class RelationTestCase extends DrupalWebTestCase {
       )
     );
     $this->RelationSaveHelper($predicate_sym, $entity_keys);
-    $relations = relation_get_relations('node', $node4->nid);
+    $relations = relation_query('node', $node4->nid)->execute();
     $this->assertEqual(count($relations), 1, 'One relation found');
     $relation = reset($relations);
     $this->assertEqual($relation->entity_keys[0]['entity_id'], $node1->nid, 'Correct entity is related');

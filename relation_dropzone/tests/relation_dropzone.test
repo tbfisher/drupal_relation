@@ -56,7 +56,7 @@ class RelationDropzoneTestCase extends RelationTestCase {
     $this->drupalPost('node', $edit, t('Pick'));
     $this->drupalPost('node', array(), t('Create relation'));
     // Now figure out the new relation_id.
-    $relation = reset(relation_get_relations('node', $node1->nid, array($predicate)));
+    $relation = reset(relation_query('node', $node1->nid)->predicates($predicate)->execute());
     $path = "relation/$relation->relation_id";
     $link = l($predicate, $path);
     // Rebuild the message. Use the known node labels to make sure the message

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Database query functions.
+ */
+
 function relation_query($entity_type, $entity) {
   return new RelationQuery($entity_type, $entity);
 }
