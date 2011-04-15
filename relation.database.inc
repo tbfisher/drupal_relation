@@ -5,15 +5,17 @@
  * Database query functions.
  */
 
-function relation_query($entity_type, $entity) {
-  return new RelationQuery($entity_type, $entity);
-}
-
 /**
  * Handler class for entity relations.
+ *
+ * Properites are public for the same as EntityFieldQuery. Please use the
+ * utility methods instead of directly changing them.
  */
 class RelationQuery {
 
+  /**
+   * Constructor for RelationQuery.
+   */
   function __construct($entity_type, $entity_id) {
     $entity = reset(entity_load($entity_type, array($entity_id)));
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
@@ -22,22 +24,45 @@ class RelationQuery {
     $this->entity_type = $entity_type;
   }
 
-  // Array of predicates to look for relations with.
+  /**
+   * The list of predicates the relation should have.
+   */
   public $predicates = array();
 
-  // index of the entity in the relation
+  /**
+   * The index of the endpoint given in the constructor.
+   */
   public $index = NULL;
 
-  // default limits
+  /**
+   * Start of the query range.
+   */
   public $start = 0;
 
+  /**
+   * Length of the query range.
+   */
   public $length = 50;
 
-  // whether to return a count query
+  /**
+   * Whether to return the number of related entities only.
+   */
   public $count = FALSE;
 
   /**
-   * Defines the first row of the query to be returned.
+   * Restrict the query to a given predicate.
+   *
+   * @return RelationQuery
+   */
+  public function predicate(array $predicate) {
+    $this->predicates = array($predicate);
+    return $this;
+  }
+
+  /**
+   * Restrict the query to the given array of predicates.
+   *
+   * @return RelationQuery
    */
   public function predicates($predicates) {
     $this->predicates = $predicates;
@@ -45,7 +70,9 @@ class RelationQuery {
   }
 
   /**
-   * Defines the first row of the query to be returned.
+   * The index of the endpoint given in the constructor.
+   *
+   * @return RelationQuery
    */
   public function index($index) {
     $this->index = $index;
@@ -54,6 +81,8 @@ class RelationQuery {
 
   /**
    * Limit the query to a range.
+   *
+   * @return RelationQuery
    */
   public function range($start, $length) {
     $this->from = $start;
@@ -63,6 +92,8 @@ class RelationQuery {
 
   /**
    * Return a count query result, instead of select.
+   *
+   * @return RelationQuery
    */
   public function count() {
     $this->count = TRUE;
@@ -71,9 +102,14 @@ class RelationQuery {
 
   /**
    * Execute the query.
+   *
+   * @return
+   *   Either the number of entities if this a count query or the loaded
+   *   entities as returned by entity_load().
    */
   public function execute() {
-    return relation_sql_relation_query($this);
+    $function = variable_get('relation_storage', 'relation_sql') . '_relation_query';
+    return $function($this);
   }
 }
 

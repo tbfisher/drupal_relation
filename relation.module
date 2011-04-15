@@ -5,8 +5,6 @@
  * Describes relations between entities.
  */
 
-module_load_include('inc', 'relation', 'relation.database');
-
 /**
  * Implements hook_entity_info().
  */
@@ -434,7 +432,6 @@ function relation_create($predicate, $entity_keys) {
 function relation_save($relation) {
   $errors = array();
   relation_validate($relation->predicate, $relation->entity_keys, $errors);
-  dpm($errors, 'errors');
   if ($errors) {
     return FALSE;
   }
@@ -519,7 +516,6 @@ function relation_multiple_delete($relation_ids) {
  *   Array of errors to be filled in, passed by reference.
  */
 function relation_validate($predicate, $entity_keys, &$errors) {
-dpm($entity_keys, 'entity keys');
   $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
   // Check that predicate exists.
   if (!$relation_type) {
@@ -605,4 +601,19 @@ function relation_delete_confirm_submit($form, &$form_state) {
  */
 function relation_uri($relation) {
   return array('path' => 'relation/' . $relation->relation_id);
+}
+
+/**
+ * Returns a query object to find related entities.
+ *
+ * @param $entity_type
+ *   The entity type one of the endpoints.
+ * @param $entity_id
+ *   The entity id one of the endpoints.
+ *
+ * @return RelationQuery
+ *   The query object itself.
+ */
+function relation_query($entity_type, $entity_id) {
+  return new RelationQuery($entity_type, $entity_id);
 }
