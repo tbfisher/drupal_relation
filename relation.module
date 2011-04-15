@@ -510,6 +510,8 @@ function relation_multiple_delete($relation_ids) {
  *   An array of entity key arrays of the form:
  *   - entity_type: type of the entity to be added to the relation (eg. node)
  *   - entity_id: numerical id of the entity to be added to the relation.
+ *   - entity_bundle: the bundle of the entity. Optional. Specifying it speeds
+ *     up validation.
  *   - r_index: integer index of the entity to be added. This should be zero if
  *     the relation is non-directional.
  * @param $error
@@ -536,6 +538,10 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $r_index = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
     $endpoint = ($directional && ($direction > 0)) ? 'target_bundles' : 'source_bundles';
     foreach ($relation_bundles->$endpoint as $relation_bundle) {
+      if (!isset($entity_key['entity_bundle'])) {
+        $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+        list (, , $entity_key['entity_bundle']) = entity_extract_ids($entity_key['entity_type'], $entity);
+      }
       $relation_bundle_array = explode(':', $relation_bundle, 2);
       if (($relation_bundle == $entity_key['entity_type'] . ':' . $entity_key['entity_bundle']) || (($entity_key['entity_type'] == $relation_bundle_array[0]) && ($relation_bundle_array[1] == '*'))) {
         $acceptable = TRUE;
