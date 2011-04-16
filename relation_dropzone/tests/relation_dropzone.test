@@ -64,8 +64,8 @@ class RelationDropzoneTestCase extends RelationTestCase {
     $node1_label = entity_label('node', $node1);
     $node2_label = entity_label('node', $node2);
     $items = array(
-      "node: " . $node1_label,
-      "node: " . $node2_label,
+      "article: " . $node1_label,
+      "article: " . $node2_label,
     );
     $item_list = array(
       '#theme' => 'item_list',

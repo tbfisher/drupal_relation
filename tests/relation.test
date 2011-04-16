@@ -6,20 +6,17 @@
  */
 
 /**
- * Test relation.
+ * Relation helper class.
  */
 class RelationTestCase extends DrupalWebTestCase {
-
-  public static function getInfo() {
-    return array(
-      'name' => 'Relation test',
-      'description' => 'Test relations.',
-      'group' => 'Relation',
-    );
-  }
-
   function setUp() {
-    parent::setUp('relation');
+    // Other modules will reuse this class, make sure to pass the arguments up.
+    if (func_num_args()) {
+      parent::setUp(func_get_args());
+    }
+    else {
+      parent::setUp('relation');
+    }
     $perms = array(
       'create article content',
       'create page content',
@@ -30,6 +27,44 @@ class RelationTestCase extends DrupalWebTestCase {
       );
     $web_user = $this->drupalCreateUser($perms);
     $this->drupalLogin($web_user);
+  }
+
+  function createRelationTypes() {
+    $relation_type = array(
+      'predicate'   => 'symmetric',
+      'label' => $this->randomString(),
+      'source_bundles' => array('node:article', 'node:page'),
+    );
+    relation_type_save($relation_type);
+    $relation_type = array(
+      'predicate'   => 'directional',
+      'label' => $this->randomString(),
+      'directional' => TRUE,
+      'source_bundles' => array('node:article'),
+      'target_bundles' => array('node:page'),
+    );
+    relation_type_save($relation_type);
+    $relation_type = array(
+      'predicate'   => 'octopus',
+      'label' => $this->randomString(),
+      'min_arity' => 2,
+      'max_arity' => 8,
+      'source_bundles' => array('node:article', 'node:page'),
+    );
+    relation_type_save($relation_type);
+  }
+}
+
+/**
+ * Test relation API.
+ */
+class RelationAPITestCase extends RelationTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Relation test',
+      'description' => 'Test relations.',
+      'group' => 'Relation',
+    );
   }
 
   /**
@@ -67,7 +102,7 @@ class RelationTestCase extends DrupalWebTestCase {
   }
 
   function RelationSaveHelper($predicate, $entity_keys) {
-      relation_validate($predicate, $entity_keys, $errors);
+    relation_validate($predicate, $entity_keys, $errors);
     if ($errors) {
       foreach ($errors as $error) {
         $this->fail($error);
@@ -91,30 +126,5 @@ class RelationTestCase extends DrupalWebTestCase {
       unset($need_ids[$entity_key['entity_id']]);
     }
     $this->assertFalse($need_ids, 'All ids found');
-  }
-
-  function createRelationTypes() {
-    $relation_type = array(
-      'predicate'   => 'symmetric',
-      'label' => $this->randomString(),
-      'source_bundles' => array('node:article', 'node:page'),
-    );
-    relation_type_save($relation_type);
-    $relation_type = array(
-      'predicate'   => 'directional',
-      'label' => $this->randomString(),
-      'directional' => TRUE,
-      'source_bundles' => array('node:article'),
-      'target_bundles' => array('node:page'),
-    );
-    relation_type_save($relation_type);
-    $relation_type = array(
-      'predicate'   => 'octopus',
-      'label' => $this->randomString(),
-      'min_arity' => 2,
-      'max_arity' => 8,
-      'source_bundles' => array('node:article', 'node:page'),
-    );
-    relation_type_save($relation_type);
   }
 }
