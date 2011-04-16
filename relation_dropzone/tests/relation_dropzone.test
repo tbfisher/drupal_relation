@@ -43,7 +43,7 @@ class RelationDropzoneTestCase extends RelationTestCase {
 
     $this->createRelationTypes();
 
-    $predicate = 'symmetric';
+    $predicate = $this->relation_types['symmetric']['predicate'];
     $edit = array(
       "predicate" => $predicate,
       "entity_key" => $node1key,
