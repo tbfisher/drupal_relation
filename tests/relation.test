@@ -30,28 +30,28 @@ class RelationTestCase extends DrupalWebTestCase {
   }
 
   function createRelationTypes() {
-    $relation_type = array(
-      'predicate'   => 'symmetric',
+    $this->relation_types['symmetric'] = array(
+      'predicate'   => $this->randomName(),
       'label' => $this->randomString(),
       'source_bundles' => array('node:article', 'node:page'),
     );
-    relation_type_save($relation_type);
-    $relation_type = array(
-      'predicate'   => 'directional',
+    $this->relation_types['directional'] = array(
+      'predicate'   => $this->randomName(),
       'label' => $this->randomString(),
       'directional' => TRUE,
       'source_bundles' => array('node:article'),
       'target_bundles' => array('node:page'),
     );
-    relation_type_save($relation_type);
-    $relation_type = array(
-      'predicate'   => 'octopus',
+    $this->relation_types['octopus'] = array(
+      'predicate'   => $this->randomName(),
       'label' => $this->randomString(),
       'min_arity' => 2,
       'max_arity' => 8,
       'source_bundles' => array('node:article', 'node:page'),
     );
-    relation_type_save($relation_type);
+    foreach ($this->relation_types as $relation_type) {
+      relation_type_save($relation_type);
+    }
   }
 }
 
@@ -77,9 +77,6 @@ class RelationAPITestCase extends RelationTestCase {
     $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
 
     $this->createRelationTypes();
-    $predicate_sym = 'symmetric';
-    $predicate_dir = 'directional';
-    $predicate_octo = 'octopus';
     $errors = array();
 
     // create a symmetric relation
@@ -93,12 +90,17 @@ class RelationAPITestCase extends RelationTestCase {
         'entity_id' => $node4->nid,
       )
     );
-    $this->RelationSaveHelper($predicate_sym, $entity_keys);
+    $predicate_symmetric = $this->relation_types['symmetric']['predicate'];
+    $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
     $relations = relation_query('node', $node4->nid)->execute();
     $count = count($relations);
     $this->assertEqual(count($relations), 1, $count . ' relation found, should be 1');
     $relation = reset($relations);
     $this->assertEqual($relation->entity_keys[0]['entity_id'], $node1->nid, 'Correct entity is related: ' . $relation->entity_keys[0]['entity_id'] . '==' . $node1->nid);
+    $entity_keys[0]['entity_id'] = $node2->nid;
+    $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    $this->drupalGet("admin/structure/relation/manage/$predicate_symmetric/delete");
+    $this->assertRaw(t('The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => 2)), 'Correct number of relations found');
   }
 
   function RelationSaveHelper($predicate, $entity_keys) {

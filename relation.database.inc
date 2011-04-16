@@ -61,7 +61,7 @@ class RelationQuery {
    *
    * @return RelationQuery
    */
-  public function predicate(array $predicate) {
+  public function predicate($predicate) {
     return $this->predicates(array($predicate));
   }
 
@@ -161,11 +161,10 @@ function relation_sql_relation_query($relationQuery) {
     $query->condition('rd.index', $relationQuery->index);
   }
   if ($relationQuery->count) {
-    $query = $query->countQuery();
-    return $query->execute()->fetchField();
+    return $query->groupBy('r.rid')->countQuery()->execute()->fetchField();
   }
-  $query->range($this->start, $this->length);
-  foreach ($this->order as $order) {
+  $query->range($relationQuery->start, $relationQuery->length);
+  foreach ($relationQuery->order as $order) {
     $query->orderBy('r.' . $order['field'], $order['direction']);
   }
   $rids = $query->execute()->fetchCol();
