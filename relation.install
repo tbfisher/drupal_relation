@@ -106,7 +106,10 @@ function relation_schema() {
         'description' => 'The number rows in this relation. Cannot exceed max_arity, or be less than min_arity in relation_type table.',
       ),
     ),
-    'primary key' => array('rid', 'vid'),
+    'primary key' => array('vid'),
+    'indexes' => array(
+      'rid_vid' => array('rid', 'vid'),
+    ),
   );
   $schema['relation_data'] = array(
     'description' => 'Stores information about relations between entities',
