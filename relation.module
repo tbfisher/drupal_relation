@@ -12,11 +12,13 @@ function relation_entity_info() {
   $entities['relation'] = array(
     'label' => t('Relation'),
     'base table' => 'relation',
+    'revision table' => 'relation_revision',
     'fieldable' => TRUE,
     'controller class' => 'RelationEntityController',
     'uri callback' => 'relation_uri',
     'entity keys' => array(
       'id' => 'rid',
+      'revision' => 'vid',
       'bundle' => 'predicate',
       'label' => 'rid',
     ),
@@ -273,8 +275,9 @@ function relation_type_delete($predicate) {
  *       non-directional relations, in directional relations this is 0 for
  *       source entities, and 1 for target entities.
  */
-function relation_load($rid) {
-  return reset(relation_multiple_load(array($rid)));
+function relation_load($rid, $vid = NULL, $reset = FALSE) {
+  $conditions = (isset($vid) ? array('vid' => $vid) : array());
+  return reset(relation_multiple_load(array($rid), $conditions));
 }
 
 /**
@@ -288,9 +291,9 @@ function relation_load($rid) {
  *
  * @see relation_load()
  */
-function relation_multiple_load($rids) {
+function relation_multiple_load($rids, $conditions = array(), $reset = FALSE) {
   // Entity load handles field_attach_load for us.
-  return entity_load('relation', $rids);
+  return entity_load('relation', $rids, $conditions);
 }
 
 /**
@@ -399,17 +402,13 @@ class RelationEntityController extends DrupalDefaultEntityController {
 function relation_create($predicate, $entity_keys) {
   global $user;
   $relation = new stdClass();
-  $relation->rid = -1; //flag as creation
+  $relation->is_new = TRUE;
   $relation->predicate = $predicate;
-  $relation->vid = 1;
   $relation->uid = $user->uid;
-  $relation->created = REQUEST_TIME;
-  $relation->changed = REQUEST_TIME;
-  $relation->arity = count($entity_keys);
   $relation->entity_keys = array();
   foreach ($entity_keys as $index => $entity_key) {
     $relation->entity_keys[$index] = array(
-      'rid' => -1,
+      'rid' => NULL,
       'entity_type' => $entity_key['entity_type'],
       'entity_id'   => $entity_key['entity_id'],
       'r_index'     => $index,
@@ -435,13 +434,13 @@ function relation_save($relation) {
   if ($errors) {
     return FALSE;
   }
-  if ($relation->rid == -1) {
+  $relation->arity = count($relation->entity_keys);
+  if ($relation->is_new) {
     $rid = db_insert('relation')
       ->useDefaults(array('rid'))
       ->fields(array(
         'predicate' => $relation->predicate,
-        'arity'     => count($relation->entity_keys),
-        'vid'       => $relation->vid,
+        'arity'     => $relation->arity,
         'uid'       => $relation->uid,
         'created'   => REQUEST_TIME,
         'changed'   => REQUEST_TIME,
@@ -450,30 +449,49 @@ function relation_save($relation) {
     foreach (array_keys($relation->entity_keys) as $index) {
       $relation->entity_keys[$index]['rid'] = $rid;
     }
+    $relation->rid = $rid;
+
+    // Add relation data - don't need to change this for new relations..
+    $query = db_insert('relation_data')
+      ->fields(array('rid', 'entity_type', 'entity_id', 'r_index'));
+    foreach ($relation->entity_keys as $entity_key) {
+      $query->values($entity_key);
+    }
+    $query->execute();
+    $relation->revision = TRUE;
   }
-  else {
-    $rid = $relation->rid;
-    db_insert('relation')
+  if (!empty($relation->revision)) {
+    $vid = db_insert('relation_revision')
+      ->useDefaults(array('vid'))
       ->fields(array(
         'rid' => $relation->rid,
         'predicate'   => $relation->predicate,
-        'arity'       => count($relation->entity_keys),
-        'vid'         => $relation->vid,
+        'arity'       => $relation->arity,
         'uid'         => $relation->uid,
-        'created'     => REQUEST_TIME,
         'changed'     => REQUEST_TIME,
+        ))
+      ->execute();
+      $relation->vid = $vid;
+
+    // These are the only fields that we allow updating.
+    db_update('relation')
+      ->condition('rid', $relation->rid)
+      ->fields(array(
+        'vid'     => $relation->vid,
+        'uid'     => $relation->uid,
+        'changed' => REQUEST_TIME,
         ))
       ->execute();
   }
 
-  $query = db_insert('relation_data')
-    ->fields(array('rid', 'entity_type', 'entity_id', 'r_index'));
-  foreach ($relation->entity_keys as $entity_key) {
-    $query->values($entity_key);
+  if ($relation->is_new) {
+    field_attach_insert('relation', $relation);
   }
-  $query->execute();
+  else {
+    field_attach_update('relation', $relation);
+  }
 
-  return $rid;
+  return $relation->rid;
 }
 
 /**

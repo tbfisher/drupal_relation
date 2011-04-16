@@ -63,6 +63,51 @@ function relation_schema() {
       'predicates' => array('predicate', 'rid'),
     ),
   );
+  $schema['relation_revision'] = array(
+    'description' => 'Keeps track of relation entities.',
+    'fields' => array(
+      'rid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unique relation id (entity id).',
+      ),
+      'predicate' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Relation type (see relation_type table).',
+      ),
+      'vid' => array(
+        'description' => 'The current {relation_revision}.vid version identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this relation; initially, this is the user that created it.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the relation was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'arity' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The number rows in this relation. Cannot exceed max_arity, or be less than min_arity in relation_type table.',
+      ),
+    ),
+    'primary key' => array('rid', 'vid'),
+  );
   $schema['relation_data'] = array(
     'description' => 'Stores information about relations between entities',
     'fields' => array(
