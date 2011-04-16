@@ -20,8 +20,12 @@ function relation_dropzone_block_view() {
   return $block;
 }
 
-function relation_dropzone_pre_render() {
-  return drupal_get_form('relation_dropzone');
+/**
+ * Pre render callback for the dropzone block.
+ */
+function relation_dropzone_pre_render($element) {
+  $element['form'] = drupal_get_form('relation_dropzone');
+  return $element;
 }
 
 /**
