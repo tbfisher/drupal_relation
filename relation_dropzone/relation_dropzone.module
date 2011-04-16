@@ -15,16 +15,13 @@ function relation_dropzone_block_info() {
  * Implements hook_block_view().
  */
 function relation_dropzone_block_view() {
-  drupal_add_css(drupal_get_path('module', 'relation_dropzone') . '/relation_dropzone.css');
+  $block['subject'] = t('Pick an entity');
+  $block['content']['#pre_render'] = array('relation_dropzone_pre_render');
+  return $block;
+}
 
-  $form = drupal_get_form('relation_dropzone');
-  if (isset($form['entity_key'])) {
-    return array(
-      'subject' => t('Pick an entity'),
-      'content' => $form,
-    );
-  }
-  return array();
+function relation_dropzone_pre_render() {
+  return drupal_get_form('relation_dropzone');
 }
 
 /**
@@ -59,6 +56,9 @@ function relation_dropzone_entity_load($entities, $type) {
  * The dropzone form.
  */
 function relation_dropzone($form, &$form_state) {
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'relation_dropzone') . '/relation_dropzone.css',
+  );
   if ($relation_entities = drupal_static('relation_entities', array())) {
     foreach ($relation_entities as $entity_type => $entities) {
       foreach ($entities as $entity_id => $entity) {
@@ -69,6 +69,7 @@ function relation_dropzone($form, &$form_state) {
     $form_state['relation_entities_options'] = $options;
   }
   if (empty($form_state['relation_entities_options'])) {
+    $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded.');
     return $form;
   }
   $form['predicate'] = array(
