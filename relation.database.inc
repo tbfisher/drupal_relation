@@ -17,11 +17,13 @@ class RelationQuery {
    * Constructor for RelationQuery.
    */
   function __construct($entity_type, $entity_id) {
-    $entity = reset(entity_load($entity_type, array($entity_id)));
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-    $this->entity_id = $id;
-    $this->entity_bundle = $bundle;
-    $this->entity_type = $entity_type;
+    if (isset($entity_type)) {
+      $entity = reset(entity_load($entity_type, array($entity_id)));
+      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+      $this->entity_id = $id;
+      $this->entity_bundle = $bundle;
+      $this->entity_type = $entity_type;
+    }
   }
 
   /**
@@ -50,13 +52,17 @@ class RelationQuery {
   public $count = FALSE;
 
   /**
+   * List of order clauses.
+   */
+  public $order = array();
+
+  /**
    * Restrict the query to a given predicate.
    *
    * @return RelationQuery
    */
   public function predicate(array $predicate) {
-    $this->predicates = array($predicate);
-    return $this;
+    return $this->predicates(array($predicate));
   }
 
   /**
@@ -80,12 +86,22 @@ class RelationQuery {
   }
 
   /**
+   * Orders the result set by relation columns.
+   */
+  public function order($field, $direction = 'ASC') {
+    $this->order[] = array(
+      'field' => $field,
+      'direction' => $direction,
+    );
+  }
+
+  /**
    * Limit the query to a range.
    *
    * @return RelationQuery
    */
   public function range($start, $length) {
-    $this->from = $start;
+    $this->start = $start;
     $this->limit = $length;
     return $this;
   }
@@ -134,7 +150,10 @@ function relation_sql_relation_query($relationQuery) {
   $query = db_select('relation_data', 'rd');
   $query->addField('r', 'rid');
   $query->innerJoin('relation', 'r', 'r.rid = rd.rid');
-  $query->condition('rd.entity_id', $relationQuery->entity_id);
+  if (isset($relationQuery->entity_id)) {
+    $query->condition('rd.entity_type', $relationQuery->entity_type);
+    $query->condition('rd.entity_id', $relationQuery->entity_id);
+  }
   if ($relationQuery->predicates) {
     $query->condition('r.predicate', $relationQuery->predicates);
   }
@@ -144,6 +163,10 @@ function relation_sql_relation_query($relationQuery) {
   if ($relationQuery->count) {
     $query = $query->countQuery();
     return $query->execute()->fetchField();
+  }
+  $query->range($this->start, $this->length);
+  foreach ($this->order as $order) {
+    $query->orderBy('r.' . $order['field'], $order['direction']);
   }
   $rids = $query->execute()->fetchCol();
   return $rids ? entity_load('relation', $rids) : array();
