@@ -483,6 +483,18 @@ function relation_save($relation) {
         ))
       ->execute();
   }
+  if (empty($relation->is_new) && empty($relation->revision)) {
+    // These are the only updatable columns.
+    db_update('relation')
+      ->condition('rid', $relation->rid)
+      ->fields(array(
+        'uid'       => $relation->uid,
+        'created'   => $relation->created,
+        'changed'   => REQUEST_TIME,
+        ))
+      ->execute();
+    // we don't update the relation_data.
+  }
 
   if ($relation->is_new) {
     field_attach_insert('relation', $relation);
