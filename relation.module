@@ -16,9 +16,9 @@ function relation_entity_info() {
     'controller class' => 'RelationEntityController',
     'uri callback' => 'relation_uri',
     'entity keys' => array(
-      'id' => 'relation_id',
+      'id' => 'rid',
       'bundle' => 'predicate',
-      'label' => 'relation_id',
+      'label' => 'rid',
     ),
     'bundle keys' => array(
       'bundle' => 'predicate',
@@ -254,14 +254,14 @@ function relation_type_delete($predicate) {
 }
 
 /**
- * Loads a relation from a relation_id.
+ * Loads a relation from a relation id.
  *
- * @param $relation_id
- *   Numerical relation_id of the relation to be loaded.
+ * @param $rid
+ *   Numerical id of the relation to be loaded.
  *
  * @return
  *   Loaded relation object. Relation objects are stdClass Object of the form:
- *   - relation_id: numeric relation_id.
+ *   - rid: numeric relation id.
  *   - predicate: relation bundle machine name.
  *   - arity: the number of entities in the relation
  *   - rdf_mapping: not yet implemented (empty array)
@@ -273,24 +273,24 @@ function relation_type_delete($predicate) {
  *       non-directional relations, in directional relations this is 0 for
  *       source entities, and 1 for target entities.
  */
-function relation_load($relation_id) {
-  return reset(relation_multiple_load(array($relation_id)));
+function relation_load($rid) {
+  return reset(relation_multiple_load(array($rid)));
 }
 
 /**
- * Loads a set of relations from an array of relation_ids.
+ * Loads a set of relations from an array of relation ids.
  *
- * @param $relation_ids
- *   Array of numerical relation_ids of the relations to be loaded.
+ * @param $rids
+ *   Array of numerical relation ids of the relations to be loaded.
  *
  * @return
- *   Associative array of loaded relation objects, keyed by relation_id.
+ *   Associative array of loaded relation objects, keyed by relation id.
  *
  * @see relation_load()
  */
-function relation_multiple_load($relation_ids) {
+function relation_multiple_load($rids) {
   // Entity load handles field_attach_load for us.
-  return entity_load('relation', $relation_ids);
+  return entity_load('relation', $rids);
 }
 
 /**
@@ -313,7 +313,7 @@ function relation_page($relation) {
     '#rows' => $items,
   );
 
-  field_attach_prepare_view('relation', array($relation->relation_id => $relation), 'full');
+  field_attach_prepare_view('relation', array($relation->rid => $relation), 'full');
 
   return $build;
 }
@@ -322,7 +322,7 @@ function relation_page($relation) {
  * Relation display page title.
  */
 function relation_page_title($relation) {
-  return 'Relation ' . $relation->relation_id;
+  return 'Relation ' . $relation->rid;
 }
 
 /**
@@ -365,9 +365,9 @@ class RelationEntityController extends DrupalDefaultEntityController {
     parent::attachLoad($queried_entities, $revision_id);
     foreach ($queried_entities as $id => $entity) {
       $query = db_select('relation', 'r');
-      $query->condition('r.relation_id', $id);
-      $query->innerJoin('relation_data', 'rd', 'r.relation_id = rd.relation_id');
-      $query->addField('r', 'relation_id');
+      $query->condition('r.rid', $id);
+      $query->innerJoin('relation_data', 'rd', 'r.rid = rd.rid');
+      $query->addField('r', 'rid');
       $query->addField('r', 'predicate');
       $query->addField('rd', 'entity_type', 'entity_type');
       $query->addField('rd', 'entity_id', 'entity_id');
@@ -399,7 +399,7 @@ class RelationEntityController extends DrupalDefaultEntityController {
 function relation_create($predicate, $entity_keys) {
   global $user;
   $relation = new stdClass();
-  $relation->relation_id = -1; //flag as creation
+  $relation->rid = -1; //flag as creation
   $relation->predicate = $predicate;
   $relation->vid = 1;
   $relation->uid = $user->uid;
@@ -409,14 +409,14 @@ function relation_create($predicate, $entity_keys) {
   $relation->entity_keys = array();
   foreach ($entity_keys as $index => $entity_key) {
     $relation->entity_keys[$index] = array(
-      'relation_id' => -1,
+      'rid' => -1,
       'entity_type' => $entity_key['entity_type'],
       'entity_id'   => $entity_key['entity_id'],
       'r_index'     => $index,
     );
   }
-  $relation_id = relation_save($relation);
-  return $relation_id;
+  $rid = relation_save($relation);
+  return $rid;
 }
 
 /**
@@ -435,9 +435,9 @@ function relation_save($relation) {
   if ($errors) {
     return FALSE;
   }
-  if ($relation->relation_id == -1) {
-    $relation_id = db_insert('relation')
-      ->useDefaults(array('relation_id'))
+  if ($relation->rid == -1) {
+    $rid = db_insert('relation')
+      ->useDefaults(array('rid'))
       ->fields(array(
         'predicate' => $relation->predicate,
         'arity'     => count($relation->entity_keys),
@@ -448,14 +448,14 @@ function relation_save($relation) {
         ))
       ->execute();
     foreach (array_keys($relation->entity_keys) as $index) {
-      $relation->entity_keys[$index]['relation_id'] = $relation_id;
+      $relation->entity_keys[$index]['rid'] = $rid;
     }
   }
   else {
-    $relation_id = $relation->relation_id;
+    $rid = $relation->rid;
     db_insert('relation')
       ->fields(array(
-        'relation_id' => $relation->relation_id,
+        'rid' => $relation->rid,
         'predicate'   => $relation->predicate,
         'arity'       => count($relation->entity_keys),
         'vid'         => $relation->vid,
@@ -467,37 +467,37 @@ function relation_save($relation) {
   }
 
   $query = db_insert('relation_data')
-    ->fields(array('relation_id', 'entity_type', 'entity_id', 'r_index'));
+    ->fields(array('rid', 'entity_type', 'entity_id', 'r_index'));
   foreach ($relation->entity_keys as $entity_key) {
     $query->values($entity_key);
   }
   $query->execute();
 
-  return $relation_id;
+  return $rid;
 }
 
 /**
  * Deletes a relation.
  *
- * @param $relation_id
- *   The relation_id (numeric) of the relation to be deleted.
+ * @param $rid
+ *   The numeric id of the relation to be deleted.
  */
-function relation_delete($relation_id) {
-  relation_multiple_delete(array($relation_id));
+function relation_delete($rid) {
+  relation_multiple_delete(array($rid));
 }
 
 /**
  * Deletes a relation.
  *
- * @param $relation_id
- *   The relation_id (numeric) of the relation to be deleted.
+ * @param $rid
+ *   An array of numeric ids of the relation to be deleted.
  */
-function relation_multiple_delete($relation_ids) {
-  $relations = relation_multiple_load($relation_id);
-  foreach ($relations as $relation_id => $relation) {
+function relation_multiple_delete($rids) {
+  $relations = relation_multiple_load($rid);
+  foreach ($relations as $rid => $relation) {
     field_attach_delete('relation', $relation);
-    db_delete('relation')->condition('relation_id', $relation_id)->execute();
-    db_delete('relation_data')->condition('relation_', $relation_id)->execute();
+    db_delete('relation')->condition('rid', $rid)->execute();
+    db_delete('relation_data')->condition('relation_', $rid)->execute();
   }
 }
 
@@ -576,10 +576,10 @@ function relation_predicate_autocomplete($string='') {
 function relation_delete_confirm($form, &$form_state, $relation) {
   $form['#relation'] = $relation;
   // Always provide entity id in the same form key as in the entity edit form.
-  $form['relation_id'] = array('#value' => $relation['relation_id']);
+  $form['rid'] = array('#value' => $relation['rid']);
   return confirm_form($form,
-    t('Are you sure you want to delete relation %relation_id?', array('%relation_id' => $relation['relation_id'])),
-    'relation/' . $relation['relation_id'],
+    t('Are you sure you want to delete relation %rid?', array('%rid' => $relation['rid'])),
+    'relation/' . $relation['rid'],
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -593,8 +593,8 @@ function relation_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $relation = $form['#relation'];
     relation_delete($form_state['values']['nid']);
-    watchdog('relation', '@type: deleted %title.', array('@type' => $relation['predicate'], '%title' => $relation['relation_id']));
-    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation['predicate'], '%title' => $relation['relation_id'])));
+    watchdog('relation', '@type: deleted %title.', array('@type' => $relation['predicate'], '%title' => $relation['rid']));
+    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation['predicate'], '%title' => $relation['rid'])));
   }
 
   $form_state['redirect'] = '<front>';
@@ -606,7 +606,7 @@ function relation_delete_confirm_submit($form, &$form_state) {
  * @see entity_uri()
  */
 function relation_uri($relation) {
-  return array('path' => 'relation/' . $relation->relation_id);
+  return array('path' => 'relation/' . $relation->rid);
 }
 
 /**

@@ -132,8 +132,8 @@ class RelationQuery {
  */
 function relation_sql_relation_query($relationQuery) {
   $query = db_select('relation_data', 'rd');
-  $query->addField('r', 'relation_id');
-  $query->innerJoin('relation', 'r', 'r.relation_id = rd.relation_id');
+  $query->addField('r', 'rid');
+  $query->innerJoin('relation', 'r', 'r.rid = rd.rid');
   $query->condition('rd.entity_id', $relationQuery->entity_id);
   if ($relationQuery->predicates) {
     $query->condition('r.predicate', $relationQuery->predicates);
@@ -145,6 +145,6 @@ function relation_sql_relation_query($relationQuery) {
     $query = $query->countQuery();
     return $query->execute()->fetchField();
   }
-  $relation_ids = $query->execute()->fetchCol();
-  return $relation_ids ? entity_load('relation', $relation_ids) : array();
+  $rids = $query->execute()->fetchCol();
+  return $rids ? entity_load('relation', $rids) : array();
 }

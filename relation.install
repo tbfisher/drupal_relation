@@ -12,7 +12,7 @@ function relation_schema() {
   $schema['relation'] = array(
     'description' => 'Keeps track of relation entities.',
     'fields' => array(
-      'relation_id' => array(
+      'rid' => array(
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -58,15 +58,15 @@ function relation_schema() {
         'description' => 'The number rows in this relation. Cannot exceed max_arity, or be less than min_arity in relation_type table.',
       ),
     ),
-    'primary key' => array('relation_id'),
+    'primary key' => array('rid'),
     'indexes' => array(
-      'predicates' => array('predicate', 'relation_id'),
+      'predicates' => array('predicate', 'rid'),
     ),
   );
   $schema['relation_data'] = array(
     'description' => 'Stores information about relations between entities',
     'fields' => array(
-      'relation_id' => array(
+      'rid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -95,9 +95,9 @@ function relation_schema() {
         'description' => 'The index of this row in this relation. The highest index in the relation is stored as "arity" in the relation table.',
       ),
     ),
-    'primary key' => array('relation_id', 'entity_type', 'entity_id', 'r_index'),
+    'primary key' => array('rid', 'entity_type', 'entity_id', 'r_index'),
     'indexes' => array(
-      'relation_id' => array('relation_id', 'r_index'),
+      'rid' => array('rid', 'r_index'),
       'entity' => array('entity_type', 'entity_id'),
     ),
   );

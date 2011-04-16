@@ -78,7 +78,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
       '#theme' => 'links',
       '#links' => $links,
       '#heading' => array(
-        'text' => t('Part of relation @relation_id', array('@relation_id' => $item->relation_id)),
+        'text' => t('Part of relation @rid', array('@rid' => $item->rid)),
         'level' => 'h4',
       ),
     );

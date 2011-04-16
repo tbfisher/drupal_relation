@@ -75,8 +75,8 @@ class RelationTestCase extends DrupalWebTestCase {
     else {
       $this->pass('Validation passed');
     }
-    $relation_id = relation_create($predicate, $entity_keys);
-    $relation = relation_load($relation_id);
+    $rid = relation_create($predicate, $entity_keys);
+    $relation = relation_load($rid);
     $this->assertEqual(count($relation->entity_keys), 2, 'There are two entities');
     $this->assertEqual($relation->arity, 2, 'Arity is 2.');
     $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct');
