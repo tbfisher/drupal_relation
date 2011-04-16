@@ -28,8 +28,8 @@ function relation_entity_info() {
     'bundles' => array(),
     'view modes' => array(),
   );
-  foreach (relation_get_types(NULL, TRUE) as $type => $info) {
-    $entities['relation']['bundles'][$type] = $info;
+  foreach (relation_get_types(NULL) as $type => $info) {
+    $entities['relation']['bundles'][$type] = (array) $info;
     $entities['relation']['bundles'][$type]['admin'] = array(
       'path' => 'admin/structure/relation/manage/%relation_type',
       'real path' => 'admin/structure/relation/manage/' . $type,
@@ -206,8 +206,8 @@ function relation_type_save($record, $write_record_keys = array()) {
  *   relation_type_save().
  */
 function relation_type_load($predicate) {
-  $types = relation_get_types($predicate, TRUE);
-  return reset($types);
+  $types = relation_get_types($predicate);
+  return isset($types[$predicate]) ? $types[$predicate] : FALSE;
 }
 
 /**
@@ -216,15 +216,12 @@ function relation_type_load($predicate) {
  * @param $predicate
  *   The machine name of the relation type (bundle) to be loaded. If $predicate
  *   is NULL, load all relation entity types.
- * @param $array
- *   Boolean, whether to return an array of bundles as arrays (TRUE), or
- *   an array of bundles as objects (FALSE).
  *
  * @return
  *   A an array of relation type records in the same format as expected by
  *   relation_type_save(), keyed by predicate.
  */
-function relation_get_types($predicate = NULL, $array = FALSE) {
+function relation_get_types($predicate = NULL) {
   $query = db_select('relation_type', 'rt')
   ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'min_arity', 'max_arity'));
   if ($predicate) {
@@ -239,7 +236,7 @@ function relation_get_types($predicate = NULL, $array = FALSE) {
       $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
       $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
     }
-    $relation_types[$relation_type->predicate] = $array ? (array) $relation_type : $relation_type;
+    $relation_types[$relation_type->predicate] = $relation_type;
   }
   return $relation_types;
 }
@@ -444,7 +441,7 @@ function relation_save($relation) {
         'uid'       => $relation->uid,
         'created'   => REQUEST_TIME,
         'changed'   => REQUEST_TIME,
-        ))
+      ))
       ->execute();
     foreach (array_keys($relation->entity_keys) as $index) {
       $relation->entity_keys[$index]['rid'] = $rid;
@@ -469,7 +466,7 @@ function relation_save($relation) {
         'arity'       => $relation->arity,
         'uid'         => $relation->uid,
         'changed'     => REQUEST_TIME,
-        ))
+      ))
       ->execute();
       $relation->vid = $vid;
 
@@ -548,7 +545,7 @@ function relation_multiple_delete($rids) {
  *   Array of errors to be filled in, passed by reference.
  */
 function relation_validate($predicate, $entity_keys, &$errors) {
-  $relation_type = db_query('SELECT directional, min_arity, max_arity FROM {relation_type} WHERE predicate = :predicate', array(':predicate' => $predicate))->fetchObject();
+  $relation_type = relation_type_load($predicate);
   // Check that predicate exists.
   if (!$relation_type) {
     $errors[] = t("The !predicate relation type does not exist!", array('!predicate' => $predicate));
