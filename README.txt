@@ -85,12 +85,13 @@ See TODO.txt
 
 * Go to admin/structure/relation, and create a new relation type. Add fields if
   neccesary.
-* Enable the relation_dropzone block.
+* Enable the relation_dropzone block if it is not enable on install -- it tries
+to insert itself after the system management block if that one is enabled.
 
 -- USAGE --
 
 * To use the relation_dropzone block, go to any page that loads entities, and
-  the relation block will appear.
+  the entity selector will appear.
 * "Pick" as many entities as you need for your relation type (between min_ and
   max_arity in the appropriate relation bundle)
 * Click "Create Relation", your relation will be created, and you will be given
