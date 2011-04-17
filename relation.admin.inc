@@ -138,7 +138,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->source_bundles,
     '#multiple'      => TRUE,
-    '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple.',
+    '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple. Note that selecting all bundles also include bundles not yet created for that entity type.',
   );
   $form['target_bundles'] = array(
     '#type'          => 'select',

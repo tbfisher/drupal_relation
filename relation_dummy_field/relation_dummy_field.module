@@ -43,9 +43,6 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $element['relation_field'] = array(
-    '#markup' => t('Nothing to see here, move along.'),
-  );
   return $element;
 }
 
