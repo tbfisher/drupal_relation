@@ -444,9 +444,11 @@ function relation_save($relation) {
         'changed'   => REQUEST_TIME,
       ))
       ->execute();
-    foreach (array_keys($relation->entity_keys) as $index) {
-      $relation->entity_keys[$index]['rid'] = $rid;
+    foreach ($relation->entity_keys as &$entity_key) {
+      $entity_key['rid'] = $rid;
     }
+    // If I do not unset here, PHP breaks. http://bugs.php.net/bug.php?id=53870
+    unset($entity_key);
     $relation->rid = $rid;
 
     // Add relation data - don't need to change this for new relations..
