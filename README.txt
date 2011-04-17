@@ -12,7 +12,7 @@ Relations can relate more than two entities, eg:
   areSiblings -> (john, jen, jack, jess)
 
 And for 2-ary relations, relations can be directional, ie:
-  manny -> isChildOf -> mary
+  bruno -> isChildOf -> boglarka
 
 Relations are entities, so they can relate relations to other entities, for
 example:
@@ -46,6 +46,9 @@ tagged with that term). The first milestone for this module is to provide simple
 blocks that display specific corners of this graph, like a user's nodes, and
 terms a user has used. In the future, we would like to be able to add filters to
 the graph (like "a users nodes" + "only blog posts").
+
+There is a dummy field module that, while still does not allow editing
+relations, it opens the door for formatters.
 
 --- A little more thinking/rephrasing... ---
 
