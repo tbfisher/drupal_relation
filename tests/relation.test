@@ -53,6 +53,33 @@ class RelationTestCase extends DrupalWebTestCase {
       relation_type_save($relation_type);
     }
   }
+
+  function RelationSaveHelper($predicate, $entity_keys) {
+    relation_validate($predicate, $entity_keys, $errors);
+    if ($errors) {
+      foreach ($errors as $error) {
+        $this->fail($error);
+      }
+    }
+    else {
+      $this->pass('Validation passed');
+    }
+    $rid = relation_create($predicate, $entity_keys);
+    $relation = relation_load($rid);
+    $count = count($relation->entity_keys);
+    $this->assertEqual($count, 2, 'There are two entities: ' . $count);
+    $this->assertEqual($relation->arity, 2, 'Arity is 2: ' . $relation->arity);
+    $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct: ' . $relation->predicate);
+    foreach ($entity_keys as $entity_key) {
+      $need_ids[$entity_key['entity_id']] = TRUE;
+    }
+    foreach ($relation->entity_keys as $entity_key) {
+      $this->assertEqual($entity_key['entity_type'], 'node', 'The entity type is node: ' . $entity_key['entity_type']);
+      $this->assertTrue(isset($need_ids[$entity_key['entity_id']]), 'The entity ID is correct: ' . $need_ids[$entity_key['entity_id']]);
+      unset($need_ids[$entity_key['entity_id']]);
+    }
+    $this->assertFalse($need_ids, 'All ids found');
+  }
 }
 
 /**
@@ -101,32 +128,5 @@ class RelationAPITestCase extends RelationTestCase {
     $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
     $this->drupalGet("admin/structure/relation/manage/$predicate_symmetric/delete");
     $this->assertRaw(t('The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => 2)), 'Correct number of relations found');
-  }
-
-  function RelationSaveHelper($predicate, $entity_keys) {
-    relation_validate($predicate, $entity_keys, $errors);
-    if ($errors) {
-      foreach ($errors as $error) {
-        $this->fail($error);
-      }
-    }
-    else {
-      $this->pass('Validation passed');
-    }
-    $rid = relation_create($predicate, $entity_keys);
-    $relation = relation_load($rid);
-    $count = count($relation->entity_keys);
-    $this->assertEqual($count, 2, 'There are two entities: ' . $count);
-    $this->assertEqual($relation->arity, 2, 'Arity is 2: ' . $relation->arity);
-    $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct: ' . $relation->predicate);
-    foreach ($entity_keys as $entity_key) {
-      $need_ids[$entity_key['entity_id']] = TRUE;
-    }
-    foreach ($relation->entity_keys as $entity_key) {
-      $this->assertEqual($entity_key['entity_type'], 'node', 'The entity type is node: ' . $entity_key['entity_type']);
-      $this->assertTrue(isset($need_ids[$entity_key['entity_id']]), 'The entity ID is correct: ' . $need_ids[$entity_key['entity_id']]);
-      unset($need_ids[$entity_key['entity_id']]);
-    }
-    $this->assertFalse($need_ids, 'All ids found');
   }
 }
