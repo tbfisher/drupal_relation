@@ -363,6 +363,7 @@ class RelationEntityController extends DrupalDefaultEntityController {
    */
   protected function attachLoad(&$queried_entities, $revision_id = FALSE) {
     parent::attachLoad($queried_entities, $revision_id);
+    // TODO figure out what to do with relations that are too big to load.
     foreach ($queried_entities as $id => $entity) {
       $query = db_select('relation', 'r');
       $query->condition('r.rid', $id);
