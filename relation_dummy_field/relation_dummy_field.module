@@ -63,21 +63,28 @@ function relation_dummy_field_field_formatter_info() {
  */
 function relation_dummy_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
+  list($entity_id) = entity_extract_ids($entity_type, $entity);
   foreach ($items as $delta => $item) {
     $links = array();
     foreach ($item->entity_keys as $r_index => $entity_key) {
       $related_entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
-      $title = entity_label($entity_key['entity_type'], $related_entity);
-      $uri = entity_uri($entity_key['entity_type'], $related_entity);
-      $links[] = array('href' => $uri['path'], 'title' => $title);
+      if ($entity_key['entity_type'] == $entity_type && $entity_key['entity_id'] == $entity_id) {
+        $link = array();
+      }
+      else {
+        $link = entity_uri($entity_key['entity_type'], $related_entity);
+        $link['href'] = $link['path'];
+      }
+      $link['title'] = entity_label($entity_key['entity_type'], $related_entity);
+      $links[] = $link;
     }
-    $element[] = array(
+    $uri = entity_uri('relation', $item);
+    $relation_link = l(t('Relation @rid', array('@rid' => $item->rid)), $uri['path'], $uri['options']);
+    // Can't use #heading as it's mercilessly check_plain'd.
+    $element[$delta]['relation']['heading']['#markup'] = t('<h4>Part of !link</h4>', array('!link' => $relation_link));
+    $element[$delta]['relation']['links'] = array(
       '#theme' => 'links',
       '#links' => $links,
-      '#heading' => array(
-        'text' => t('Part of relation @rid', array('@rid' => $item->rid)),
-        'level' => 'h4',
-      ),
     );
   }
   return $element;
