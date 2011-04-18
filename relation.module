@@ -523,11 +523,11 @@ function relation_delete($rid) {
  *   An array of numeric ids of the relation to be deleted.
  */
 function relation_multiple_delete($rids) {
-  $relations = relation_multiple_load($rid);
+  $relations = relation_multiple_load($rids);
   foreach ($relations as $rid => $relation) {
     field_attach_delete('relation', $relation);
     db_delete('relation')->condition('rid', $rid)->execute();
-    db_delete('relation_data')->condition('relation_', $rid)->execute();
+    db_delete('relation_data')->condition('rid', $rid)->execute();
   }
 }
 
@@ -647,13 +647,24 @@ function relation_uri($relation) {
  * Returns a query object to find related entities.
  *
  * @param $entity_type
- *   The entity type one of the endpoints.
+ *   The entity type of one of the endpoints.
  * @param $entity_id
- *   The entity id one of the endpoints.
+ *   The entity id of one of the endpoints.
  *
  * @return RelationQuery
  *   The query object itself.
  */
 function relation_query($entity_type  = NULL, $entity_id = NULL) {
   return new RelationQuery($entity_type = NULL, $entity_id = NULL);
+}
+
+/**
+ * Implements hook_entity_delete.
+ */
+function relation_entity_delete($entity, $entity_type) {
+  list($id, , ) = entity_extract_ids($entity_type, $entity);
+  $relations = relation_query($entity_type, $id)
+    ->execute();
+  relation_multiple_delete(array_keys($relations));
+  drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
 }
