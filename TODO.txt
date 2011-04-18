@@ -1,7 +1,9 @@
-- ipmplement hook_entity_delete()
+- implement hook_entity_delete()
+- implement directionality properly
+- figure out what to do with relations that are too big to load.
 
-- Field API relation display (using tokens?), and creation and editing?
-  - with natural language formatters..
+- Field API creation and editing?
+  - display with natural language formatters..
 
 - The relation module should be able to ask the relation bundle provider things
   like:
@@ -19,3 +21,4 @@
   - get_relation(user, node)  ~~~> user --> node
   - get_relation(user, term) ~~~> user --> node --> term
   - get_relation(user, file, term) ~~~> user --> file --> node --> term
+
