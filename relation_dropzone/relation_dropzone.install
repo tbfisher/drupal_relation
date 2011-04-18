@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Installation functions for Relation dropzone block.
+ */
+
+/**
+ * Implements hook_install. Enables block on module install.
+ */
 function relation_dropzone_install() {
   $select = db_select('block', 'b')
     ->condition('status', 1)
