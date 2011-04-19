@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_install. Enables block on module install.
+ * Implements hook_install. Attempts to enable block on module install.
  */
 function relation_dropzone_install() {
   $select = db_select('block', 'b')

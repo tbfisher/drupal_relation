@@ -29,6 +29,9 @@ class RelationTestCase extends DrupalWebTestCase {
     $this->drupalLogin($web_user);
   }
 
+  /**
+   * Creates a set of standard relation types.
+   */
   function createRelationTypes() {
     $this->relation_types['symmetric'] = array(
       'predicate'   => 'symm' . $this->randomName(),
@@ -54,6 +57,9 @@ class RelationTestCase extends DrupalWebTestCase {
     }
   }
 
+  /**
+   * Validates and saves relations, and checks the process.
+   */
   function RelationSaveHelper($predicate, $entity_keys) {
     relation_validate($predicate, $entity_keys, $errors);
     if ($errors) {
@@ -96,7 +102,8 @@ class RelationAPITestCase extends RelationTestCase {
   }
 
   /**
-   * Create some nodes, add some relations and check they are related.
+   * Create some nodes, add some relations and check they are related. This
+   * test suite also checks all methods available in RelationQuery.
    */
   function testRelationCRDMultiple() {
     $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));

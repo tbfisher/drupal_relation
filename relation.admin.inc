@@ -6,7 +6,7 @@
  */
 
 /**
- * List all relation predicates.
+ * List all relation predicates (page callback).
  */
 function relation_list() {
   $relation = relation_entity_info();

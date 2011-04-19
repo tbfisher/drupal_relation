@@ -25,7 +25,8 @@ class RelationDummyFieldTestCase extends RelationTestCase {
   }
 
   /**
-   * Create some nodes, add some relations and check they are related.
+   * Create some nodes, create a relation field on the Article node type, and
+   * check if it displays the relations correctly on the node page.
    */
   function testDummyFieldDisplayed() {
     $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
@@ -73,7 +74,7 @@ class RelationDummyFieldTestCase extends RelationTestCase {
         ),
       ),
     );
-    field_create_instance($instance);    
+    field_create_instance($instance);
     $this->drupalGet("node/$node1->nid");
     // As we have asserted node2 title not being on the page the only way this
     // click can succeed if the field formatter put it there.

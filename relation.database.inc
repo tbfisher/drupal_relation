@@ -55,19 +55,29 @@ class RelationQuery {
   /**
    * Add a related entity to the query.
    *
+   * @param $entity_type
+   *   Entity type of the related entity.
+   * @param $entity_id
+   *   Entity id of the related entity.
+   * @param $index
+   *   The index of the related entity within the requested relation(s).
+   *
    * @return RelationQuery
    */
   function related($entity_type, $entity_id, $index = NULL) {
     $this->entityKeys[] = array(
       'entity_type' => $entity_type,
       'entity_id' => $entity_id,
-      'index' => $index,
+      'r_index' => $index,
     );
     return $this;
   }
 
   /**
    * Restrict the query to a given predicate.
+   *
+   * @param $predicate
+   *   Predicate with which to restrict the results.
    *
    * @return RelationQuery
    */
@@ -77,6 +87,9 @@ class RelationQuery {
 
   /**
    * Restrict the query to the given array of predicates.
+   *
+   * @param $predicates
+   *   Array of predicates with which to restrict the results.
    *
    * @return RelationQuery
    */
@@ -88,6 +101,9 @@ class RelationQuery {
   /**
    * The index of the endpoint given in the constructor.
    *
+   * @param $index
+   *   Index of the initial queried entity in the relation(s).
+   *
    * @return RelationQuery
    */
   public function index($index) {
@@ -97,6 +113,11 @@ class RelationQuery {
 
   /**
    * Orders the result set by relation columns.
+   *
+   * @param $field
+   *   Database column by which to sort the results.
+   * @param $direction
+   *   SQL sort direction (eg. ASC, or DESC).
    *
    * @return RelationQuery
    */
@@ -110,6 +131,11 @@ class RelationQuery {
 
   /**
    * Limit the query to a range.
+   *
+   * @param $start
+   *   Initial result row to retrieve. Defaults to 0.
+   * @param $length
+   *   The number of rows to retrieve. Defaults to 50.
    *
    * @return RelationQuery
    */

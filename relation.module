@@ -201,6 +201,7 @@ function relation_type_save($record, $write_record_keys = array()) {
  *
  * @param $predicate
  *   The machine name of the relation type (bundle) to be loaded.
+ *
  * @return
  *   A relation type record (as an Array) in the same format as expected by
  *   relation_type_save().
@@ -354,9 +355,8 @@ function relation_edit($relation) {
 /**
  * Controller class for entity relations.
  *
- * This extends the DrupalDefaultEntityController class. The buildQuery method
- * is overriden to add the self join and to exclude rows where the left and
- * right entities are identical.
+ * Extends the DrupalDefaultEntityController class. The buildQuery method is
+ * overriden to add a join from the relation table to the relation_data table.
  */
 class RelationEntityController extends DrupalDefaultEntityController {
 
@@ -613,7 +613,7 @@ function relation_predicate_autocomplete($string='') {
 }
 
 /**
- * Menu callback -- ask for confirmation of relation deletion
+ * Menu callback: ask for confirmation of relation deletion
  */
 function relation_delete_confirm($form, &$form_state, $relation) {
   $form['#relation'] = $relation;
