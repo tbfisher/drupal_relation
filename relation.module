@@ -436,6 +436,9 @@ function relation_save($relation) {
     return FALSE;
   }
   $relation->arity = count($relation->entity_keys);
+  // use time() instead of REQUEST_TIME, because otherwise tests
+  // RelationQuery::order() are impossible
+  $current_time = time();
   if ($relation->is_new) {
     $rid = db_insert('relation')
       ->useDefaults(array('rid'))
@@ -443,8 +446,8 @@ function relation_save($relation) {
         'predicate' => $relation->predicate,
         'arity'     => $relation->arity,
         'uid'       => $relation->uid,
-        'created'   => REQUEST_TIME,
-        'changed'   => REQUEST_TIME,
+        'created'   => $current_time,
+        'changed'   => $current_time,
       ))
       ->execute();
     foreach ($relation->entity_keys as &$entity_key) {
@@ -471,7 +474,7 @@ function relation_save($relation) {
         'predicate'   => $relation->predicate,
         'arity'       => $relation->arity,
         'uid'         => $relation->uid,
-        'changed'     => REQUEST_TIME,
+        'changed'     => $current_time,
       ))
       ->execute();
       $relation->vid = $vid;
@@ -482,7 +485,7 @@ function relation_save($relation) {
       ->fields(array(
         'vid'     => $relation->vid,
         'uid'     => $relation->uid,
-        'changed' => REQUEST_TIME,
+        'changed' => $current_time,
         ))
       ->execute();
   }
@@ -493,7 +496,7 @@ function relation_save($relation) {
       ->fields(array(
         'uid'       => $relation->uid,
         'created'   => $relation->created,
-        'changed'   => REQUEST_TIME,
+        'changed'   => $current_time,
         ))
       ->execute();
     // we don't update the relation_data.
