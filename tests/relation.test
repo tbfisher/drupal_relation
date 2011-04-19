@@ -131,33 +131,38 @@ class RelationAPITestCase extends RelationTestCase {
     $rid_octopus = $this->RelationSaveHelper($predicate_octopus, $entity_keys_4);
 
     // Get relations for node 1, should return 3 relations
-    $relations = relation_query('node', $node1->nid)->execute();
+    $relations = relation_query('node', $node1->nid)
+      ->execute();
     $count = count($relations);
-    $this->assertEqual($count, 3, $count . ' relations found, should be 3');
+    $this->assertEqual($count, 3, $count . ' relations found for nid=1, should be 3');
     // Check that symmetric relation is correctly related to node 4
     $this->assertEqual($relations[$rid_symmetric]->entity_keys[1]['entity_id'], $node4->nid, 'Correct entity is related: ' . $relations[$rid_symmetric]->entity_keys[1]['entity_id'] . '==' . $node4->nid);
 
     // Get number of relations for node 4, should return 2 relations.
-    $count = relation_query('node', $node1->nid)->count()->execute();
-    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
-
-    // Get number of relations for node 2, should return 1 relation.
-    $count = relation_query('node', $node1->nid)->count()->execute();
-    $this->assertEqual($count, 1, $count . ' relation found, should be 1');
+    $count = relation_query('node', $node4->nid)
+      ->count()
+      ->execute();
+    $this->assertEqual($count, 2, $count . ' relations foundfor nid=4, should be 2');
 
     // Get number of relations for node 5, should return 0 relations.
-    $count = relation_query('node', $node1->nid)->count()->execute();
+    $count = relation_query('node', $node5->nid)
+      ->count()
+      ->execute();
+    $this->assertEqual($count, 0, $count . ' relations found for nid=5, should be 0');
+
+    // Get relations between entities 2 and 5 (none)
+    $count = relation_query('node', $node2->nid)
+      ->related('node', $node5->nid)
+      ->count()
+      ->execute();
     $this->assertEqual($count, 0, $count . ' relations found, should be 0');
 
-    // Get relations between entities 1 and 3 (directional, octopus)
-    $relations = relation_query('node', $node1->nid)
-      ->related('node', $node3->nid)
+    // Get directed relations for node 3 using index, should return >=1 relation.
+    $relations = relation_query('node', $node3->nid)
+      ->index(1)
       ->execute();
     $count = count($relations);
-    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
-    // Check that we have the correct relations
-    $this->assertEqual(isset($relations[$rid_directional]), 'Got one correct relation.');
-    $this->assertEqual(isset($relations[$rid_octopus]), 'Got a second one.');
+    $this->assertTrue(isset($relations[$rid_directional]), 'Got the correct directional relation for nid=3.');
 
     // Get relations between entities 2 and 3 (octopus)
     $relations = relation_query('node', $node2->nid)
@@ -168,12 +173,36 @@ class RelationAPITestCase extends RelationTestCase {
     // Check that we have the correct relations
     $this->assertEqual(isset($relations[$rid_octopus]), 'Got one correct relation.');
 
-    // Get relations between entities 2 and 5 (none)
-    $count = relation_query('node', $node2->nid)
-      ->related('node', $node5->nid)
-      ->count()
+    // Get relations for node 1 (symmetric, directional, octopus), limit to
+    // octopus with predicate()
+    $relations = relation_query('node', $node1->nid)
+      ->predicate(array(
+        $this->relation_types['directional']['predicate'],
+        $this->relation_types['octopus']['predicate'],
+        )
+      )
       ->execute();
-    $this->assertEqual($count, 0, $count . ' relations found, should be 0');
+    $count = count($relations);
+    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
+    // Check that we have the correct relations
+    $this->assertTrue(isset($relations[$rid_directional]), 'Got one correct relation.');
+    $this->assertTrue(isset($relations[$rid_octopus]), 'Got a second one.');
+
+    // Get last two relations for node 1
+    $relations = relation_query('node', $node1->nid)
+      ->range(1, 2)
+      ->execute();
+    $count = count($relations);
+    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
+    // Check that we have the correct relations
+    $this->assertTrue(isset($relations[$rid_directional]), 'Got one correct relation.');
+    $this->assertTrue(isset($relations[$rid_octopus]), 'Got a second one.');
+
+    // Get all relations on node 1 and sort them in reverse created order
+    $relations = relation_query('node', $node1->nid)
+      ->order('created','ASC')
+      ->execute();
+    $this->assertEqual(array_keys($relations), array(3, 2, 1), 'Got relations 3, 2, 1: ' . implode(', ', array_keys($relations)));
 
     // Try deleting the content types.
     $this->drupalGet("admin/structure/relation/manage/$predicate_symmetric/delete");

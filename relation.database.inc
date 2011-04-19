@@ -101,6 +101,7 @@ class RelationQuery {
       'field' => $field,
       'direction' => $direction,
     );
+    return $this;
   }
 
   /**
