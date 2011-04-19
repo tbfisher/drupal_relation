@@ -1,4 +1,3 @@
-- implement hook_entity_delete()
 - implement directionality properly
 - figure out what to do with relations that are too big to load.
 

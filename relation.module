@@ -274,7 +274,8 @@ function relation_type_delete($predicate) {
  */
 function relation_load($rid, $vid = NULL, $reset = FALSE) {
   $conditions = (isset($vid) ? array('vid' => $vid) : array());
-  return reset(relation_multiple_load(array($rid), $conditions));
+  $relations = relation_multiple_load(array($rid), $conditions);
+  return reset($relations);
 }
 
 /**
@@ -300,7 +301,8 @@ function relation_multiple_load($rids, $conditions = array(), $reset = FALSE) {
  */
 function relation_page($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+    $entity = reset($entities);
     $label = entity_label($entity_key['entity_type'], $entity);
     $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
@@ -330,7 +332,8 @@ function relation_page_title($relation) {
  */
 function relation_edit($relation) {
   foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+    $entity = reset($entities);
     $label = entity_label($entity_key['entity_type'], $entity);
     $uri = entity_uri($entity_key['entity_type'], $entity);
     $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
@@ -564,7 +567,8 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
     $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $relation_bundles = reset(relation_get_types($predicate));
+  $types = relation_get_types($predicate);
+  $relation_bundles = reset($types);
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
     $directional = $relation_bundles->directional;
@@ -573,7 +577,8 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
     $end_bundles = $endpoint . '_bundles';
     foreach ($relation_bundles->$end_bundles as $relation_bundle) {
       if (!isset($entity_key['entity_bundle'])) {
-        $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+        $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+        $entity = reset($entities);
         list (, , $entity_key['entity_bundle']) = entity_extract_ids($entity_key['entity_type'], $entity);
       }
       $relation_bundle_array = explode(':', $relation_bundle, 2);

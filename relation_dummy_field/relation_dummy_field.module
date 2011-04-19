@@ -67,7 +67,8 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
   foreach ($items as $delta => $item) {
     $links = array();
     foreach ($item->entity_keys as $r_index => $entity_key) {
-      $related_entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
+      $related_entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+      $related_entity = reset($related_entities);
       if ($entity_key['entity_type'] == $entity_type && $entity_key['entity_id'] == $entity_id) {
         $link = array();
       }
