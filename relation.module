@@ -523,11 +523,11 @@ function relation_delete($rid) {
  *   An array of numeric ids of the relation to be deleted.
  */
 function relation_multiple_delete($rids) {
-  $relations = relation_multiple_load($rid);
+  $relations = relation_multiple_load($rids);
   foreach ($relations as $rid => $relation) {
     field_attach_delete('relation', $relation);
     db_delete('relation')->condition('rid', $rid)->execute();
-    db_delete('relation_data')->condition('relation_', $rid)->execute();
+    db_delete('relation_data')->condition('rid', $rid)->execute();
   }
 }
 
@@ -542,19 +542,22 @@ function relation_multiple_delete($rids) {
  *   - entity_id: numerical id of the entity to be added to the relation.
  *   - entity_bundle: the bundle of the entity. Optional. Specifying it speeds
  *     up validation.
- *   - r_index: integer index of the entity to be added. This should be zero if
- *     the relation is non-directional.
+ *   - r_index: integer index of the entity to be added. This is ignored if
+ *     the relation is non-directional. For directional relations, 0 is source,
+*      1 or higher is target.
  * @param $error
  *   Array of errors to be filled in, passed by reference.
+ * @param $in_progress
+ *   If TRUE, the relation is in progress so minimum arity is not checked.
  */
-function relation_validate($predicate, $entity_keys, &$errors) {
+function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FALSE) {
   $relation_type = relation_type_load($predicate);
   // Check that predicate exists.
   if (!$relation_type) {
     $errors[] = t("The !predicate relation type does not exist!", array('!predicate' => $predicate));
   }
   // Check that arity is within acceptable bounds.
-  if (count($entity_keys) < $relation_type->min_arity) {
+  if (count($entity_keys) < $relation_type->min_arity && !$in_progress) {
     $errors[] = t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity));
   }
   if (count($entity_keys) > $relation_type->max_arity) {
@@ -566,8 +569,9 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     $acceptable = FALSE;
     $directional = $relation_bundles->directional;
     $r_index = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
-    $endpoint = ($directional && ($direction > 0)) ? 'target_bundles' : 'source_bundles';
-    foreach ($relation_bundles->$endpoint as $relation_bundle) {
+    $endpoint = ($directional && ($r_index > 0)) ? 'target' : 'source';
+    $end_bundles = $endpoint . '_bundles';
+    foreach ($relation_bundles->$end_bundles as $relation_bundle) {
       if (!isset($entity_key['entity_bundle'])) {
         $entity = reset(entity_load($entity_key['entity_type'], array($entity_key['entity_id'])));
         list (, , $entity_key['entity_bundle']) = entity_extract_ids($entity_key['entity_type'], $entity);
@@ -580,7 +584,7 @@ function relation_validate($predicate, $entity_keys, &$errors) {
     }
     if (!$acceptable) {
       $endpoint = $relation_type->directional ? $endpoint . ' endpoints' : 'an endpoint';
-      $errors[] = t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate' => $predicate, ':bundle' => $entity_bundle));
+      $errors[] = t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate' => $predicate, ':bundle' => $entity_key['entity_bundle']));
     }
   }
 }
@@ -643,13 +647,24 @@ function relation_uri($relation) {
  * Returns a query object to find related entities.
  *
  * @param $entity_type
- *   The entity type one of the endpoints.
+ *   The entity type of one of the endpoints.
  * @param $entity_id
- *   The entity id one of the endpoints.
+ *   The entity id of one of the endpoints.
  *
  * @return RelationQuery
  *   The query object itself.
  */
 function relation_query($entity_type  = NULL, $entity_id = NULL) {
   return new RelationQuery($entity_type, $entity_id);
+}
+
+/**
+ * Implements hook_entity_delete.
+ */
+function relation_entity_delete($entity, $entity_type) {
+  list($id, , ) = entity_extract_ids($entity_type, $entity);
+  $relations = relation_query($entity_type, $id)
+    ->execute();
+  relation_multiple_delete(array_keys($relations));
+  drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
 }

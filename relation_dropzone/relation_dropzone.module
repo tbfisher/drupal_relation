@@ -137,24 +137,7 @@ function _relation_stored_entity_keys_list() {
  * Submit handler for the pick button.
  */
 function relation_dropzone_pick($form, &$form_state) {
-  if ($entity_key = $form_state['values']['entity_key']) {
-    $form_state['values']['entity_key'] = '';
-    // Here we get (entity_type, entity_id).
-    $break = explode(':', $entity_key);
-    // Add the label for later display. #options is check_plain'd but we need
-    // to do that ourselves.
-    $entity_key = check_plain($form['entity_key']['#options'][$entity_key]);
-    $entity_key_array = explode(':', $entity_key, 2);
-    $pick = array(
-      'entity_type' => $break[0],
-      'entity_id' => $break[1],
-      'entity_bundle' => $entity_key_array[0],
-      'entity_key' => $entity_key,
-    );
-    $_SESSION += array('relation_entity_keys' => array());
-    $_SESSION['relation_entity_keys'][] = $pick;
-    $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
-  }
+  // Nothing to do here..
 }
 
 /**
@@ -162,13 +145,37 @@ function relation_dropzone_pick($form, &$form_state) {
  */
 function relation_dropzone_validate($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
-  // May need some separate validation for "pick"
-  if ($form_state['clicked_button']['#value']=='Create relation') {
-    $errors = array();
-    relation_validate($predicate, $_SESSION['relation_entity_keys'], $errors);
-    foreach ($errors as $error) {
-      form_set_error('predicate', $error);
+  $errors = array();
+
+  if ($form_state['clicked_button']['#value']=='Pick') {
+    $entity_key = $form_state['values']['entity_key'];
+    // Here we get (entity_type, entity_id).
+    $break = explode(':', $entity_key);
+    // Add the label for later display. #options is check_plain'd but we need
+    // to do that ourselves.
+    $entity_key = check_plain($form['entity_key']['#options'][$entity_key]);
+    $entity_key_array = explode(':', $entity_key, 2);
+    // Indexes are added in ascending order, starting from 0.
+    $_SESSION += array('relation_entity_keys' => array());
+    $next_index = count($_SESSION['relation_entity_keys']);
+    $pick = array(
+      'entity_type' => $break[0],
+      'entity_id' => $break[1],
+      'entity_bundle' => $entity_key_array[0],
+      'r_index' => $next_index,
+      'entity_key' => $entity_key,
+    );
+    relation_validate($predicate, array_merge($_SESSION['relation_entity_keys'], array($pick)), $errors, TRUE);
+    if (empty($errors)) {
+      $_SESSION['relation_entity_keys'][] = $pick;
+      $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
     }
+  }
+  if ($form_state['clicked_button']['#value']=='Create relation') {
+    relation_validate($predicate, $_SESSION['relation_entity_keys'], $errors);
+  }
+  foreach ($errors as $error) {
+    form_set_error('predicate', $error);
   }
 }
 
