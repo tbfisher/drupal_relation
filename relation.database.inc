@@ -14,27 +14,14 @@
 class RelationQuery {
 
   /**
-   * Constructor for RelationQuery.
+   * The list of entity keys.
    */
-  function __construct($entity_type, $entity_id) {
-    if (isset($entity_type)) {
-      $entity = reset(entity_load($entity_type, array($entity_id)));
-      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-      $this->entity_id = $id;
-      $this->entity_bundle = $bundle;
-      $this->entity_type = $entity_type;
-    }
-  }
+  public $entityKeys = array();
 
   /**
    * The list of predicates the relation should have.
    */
   public $predicates = array();
-
-  /**
-   * The index of the endpoint given in the constructor.
-   */
-  public $index = NULL;
 
   /**
    * Start of the query range.
@@ -55,6 +42,26 @@ class RelationQuery {
    * List of order clauses.
    */
   public $order = array();
+
+  /**
+   * Constructor for RelationQuery.
+   */
+  function __construct($entity_type, $entity_id, $index = NULL) {
+    if (isset($entity_type)) {
+      $this->related($entity_type, $entity_id);
+    }
+  }
+
+  /**
+   * Add a related entity to the query.
+   */
+  function related($entity_type, $entity_id, $index = NULL) {
+    $this->entityKeys[] = array(
+      'entity_type' => $entity_type,
+      'entity_id' => $entity_id,
+      'index' => $index,
+    );
+  }
 
   /**
    * Restrict the query to a given predicate.
@@ -147,18 +154,22 @@ class RelationQuery {
  *   relate). Array is empty if no relations are found.
  */
 function relation_sql_relation_query($relationQuery) {
-  $query = db_select('relation_data', 'rd');
+  $query = db_select('relation_data', 'rd0');
   $query->addField('r', 'rid');
-  $query->innerJoin('relation', 'r', 'r.rid = rd.rid');
-  if (isset($relationQuery->entity_id)) {
-    $query->condition('rd.entity_type', $relationQuery->entity_type);
-    $query->condition('rd.entity_id', $relationQuery->entity_id);
+  $query->innerJoin('relation', 'r', 'r.rid = rd0.rid');
+  foreach ($relationQuery->entityKeys as $key => $entity_key) {
+    $alias = "rd$key";
+    if ($key) {
+      $query->innerJoin('relation_data', $alias, "r.rid = $alias.rid");
+    }
+    $query->condition("$alias.entity_type", $entity_key['entity_type']);
+    $query->condition("$alias.entity_id", $entity_key['entity_id']);
+    if (isset($entity_key['index'])) {
+      $query->condition("$alias.index", $entity_key['index']);
+    }
   }
   if ($relationQuery->predicates) {
     $query->condition('r.predicate', $relationQuery->predicates);
-  }
-  if (isset($relationQuery->index)) {
-    $query->condition('rd.index', $relationQuery->index);
   }
   if ($relationQuery->count) {
     return $query->groupBy('r.rid')->countQuery()->execute()->fetchField();

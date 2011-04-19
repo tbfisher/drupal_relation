@@ -651,5 +651,5 @@ function relation_uri($relation) {
  *   The query object itself.
  */
 function relation_query($entity_type  = NULL, $entity_id = NULL) {
-  return new RelationQuery($entity_type = NULL, $entity_id = NULL);
+  return new RelationQuery($entity_type, $entity_id);
 }
