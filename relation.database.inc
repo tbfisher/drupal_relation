@@ -61,6 +61,7 @@ class RelationQuery {
       'entity_id' => $entity_id,
       'index' => $index,
     );
+    return $this;
   }
 
   /**

@@ -31,22 +31,22 @@ class RelationTestCase extends DrupalWebTestCase {
 
   function createRelationTypes() {
     $this->relation_types['symmetric'] = array(
-      'predicate'   => $this->randomName(),
-      'label' => $this->randomString(),
-      'source_bundles' => array('node:article', 'node:page'),
+      'predicate'   => 'symm' . $this->randomName(),
+      'label' => 'symm' . $this->randomString(),
+      'source_bundles' => array('node:article', 'node:page', 'term:*'),
     );
     $this->relation_types['directional'] = array(
-      'predicate'   => $this->randomName(),
-      'label' => $this->randomString(),
+      'predicate'   => 'dir' . $this->randomName(),
+      'label' => 'dir' . $this->randomString(),
       'directional' => TRUE,
       'source_bundles' => array('node:article'),
       'target_bundles' => array('node:page'),
     );
     $this->relation_types['octopus'] = array(
-      'predicate'   => $this->randomName(),
-      'label' => $this->randomString(),
-      'min_arity' => 2,
-      'max_arity' => 8,
+      'predicate'   => 'octo' . $this->randomName(),
+      'label' => 'octo' . $this->randomString(),
+      'min_arity' => 3,
+      'max_arity' => 5,
       'source_bundles' => array('node:article', 'node:page'),
     );
     foreach ($this->relation_types as $relation_type) {
@@ -67,8 +67,8 @@ class RelationTestCase extends DrupalWebTestCase {
     $rid = relation_create($predicate, $entity_keys);
     $relation = relation_load($rid);
     $count = count($relation->entity_keys);
-    $this->assertEqual($count, 2, 'There are two entities: ' . $count);
-    $this->assertEqual($relation->arity, 2, 'Arity is 2: ' . $relation->arity);
+    $this->assertEqual($count, count($entity_keys), 'There are two entities: ' . $count);
+    $this->assertEqual($relation->arity, count($entity_keys), 'Arity is 2: ' . $relation->arity);
     $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct: ' . $relation->predicate);
     foreach ($entity_keys as $entity_key) {
       $need_ids[$entity_key['entity_id']] = TRUE;
@@ -79,6 +79,7 @@ class RelationTestCase extends DrupalWebTestCase {
       unset($need_ids[$entity_key['entity_id']]);
     }
     $this->assertFalse($need_ids, 'All ids found');
+    return $rid;
   }
 }
 
@@ -99,34 +100,83 @@ class RelationAPITestCase extends RelationTestCase {
    */
   function testRelationCRDMultiple() {
     $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
-    $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
-    $node3 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
+    $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
+    $node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
+    $node5 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
 
     $this->createRelationTypes();
-    $errors = array();
 
-    // create a symmetric relation
     $entity_keys = array(
-      array(
-        'entity_type' => 'node',
-        'entity_id' => $node1->nid,
-      ),
-      array(
-        'entity_type' => 'node',
-        'entity_id' => $node4->nid,
-      )
+      array('entity_type' => 'node', 'entity_id' => $node1->nid),
+      array('entity_type' => 'node', 'entity_id' => $node4->nid),
     );
+    $entity_keys_4 = array(
+      array('entity_type' => 'node', 'entity_id' => $node1->nid),
+      array('entity_type' => 'node', 'entity_id' => $node2->nid),
+      array('entity_type' => 'node', 'entity_id' => $node3->nid),
+      array('entity_type' => 'node', 'entity_id' => $node4->nid),
+    );
+
+    // Create a symmetric relation article 1 -- page 4
     $predicate_symmetric = $this->relation_types['symmetric']['predicate'];
-    $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
-    $relations = relation_query('node', $node4->nid)->execute();
+    $rid_symmetric = $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    // Create a correct directional relation: article 1 -> page 3
+    $entity_keys[1]['entity_id'] = $node3->nid;
+    $entity_keys[1]['r_index'] = 1;
+    $predicate_directional = $this->relation_types['directional']['predicate'];
+    $rid_directional = $this->RelationSaveHelper($predicate_directional, $entity_keys);
+    // Create a 4-ary octopus, nodes 1-4.
+    $predicate_octopus = $this->relation_types['octopus']['predicate'];
+    $rid_octopus = $this->RelationSaveHelper($predicate_octopus, $entity_keys_4);
+
+    // Get relations for node 1, should return 3 relations
+    $relations = relation_query('node', $node1->nid)->execute();
     $count = count($relations);
-    $this->assertEqual(count($relations), 1, $count . ' relation found, should be 1');
-    $relation = reset($relations);
-    $this->assertEqual($relation->entity_keys[0]['entity_id'], $node1->nid, 'Correct entity is related: ' . $relation->entity_keys[0]['entity_id'] . '==' . $node1->nid);
-    $entity_keys[0]['entity_id'] = $node2->nid;
-    $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    $this->assertEqual($count, 3, $count . ' relations found, should be 3');
+    // Check that symmetric relation is correctly related to node 4
+    $this->assertEqual($relations[$rid_symmetric]->entity_keys[1]['entity_id'], $node4->nid, 'Correct entity is related: ' . $relations[$rid_symmetric]->entity_keys[1]['entity_id'] . '==' . $node4->nid);
+
+    // Get number of relations for node 4, should return 2 relations.
+    $count = relation_query('node', $node1->nid)->count()->execute();
+    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
+
+    // Get number of relations for node 2, should return 1 relation.
+    $count = relation_query('node', $node1->nid)->count()->execute();
+    $this->assertEqual($count, 1, $count . ' relation found, should be 1');
+
+    // Get number of relations for node 5, should return 0 relations.
+    $count = relation_query('node', $node1->nid)->count()->execute();
+    $this->assertEqual($count, 0, $count . ' relations found, should be 0');
+
+    // Get relations between entities 1 and 3 (directional, octopus)
+    $relations = relation_query('node', $node1->nid)
+      ->related('node', $node3->nid)
+      ->execute();
+    $count = count($relations);
+    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
+    // Check that we have the correct relations
+    $this->assertEqual(isset($relations[$rid_directional]), 'Got one correct relation.');
+    $this->assertEqual(isset($relations[$rid_octopus]), 'Got a second one.');
+
+    // Get relations between entities 2 and 3 (octopus)
+    $relations = relation_query('node', $node2->nid)
+      ->related('node', $node3->nid)
+      ->execute();
+    $count = count($relations);
+    $this->assertEqual($count, 1, $count . ' relation found, should be 1');
+    // Check that we have the correct relations
+    $this->assertEqual(isset($relations[$rid_octopus]), 'Got one correct relation.');
+
+    // Get relations between entities 2 and 5 (none)
+    $count = relation_query('node', $node2->nid)
+      ->related('node', $node5->nid)
+      ->count()
+      ->execute();
+    $this->assertEqual($count, 0, $count . ' relations found, should be 0');
+
+    // Try deleting the content types.
     $this->drupalGet("admin/structure/relation/manage/$predicate_symmetric/delete");
-    $this->assertRaw(t('The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => 2)), 'Correct number of relations found');
+    $this->assertRaw(t('The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => 1)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
   }
 }
