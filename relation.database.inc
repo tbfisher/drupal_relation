@@ -54,6 +54,8 @@ class RelationQuery {
 
   /**
    * Add a related entity to the query.
+   *
+   * @return RelationQuery
    */
   function related($entity_type, $entity_id, $index = NULL) {
     $this->entityKeys[] = array(
@@ -95,6 +97,8 @@ class RelationQuery {
 
   /**
    * Orders the result set by relation columns.
+   *
+   * @return RelationQuery
    */
   public function order($field, $direction = 'ASC') {
     $this->order[] = array(

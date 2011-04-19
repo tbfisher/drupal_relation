@@ -121,11 +121,13 @@ class RelationAPITestCase extends RelationTestCase {
     // Create a symmetric relation article 1 -- page 4
     $predicate_symmetric = $this->relation_types['symmetric']['predicate'];
     $rid_symmetric = $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    sleep(2);
     // Create a correct directional relation: article 1 -> page 3
     $entity_keys[1]['entity_id'] = $node3->nid;
     $entity_keys[1]['r_index'] = 1;
     $predicate_directional = $this->relation_types['directional']['predicate'];
     $rid_directional = $this->RelationSaveHelper($predicate_directional, $entity_keys);
+    sleep(2);
     // Create a 4-ary octopus, nodes 1-4.
     $predicate_octopus = $this->relation_types['octopus']['predicate'];
     $rid_octopus = $this->RelationSaveHelper($predicate_octopus, $entity_keys_4);
@@ -200,12 +202,14 @@ class RelationAPITestCase extends RelationTestCase {
 
     // Get all relations on node 1 and sort them in reverse created order
     $relations = relation_query('node', $node1->nid)
-      ->order('created','ASC')
+      ->order('created','DESC')
       ->execute();
     $this->assertEqual(array_keys($relations), array(3, 2, 1), 'Got relations 3, 2, 1: ' . implode(', ', array_keys($relations)));
 
     // Try deleting the content types.
     $this->drupalGet("admin/structure/relation/manage/$predicate_symmetric/delete");
-    $this->assertRaw(t('The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => 1)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
+    $num_relations = 1;
+    // See relation_type_delete_confirm() in relation.admin.inc
+    $this->assertRaw(format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => $num_relations)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
   }
 }
