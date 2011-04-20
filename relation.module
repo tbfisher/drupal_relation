@@ -618,10 +618,10 @@ function relation_predicate_autocomplete($string='') {
 function relation_delete_confirm($form, &$form_state, $relation) {
   $form['#relation'] = $relation;
   // Always provide entity id in the same form key as in the entity edit form.
-  $form['rid'] = array('#value' => $relation['rid']);
+  $form['rid'] = array('#type' => 'value', '#value' => $relation->rid);
   return confirm_form($form,
-    t('Are you sure you want to delete relation %rid?', array('%rid' => $relation['rid'])),
-    'relation/' . $relation['rid'],
+    t('Are you sure you want to delete relation %rid?', array('%rid' => $relation->rid)),
+    'relation/' . $relation->rid,
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -634,9 +634,9 @@ function relation_delete_confirm($form, &$form_state, $relation) {
 function relation_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $relation = $form['#relation'];
-    relation_delete($form_state['values']['nid']);
-    watchdog('relation', '@type: deleted %title.', array('@type' => $relation['predicate'], '%title' => $relation['rid']));
-    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation['predicate'], '%title' => $relation['rid'])));
+    relation_delete($form_state['values']['rid']);
+    watchdog('relation', '@type: deleted %title.', array('@type' => $relation->predicate, '%title' => $relation->rid));
+    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation->predicate, '%title' => $relation->rid)));
   }
 
   $form_state['redirect'] = '<front>';
