@@ -453,7 +453,8 @@ function relation_save($relation) {
     foreach ($relation->entity_keys as &$entity_key) {
       $entity_key['rid'] = $rid;
     }
-    // If I do not unset here, PHP breaks. http://bugs.php.net/bug.php?id=53870
+    // $entity_key still holds a reference to the last element of
+    // $relation->entity_keys.
     unset($entity_key);
     $relation->rid = $rid;
 
