@@ -601,16 +601,20 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
 /**
  * Autocomplete page for listing bundles.
  */
-function relation_predicate_autocomplete($string='') {
-  $sql = "SELECT predicate, label FROM {relation_type} WHERE lower(predicate) LIKE lower('%" . $string . "%')";
-
-  $resource = db_query($sql);
-  $results = array();
-  foreach ($resource as $row) {
-    $results[$row->predicate] = $row->label;
+function relation_predicate_autocomplete($string = '') {
+  $like_string = db_like($string) . '%';
+  $result = db_select('relation_type', 'rt')
+    ->fields('rt', array('predicate', 'label'))
+    ->condition(db_or()
+      ->condition('predicate', $like_string, 'LIKE')
+      ->condition('label', $like_string, 'LIKE'))
+    ->range(0, 10)
+    ->execute();
+  $matches = array();
+  foreach ($result as $row) {
+    $matches[$row->predicate] = $row->label;
   }
-  print drupal_json_encode($results);
-  exit();
+  drupal_json_output($matches);
 }
 
 /**
