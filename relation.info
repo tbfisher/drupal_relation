@@ -4,4 +4,5 @@ core = 7.x
 package = Relation
 files[] = relation.database.inc
 files[] = tests/relation.test
++files[] = views/relation_handler_relationship.inc
 configure = admin/structure/relation

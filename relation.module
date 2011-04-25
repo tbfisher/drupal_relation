@@ -28,7 +28,7 @@ function relation_entity_info() {
     'bundles' => array(),
     'view modes' => array(),
   );
-  foreach (relation_get_types(NULL) as $type => $info) {
+  foreach (relation_get_types() as $type => $info) {
     $entities['relation']['bundles'][$type] = (array) $info;
     $entities['relation']['bundles'][$type]['admin'] = array(
       'path' => 'admin/structure/relation/manage/%relation_type',
@@ -224,7 +224,7 @@ function relation_type_load($predicate) {
  */
 function relation_get_types($predicate = NULL) {
   $query = db_select('relation_type', 'rt')
-  ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'min_arity', 'max_arity'));
+    ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'min_arity', 'max_arity'));
   if ($predicate) {
     $query->condition('predicate', $predicate);
   }
@@ -571,15 +571,14 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
     $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $types = relation_get_types($predicate);
-  $relation_bundles = reset($types);
+  $relation_type = relation_get_type($predicate);
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
-    $directional = $relation_bundles->directional;
+    $directional = $relation_type->directional;
     $r_index = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
     $endpoint = ($directional && ($r_index > 0)) ? 'target' : 'source';
     $end_bundles = $endpoint . '_bundles';
-    foreach ($relation_bundles->$end_bundles as $relation_bundle) {
+    foreach ($relation_type->$end_bundles as $relation_bundle) {
       if (!isset($entity_key['entity_bundle'])) {
         $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
         $entity = reset($entities);
@@ -681,3 +680,13 @@ function relation_entity_delete($entity, $entity_type) {
   relation_multiple_delete(array_keys($relations));
   drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function relation_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
