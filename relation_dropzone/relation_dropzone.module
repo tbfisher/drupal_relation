@@ -73,7 +73,7 @@ function relation_dropzone($form, &$form_state) {
     $form_state['relation_entities_options'] = $options;
   }
   if (empty($form_state['relation_entities_options'])) {
-    $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded.');
+    $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the dropzone until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
   }
   $form['predicate'] = array(
