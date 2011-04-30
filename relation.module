@@ -567,8 +567,8 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
   if (count($entity_keys) < $relation_type->min_arity && !$in_progress) {
     $errors[] = t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity));
   }
-  if (count($entity_keys) > $relation_type->max_arity) {
-    $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->max_arity));
+  if (count($entity_keys) > $relation_type->max_arity && $relation_type->max_arity != 0) {
+    $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':max_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
   $relation_type = relation_get_type($predicate);
