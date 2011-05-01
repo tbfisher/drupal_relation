@@ -316,7 +316,11 @@ function relation_page($relation) {
     '#rows' => $items,
   );
 
-  field_attach_prepare_view('relation', array($relation->rid => $relation), 'full');
+  $view_mode = 'full';
+  field_attach_prepare_view('relation', array($relation->rid => $relation), $view_mode);
+  entity_prepare_view('relation', array($relation->rid => $relation));
+  $build['fields'] = field_attach_view('relation', $relation, $view_mode);
+  module_invoke_all('entity_view', $relation, 'relation', $view_mode);
 
   return $build;
 }
@@ -438,6 +442,9 @@ function relation_save($relation) {
   // use time() instead of REQUEST_TIME, because otherwise tests
   // RelationQuery::order() are impossible
   $current_time = time();
+  field_attach_presave('relation', $relation);
+  module_invoke_all('entity_presave', $relation, 'relation');
+  
   if ($relation->is_new) {
     $rid = db_insert('relation')
       ->useDefaults(array('rid'))
@@ -504,9 +511,11 @@ function relation_save($relation) {
 
   if ($relation->is_new) {
     field_attach_insert('relation', $relation);
+    module_invoke_all('entity_insert', $relation);
   }
   else {
     field_attach_update('relation', $relation);
+    module_invoke_all('entity_update', $relation);
   }
 
   return $relation->rid;
@@ -531,9 +540,10 @@ function relation_delete($rid) {
 function relation_multiple_delete($rids) {
   $relations = relation_multiple_load($rids);
   foreach ($relations as $rid => $relation) {
-    field_attach_delete('relation', $relation);
     db_delete('relation')->condition('rid', $rid)->execute();
     db_delete('relation_data')->condition('rid', $rid)->execute();
+    module_invoke_all('entity_delete', $relation, 'relation');
+    field_attach_delete('relation',  $relations);
   }
 }
 
@@ -550,7 +560,7 @@ function relation_multiple_delete($rids) {
  *     up validation.
  *   - r_index: integer index of the entity to be added. This is ignored if
  *     the relation is non-directional. For directional relations, 0 is source,
-*      1 or higher is target.
+ *     1 or higher is target.
  * @param $error
  *   Array of errors to be filled in, passed by reference.
  * @param $in_progress
