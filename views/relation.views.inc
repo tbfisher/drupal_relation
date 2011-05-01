@@ -38,6 +38,7 @@ function relation_views_data_alter(&$data) {
           'title' => t('Relation: @predicate_label (@left <-> @right)', $t_arguments),
           'help' => t('Provides a relationship from @left to @right via the relation @predicate_label', $t_arguments),
           'relationship' => array(
+            'label' => $relation_type->label,
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
             'relationship field' => $entity_infos[$entity_type_left]['entity keys']['id'],
