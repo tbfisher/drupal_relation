@@ -9,7 +9,7 @@ class relation_handler_join extends views_join {
    * Build the SQL for the join this object represents.
    */
   function build_join($select_query, $table, $view_query) {
-    $directional = $this->defition['directional'];
+    $directional = $this->definition['directional'];
     // Join the left table with the entity type to the relation_data table.
     $left = $view_query->get_table_info($this->left_table);
     $entity_type_left = $this->definition['entity_type_left'];
