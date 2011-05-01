@@ -137,7 +137,8 @@ function _relation_stored_entity_keys_list() {
  * Submit handler for the pick button.
  */
 function relation_dropzone_pick($form, &$form_state) {
-  // Nothing to do here..
+  $_SESSION['relation_entity_keys'][] = $form_state['pick'];
+  $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
 }
 
 /**
@@ -146,8 +147,10 @@ function relation_dropzone_pick($form, &$form_state) {
 function relation_dropzone_validate($form, &$form_state) {
   $predicate = $form_state['values']['predicate'];
   $errors = array();
+  $current = array();
+  $in_progress = FALSE;
 
-  if ($form_state['clicked_button']['#value']=='Pick') {
+  if ($form_state['clicked_button']['#value'] == t('Pick')) {
     $entity_key = $form_state['values']['entity_key'];
     // Here we get (entity_type, entity_id).
     $break = explode(':', $entity_key);
@@ -158,22 +161,19 @@ function relation_dropzone_validate($form, &$form_state) {
     // Indexes are added in ascending order, starting from 0.
     $_SESSION += array('relation_entity_keys' => array());
     $next_index = count($_SESSION['relation_entity_keys']);
-    $pick = array(
+    // If validation succeeds we will add this in the submit handler.
+    $form_state['pick'] = array(
       'entity_type' => $break[0],
       'entity_id' => $break[1],
       'entity_bundle' => $entity_key_array[0],
       'r_index' => $next_index,
       'entity_key' => $entity_key,
     );
-    relation_validate($predicate, array_merge($_SESSION['relation_entity_keys'], array($pick)), $errors, TRUE);
-    if (empty($errors)) {
-      $_SESSION['relation_entity_keys'][] = $pick;
-      $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
-    }
+    $current[] = $form_state['pick'];
+    $in_progress = TRUE;
   }
-  if ($form_state['clicked_button']['#value']=='Create relation') {
-    relation_validate($predicate, $_SESSION['relation_entity_keys'], $errors);
-  }
+
+  relation_validate($predicate, array_merge($_SESSION['relation_entity_keys'], $current), $errors, $in_progress);
   foreach ($errors as $error) {
     form_set_error('predicate', $error);
   }
@@ -194,7 +194,7 @@ function relation_dropzone_save($form, $form_state) {
       relation_dropzone_clear($form, $form_state);
     }
     else {
-    drupal_set_message('Relation not created', 'error');
+      drupal_set_message('Relation not created', 'error');
     }
   }
 }

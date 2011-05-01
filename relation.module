@@ -571,7 +571,7 @@ function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FA
     $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':max_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
-  $relation_type = relation_get_type($predicate);
+  $relation_type = relation_type_load($predicate);
   foreach ($entity_keys as $entity_key) {
     $acceptable = FALSE;
     $directional = $relation_type->directional;
