@@ -12,6 +12,7 @@ function relation_views_data_alter(&$data) {
       $entity_tables[$entity_type] = $entity_info['base table'];
     }
   }
+
   // Build the relations between the different tables.
   $types = relation_get_types();
   foreach ($types as $predicate => $relation_type) {
@@ -34,7 +35,7 @@ function relation_views_data_alter(&$data) {
           '@predicate_label' => $relation_type->label,
         );
         $data[$base_table_left]['relation_' . $predicate . '_' . $entity_type_right] = array(
-          'title' => t('Relation: @predicate: (@left <-> @right)', $t_arguments),
+          'title' => t('Relation: @predicate_label (@left <-> @right)', $t_arguments),
           'help' => t('Provides a relationship from @left to @right via the relation @predicate_label', $t_arguments),
           'relationship' => array(
             'base' => $base_table_right,
@@ -50,5 +51,4 @@ function relation_views_data_alter(&$data) {
       }
     }
   }
-  dsm($data);
 }
