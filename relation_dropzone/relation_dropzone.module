@@ -40,6 +40,9 @@ function relation_dropzone_entity_load($entities, $type) {
   }
   if (!isset($enabled)) {
     $enabled = -1;
+    // This can fire entity_load() so we need to protect from recursion: will
+    // try to get the theme from the menu which will, in turn, load the objects
+    // in the router path.
     drupal_theme_initialize();
     $block_info = _block_load_blocks();
     $enabled = FALSE;
@@ -119,13 +122,16 @@ function relation_dropzone($form, &$form_state) {
         '#ajax'  => array(
           'wrapper' => 'relation_dropzone_reload',
           'callback' => '_relation_dropzone_ajax',
-         ),
+        ),
       );
     }
   }
   return $form;
 }
 
+/**
+ * Trivial AJAX helper.
+ */
 function _relation_dropzone_ajax($form) {
   return $form['reload'];
 }
