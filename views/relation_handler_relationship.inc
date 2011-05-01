@@ -28,6 +28,6 @@ class relation_handler_join extends views_join {
 
     // Join the right table to the relation_data table.
     $conditions = "%alias.$this->field = $r.entity_id";
-    $select_query->innerJoin($this->table, $table['alias'], $conditions);
+    $select_query->innerJoin($table['table'], $table['alias'], $conditions);
   }
 }
