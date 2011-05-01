@@ -46,6 +46,7 @@ function relation_views_data_alter(&$data) {
             'predicate' => $predicate,
             'entity_type_left' => $entity_type_left,
             'entity_type_right' => $entity_type_right,
+            'directional' => $relation_type->directional,
             'join_handler' => 'relation_handler_join',
           ),
         );
