@@ -375,7 +375,6 @@ class RelationEntityController extends DrupalDefaultEntityController {
       $query->addField('rd', 'entity_id', 'entity_id');
       $query->addField('rd', 'r_index', 'r_index');
       $query->condition('r.rid', $id);
-      $query->condition('r.arity', variable_get('relation_max_loadable', 50), '<');
       $results = $query->execute();
       $rows = $results->fetchAll();
       foreach ($rows as $row) {
@@ -690,4 +689,3 @@ function relation_views_api() {
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
 }
-
