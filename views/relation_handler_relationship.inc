@@ -17,12 +17,14 @@ class relation_handler_join extends views_join {
     if ($directional) {
       $conditions .= " AND %alias.r_index = 0";
     }
-    $l = $left_join_alias = $select_query->innerJoin("relation_data", NULL, $conditions);
+    // Left join alias.
+    $l = $select_query->innerJoin("relation_data", NULL, $conditions);
 
     // Execute a self-join.
     $entity_type_right = $this->definition['entity_type_right'];
     $conditions = "%alias.rid = $l.rid AND %alias.r_index != $l.r_index AND %alias.entity_type = '$entity_type_right'";
-    $r = $right_join_alias = $select_query->innerJoin("relation_data", NULL, $conditions);
+    // Right join alias.
+    $r = $select_query->innerJoin("relation_data", NULL, $conditions);
 
     // Join the right table to the relation_data table.
     $conditions = "%alias.$this->field = $r.entity_id";
