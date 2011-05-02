@@ -117,8 +117,10 @@ function relation_field_formatter_info() {
 function relation_field_widget_info() {
   return array(
     'relation_endpoint' => array(
-
-    )
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      ),
+    ),
   );
 }
 
@@ -126,7 +128,7 @@ function relation_field_formatter_view($entity_type, $entity, $field, $instance,
   return _relation_field_create_html_table($items);
 }
 
-function hook_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function relation_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   foreach ($items as $delta => $item) {
     foreach (array('entity_type', 'entity_id') as $column) {
       $element[$delta][$column] = array(
