@@ -60,7 +60,11 @@ function relation_field_validate($entity_type, $entity, $field, $instance, $lang
   }
 }
 
+/**
+ * Implements hook_field_presave().
+ */
 function relation_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  // We need r_index here because EntityFieldQuery can't query on deltas.
   foreach ($items as $delta => &$item) {
     $item['r_index'] = $delta;
   }
@@ -81,14 +85,17 @@ function relation_field_is_empty($item, $field) {
   return FALSE;
 }
 
-function _relation_field_create_html_table($items) {
+/**
+ * Helper to create an HTML table representing a relation.
+ */
+function _relation_field_create_html_table($endpoints) {
   $list_items = array();
-  foreach ($items as $delta => $item) {
-    $entities = entity_load($item['entity_type'], array($item['entity_id']));
+  foreach ($endpoints as $delta => $endpoint) {
+    $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
     $entity = reset($entities);
-    $label = entity_label($item['entity_type'], $entity);
-    $uri = entity_uri($item['entity_type'], $entity);
-    $list_items[$delta] = array(l($label, $uri['path'], $uri['options']), $item['entity_type']);
+    $label = entity_label($endpoint['entity_type'], $entity);
+    $uri = entity_uri($endpoint['entity_type'], $entity);
+    $list_items[$delta] = array(l($label, $uri['path'], $uri['options']), $endpoint['entity_type']);
   }
   $headers = array('Entity', 'Entity_type');
   return array(
