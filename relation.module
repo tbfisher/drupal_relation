@@ -85,8 +85,8 @@ function relation_menu() {
   $items['relation/%relation/edit'] = array(
     'title' => 'Edit',
     'access arguments' => array('edit relations'),
-    'page callback' => 'relation_edit',
-    'page arguments' => array(1),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('relation_edit_form', 1),
     'type' => MENU_LOCAL_TASK,
   );
   $items['relation/%relation/delete'] = array(
@@ -327,12 +327,23 @@ function relation_page_title($relation) {
 }
 
 /**
- * Relation edit page.
+ * Relation edit form.
  */
-function relation_edit($relation) {
-  $build = array();
-  field_attach_form('relation', $relation, $build, $form_state = array());
-  return $build;
+function relation_edit_form($form, &$form_state, $relation) {
+  $form_state['relation'] = $relation;
+  field_attach_form('relation', $relation, $form, $form_state);
+  $form['actions']['#weight'] = 100;
+  $form['actions']['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  return $form;
+}
+
+function relation_edit_form_submit($form, $form_state) {
+  $relation = $form_state['relation'];
+  entity_form_submit_build_entity('relation', $relation, $form, $form_state);
+  relation_save($relation);
 }
 
 /**
@@ -381,7 +392,7 @@ function relation_save($relation) {
   field_attach_presave('relation', $relation);
   module_invoke_all('entity_presave', $relation, 'relation');
 
-  if ($relation->is_new) {
+  if (!empty($relation->is_new)) {
     $relation->rid = db_insert('relation')
       ->useDefaults(array('rid'))
       ->fields(array(
@@ -428,7 +439,7 @@ function relation_save($relation) {
       ->execute();
   }
 
-  if ($relation->is_new) {
+  if (!empty($relation->is_new)) {
     field_attach_insert('relation', $relation);
     module_invoke_all('entity_insert', $relation);
   }

@@ -8,6 +8,7 @@ function relation_field_info() {
       'default_widget' => 'relation_endpoint',
       'default_formatter' => 'relation_endpoint',
       'entity types' => array('relation'),
+      'no_ui' => TRUE,
     ),
   );
 }
@@ -109,14 +110,17 @@ function _relation_field_create_html_table($endpoints) {
 function relation_field_formatter_info() {
   return array(
     'relation_endpoint' => array(
-
-    )
+      'label' => t('Endpoints table'),
+      'field types' => array('relation_endpoint'),
+    ),
   );
 }
 
 function relation_field_widget_info() {
   return array(
     'relation_endpoint' => array(
+      'label' => t('Endpoints table'),
+      'field types' => array('relation_endpoint'),
       'behaviors' => array(
         'multiple values' => FIELD_BEHAVIOR_CUSTOM,
       ),
@@ -139,4 +143,17 @@ function relation_field_widget_form(&$form, &$form_state, $field, $instance, $la
   }
   $element['link_list'] = _relation_field_create_html_table($items);
   return $element;
+}
+
+/**
+ * Implements hook_form_field_ui_field_overview_form_alter().
+ */
+function relation_form_field_ui_field_overview_form_alter(&$form, $form_state) {
+  // Deleting endpoints would make the module useless.
+  if ($form['#entity_type'] == 'relation') {
+    $form['fields']['endpoints']['delete'] = array(
+      '#type' => 'markup',
+      '#markup' => '&nbsp;',
+    );
+  }
 }
