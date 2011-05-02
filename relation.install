@@ -6,6 +6,27 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function relation_install() {
+  // First, add relation to the module list.
+  $module_list = module_list();
+  $module_list['relation']['filename'] = dirname(__FILE__)  . '/relation.module';
+  module_list(TRUE, FALSE, FALSE, $module_list);
+  // Next, clear the module_implements() cache.
+  module_implements('', FALSE, TRUE);
+  // Finally, clear the field info cache. This way we can create a field our
+  // own module defines.
+  field_info_cache_clear();
+  $field = array(
+    'field_name' => 'endpoints',
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'type' => 'relation_endpoint'
+  );
+  field_create_field($field);
+}
+
+/**
  * Implements hook_schema().
  */
 function relation_schema() {
@@ -111,44 +132,6 @@ function relation_schema() {
       'rid_vid' => array('rid', 'vid'),
     ),
   );
-  $schema['relation_data'] = array(
-    'description' => 'Stores information about relations between entities',
-    'fields' => array(
-      'rid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'Unique relation id (entity id). Index of relation table.',
-      ),
-      'entity_type' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'Entity_type of this relation end-point.',
-      ),
-      'entity_id' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'Entity_id of this relation end-point.',
-      ),
-      'r_index' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'The index of this row in this relation. The highest index in the relation is stored as "arity" in the relation table.',
-      ),
-    ),
-    'primary key' => array('rid', 'entity_type', 'entity_id', 'r_index'),
-    'indexes' => array(
-      'rid' => array('rid', 'r_index'),
-      'entity' => array('entity_type', 'entity_id'),
-    ),
-  );
   $schema['relation_type'] = array(
     'description' => 'Relation settings.',
     'fields' => array(
@@ -230,4 +213,39 @@ function relation_schema() {
     ),
   );
  return $schema;
+}
+
+/**
+ * Implements hook_field_schema().
+ */
+function relation_field_schema() {
+  $columns = array(
+    'entity_type' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+      'description' => 'Entity_type of this relation end-point.',
+    ),
+    'entity_id' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      'description' => 'Entity_id of this relation end-point.',
+    ),
+    'r_index' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      'description' => 'The index of this row in this relation. The highest index in the relation is stored as "arity" in the relation table.',
+    ),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => array(
+      'entity' => array('entity_type', 'entity_id'),
+    ),
+  );
 }

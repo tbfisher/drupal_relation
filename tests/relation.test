@@ -60,29 +60,24 @@ class RelationTestCase extends DrupalWebTestCase {
   /**
    * Validates and saves relations, and checks the process.
    */
-  function RelationSaveHelper($predicate, $entity_keys) {
-    relation_validate($predicate, $entity_keys, $errors);
-    if ($errors) {
-      foreach ($errors as $error) {
-        $this->fail($error);
-      }
-    }
-    else {
-      $this->pass('Validation passed');
-    }
-    $rid = relation_create($predicate, $entity_keys);
+  function RelationSaveHelper($predicate, $endpoints) {
+    $relation = new stdClass();
+    $relation->predicate = $predicate;
+    $relation->endpoints[LANGUAGE_NONE] = $endpoints;
+    field_attach_validate('relation', $relation);
+    $rid = relation_save($relation);
     $relation = relation_load($rid);
-    $count = count($relation->entity_keys);
-    $this->assertEqual($count, count($entity_keys), 'There are two entities: ' . $count);
-    $this->assertEqual($relation->arity, count($entity_keys), 'Arity is 2: ' . $relation->arity);
+    $count = count($relation->endpoints[LANGUAGE_NONE]);
+    $this->assertEqual($count, count($endpoints), 'There are two entities: ' . $count);
+    $this->assertEqual($relation->arity, count($endpoints), 'Arity is 2: ' . $relation->arity);
     $this->assertEqual($relation->predicate, $predicate, 'Predicate is correct: ' . $relation->predicate);
-    foreach ($entity_keys as $entity_key) {
-      $need_ids[$entity_key['entity_id']] = TRUE;
+    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+      $need_ids[$endpoint['entity_id']] = TRUE;
     }
-    foreach ($relation->entity_keys as $entity_key) {
-      $this->assertEqual($entity_key['entity_type'], 'node', 'The entity type is node: ' . $entity_key['entity_type']);
-      $this->assertTrue(isset($need_ids[$entity_key['entity_id']]), 'The entity ID is correct: ' . $need_ids[$entity_key['entity_id']]);
-      unset($need_ids[$entity_key['entity_id']]);
+    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+      $this->assertEqual($endpoint['entity_type'], 'node', 'The entity type is node: ' . $endpoint['entity_type']);
+      $this->assertTrue(isset($need_ids[$endpoint['entity_id']]), 'The entity ID is correct: ' . $need_ids[$endpoint['entity_id']]);
+      unset($need_ids[$endpoint['entity_id']]);
     }
     $this->assertFalse($need_ids, 'All ids found');
     return $rid;
@@ -114,11 +109,11 @@ class RelationAPITestCase extends RelationTestCase {
 
     $this->createRelationTypes();
 
-    $entity_keys = array(
+    $endpoints = array(
       array('entity_type' => 'node', 'entity_id' => $node1->nid),
       array('entity_type' => 'node', 'entity_id' => $node4->nid),
     );
-    $entity_keys_4 = array(
+    $endpoints_4 = array(
       array('entity_type' => 'node', 'entity_id' => $node1->nid),
       array('entity_type' => 'node', 'entity_id' => $node2->nid),
       array('entity_type' => 'node', 'entity_id' => $node3->nid),
@@ -127,25 +122,24 @@ class RelationAPITestCase extends RelationTestCase {
 
     // Create a symmetric relation article 1 -- page 4
     $predicate_symmetric = $this->relation_types['symmetric']['predicate'];
-    $rid_symmetric = $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    $rid_symmetric = $this->RelationSaveHelper($predicate_symmetric, $endpoints);
     sleep(2);
     // Create a correct directional relation: article 1 -> page 3
-    $entity_keys[1]['entity_id'] = $node3->nid;
-    $entity_keys[1]['r_index'] = 1;
+    $endpoints[1]['entity_id'] = $node3->nid;
+    $endpoints[1]['r_index'] = 1;
     $predicate_directional = $this->relation_types['directional']['predicate'];
-    $rid_directional = $this->RelationSaveHelper($predicate_directional, $entity_keys);
+    $rid_directional = $this->RelationSaveHelper($predicate_directional, $endpoints);
     sleep(2);
     // Create a 4-ary octopus, nodes 1-4.
     $predicate_octopus = $this->relation_types['octopus']['predicate'];
-    $rid_octopus = $this->RelationSaveHelper($predicate_octopus, $entity_keys_4);
+    $rid_octopus = $this->RelationSaveHelper($predicate_octopus, $endpoints_4);
 
     // Get relations for node 1, should return 3 relations
-    $relations = relation_query('node', $node1->nid)
-      ->execute();
+    $relations = entity_load('relation', array_keys(relation_query('node', $node1->nid)->execute()));
     $count = count($relations);
     $this->assertEqual($count, 3, $count . ' relations found for nid=1, should be 3');
     // Check that symmetric relation is correctly related to node 4
-    $this->assertEqual($relations[$rid_symmetric]->entity_keys[1]['entity_id'], $node4->nid, 'Correct entity is related: ' . $relations[$rid_symmetric]->entity_keys[1]['entity_id'] . '==' . $node4->nid);
+    $this->assertEqual($relations[$rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'], $node4->nid, 'Correct entity is related: ' . $relations[$rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'] . '==' . $node4->nid);
 
     // Get number of relations for node 4, should return 2 relations.
     $count = relation_query('node', $node4->nid)
@@ -167,8 +161,7 @@ class RelationAPITestCase extends RelationTestCase {
     $this->assertEqual($count, 0, $count . ' relations found, should be 0');
 
     // Get directed relations for node 3 using index, should return >=1 relation.
-    $relations = relation_query('node', $node3->nid)
-      ->index(1)
+    $relations = relation_query('node', $node3->nid, 1)
       ->execute();
     $count = count($relations);
     $this->assertTrue(isset($relations[$rid_directional]), 'Got the correct directional relation for nid=3.');
@@ -185,11 +178,10 @@ class RelationAPITestCase extends RelationTestCase {
     // Get relations for node 1 (symmetric, directional, octopus), limit to
     // octopus with predicate()
     $relations = relation_query('node', $node1->nid)
-      ->predicate(array(
+      ->propertyCondition('predicate', array(
         $this->relation_types['directional']['predicate'],
         $this->relation_types['octopus']['predicate'],
-        )
-      )
+      ))
       ->execute();
     $count = count($relations);
     $this->assertEqual($count, 2, $count . ' relations found, should be 2');
@@ -209,7 +201,7 @@ class RelationAPITestCase extends RelationTestCase {
 
     // Get all relations on node 1 and sort them in reverse created order
     $relations = relation_query('node', $node1->nid)
-      ->order('created','DESC')
+      ->propertyOrderBy('created','DESC')
       ->execute();
     $this->assertEqual(array_keys($relations), array(3, 2, 1), 'Got relations 3, 2, 1: ' . implode(', ', array_keys($relations)));
 

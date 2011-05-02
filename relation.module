@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/relation.field.inc';
+
 /**
  * @file
  * Describes relations between entities.
@@ -14,7 +16,7 @@ function relation_entity_info() {
     'base table' => 'relation',
     'revision table' => 'relation_revision',
     'fieldable' => TRUE,
-    'controller class' => 'RelationEntityController',
+    'controller class' => 'DrupalDefaultEntityController',
     'uri callback' => 'relation_uri',
     'entity keys' => array(
       'id' => 'rid',
@@ -193,7 +195,13 @@ function relation_type_save($record, $write_record_keys = array()) {
     }
   }
   $query->execute();
-  entity_info_cache_clear();
+  $instance = array(
+    'field_name' => 'endpoints',
+    'entity_type' => 'relation',
+    'bundle' => $predicate,
+  );
+  field_create_instance($instance);
+  field_info_cache_clear();
 }
 
 /**
@@ -265,13 +273,10 @@ function relation_type_delete($predicate) {
  *   - predicate: relation bundle machine name.
  *   - arity: the number of entities in the relation
  *   - rdf_mapping: not yet implemented (empty array)
- *   - entity_keys: Array of keys for entities that make up the relation.
- *     Keys are arrays are of the form:
+ *   - endpoints: Field holding the entities that make up the relation.
+ *     Field columns are:
  *     - entity_type: The type of the entity (eg. node).
  *     - entity_id: Numeric entity ID.
- *     - r_index: Numeric index of the entity in the relation. Always 0 for
- *       non-directional relations, in directional relations this is 0 for
- *       source entities, and 1 for target entities.
  */
 function relation_load($rid, $vid = NULL, $reset = FALSE) {
   $conditions = (isset($vid) ? array('vid' => $vid) : array());
@@ -301,27 +306,16 @@ function relation_multiple_load($rids, $conditions = array(), $reset = FALSE) {
  * @TODO: implement directionality, possibly give more details on entities?
  */
 function relation_page($relation) {
-  foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
-    $entity = reset($entities);
-    $label = entity_label($entity_key['entity_type'], $entity);
-    $uri = entity_uri($entity_key['entity_type'], $entity);
-    $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
-  }
-  $headers = array('Entity', 'Entity_type');
-  $build['link_list'] = array(
-    '#theme' => 'table',
-    '#caption' => 'Related Entities',
-    '#header' => $headers,
-    '#rows' => $items,
-  );
-
   $view_mode = 'full';
-  field_attach_prepare_view('relation', array($relation->rid => $relation), $view_mode);
-  entity_prepare_view('relation', array($relation->rid => $relation));
-  $build['fields'] = field_attach_view('relation', $relation, $view_mode);
-  module_invoke_all('entity_view', $relation, 'relation', $view_mode);
+  $entity_type = 'relation';
+  $entity = $relation;
+  $entities = array($relation->rid => $relation);
 
+  field_attach_prepare_view($entity_type, $entities, $view_mode);
+  entity_prepare_view($entity_type, $entities);
+  $build = field_attach_view($entity_type, $entity, $view_mode);
+  module_invoke_all('entity_view', $entity, $entity_type, $view_mode);
+  drupal_alter('entity_view', $build, $entity_type);
   return $build;
 }
 
@@ -336,90 +330,9 @@ function relation_page_title($relation) {
  * Relation edit page.
  */
 function relation_edit($relation) {
-  foreach ($relation->entity_keys as $r_index => $entity_key) {
-    $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
-    $entity = reset($entities);
-    $label = entity_label($entity_key['entity_type'], $entity);
-    $uri = entity_uri($entity_key['entity_type'], $entity);
-    $items[$r_index] = array(l($label, $uri['path'], $uri['options']), $entity_key['entity_type']);
-  }
-  $headers = array('Entity', 'Entity_type');
-  $build['link_list'] = array(
-    '#theme' => 'table',
-    '#caption' => 'Related Entities',
-    '#header' => $headers,
-    '#rows' => $items,
-  );
-
+  $build = array();
   field_attach_form('relation', $relation, $build, $form_state = array());
-
   return $build;
-}
-
-/**
- * Controller class for entity relations.
- *
- * Extends the DrupalDefaultEntityController class. The buildQuery method is
- * overriden to add a join from the relation table to the relation_data table.
- */
-class RelationEntityController extends DrupalDefaultEntityController {
-
-  /**
-   * Adds related entity data to relation. Each entity is saved as an
-   * (entity_type, entity_id, r_index) triple.
-   */
-  protected function attachLoad(&$queried_entities, $revision_id = FALSE) {
-    parent::attachLoad($queried_entities, $revision_id);
-    foreach ($queried_entities as $id => $entity) {
-      $query = db_select('relation', 'r');
-      $query->innerJoin('relation_data', 'rd', 'r.rid = rd.rid');
-      $query->addField('r', 'rid');
-      $query->addField('r', 'predicate');
-      $query->addField('rd', 'entity_type', 'entity_type');
-      $query->addField('rd', 'entity_id', 'entity_id');
-      $query->addField('rd', 'r_index', 'r_index');
-      $query->condition('r.rid', $id);
-      $results = $query->execute();
-      $rows = $results->fetchAll();
-      foreach ($rows as $row) {
-        $queried_entities[$id]->entity_keys[$row->r_index] = array(
-          'entity_type' => $row->entity_type,
-          'entity_id' => $row->entity_id,
-          'r_index' => $row->r_index,
-        );
-      }
-    }
-  }
-}
-
-/**
- * Creates a relation from a predicate and a set of entity keys.
- *
- * @param $predicate
- *   The relation type (bundle) of the relation to be created.
- * @param $entity_keys
- *   A list of (entity_type, entity_id, index) pairs.
- *
- * @return
- *   The new relation id.
- */
-function relation_create($predicate, $entity_keys) {
-  global $user;
-  $relation = new stdClass();
-  $relation->is_new = TRUE;
-  $relation->predicate = $predicate;
-  $relation->uid = $user->uid;
-  $relation->entity_keys = array();
-  foreach ($entity_keys as $index => $entity_key) {
-    $relation->entity_keys[$index] = array(
-      'rid' => NULL,
-      'entity_type' => $entity_key['entity_type'],
-      'entity_id'   => $entity_key['entity_id'],
-      'r_index'     => $index,
-    );
-  }
-  $rid = relation_save($relation);
-  return $rid;
 }
 
 /**
@@ -433,20 +346,27 @@ function relation_create($predicate, $entity_keys) {
  *   The new relation id.
  */
 function relation_save($relation) {
+  global $user;
   $errors = array();
-  relation_validate($relation->predicate, $relation->entity_keys, $errors);
-  if ($errors) {
+  $relation->is_new = empty($relation->rid);
+  if (!isset($relation->uid)) {
+    $relation->uid = $user->uid;
+  }
+  try {
+    field_attach_validate('relation', $relation);
+  }
+  catch (FieldValidationException $e) {
     return FALSE;
   }
-  $relation->arity = count($relation->entity_keys);
+  $relation->arity = count($relation->endpoints[LANGUAGE_NONE]);
   // use time() instead of REQUEST_TIME, because otherwise tests
   // RelationQuery::order() are impossible
   $current_time = time();
   field_attach_presave('relation', $relation);
   module_invoke_all('entity_presave', $relation, 'relation');
-  
+
   if ($relation->is_new) {
-    $rid = db_insert('relation')
+    $relation->rid = db_insert('relation')
       ->useDefaults(array('rid'))
       ->fields(array(
         'predicate' => $relation->predicate,
@@ -456,21 +376,6 @@ function relation_save($relation) {
         'changed'   => $current_time,
       ))
       ->execute();
-    foreach ($relation->entity_keys as &$entity_key) {
-      $entity_key['rid'] = $rid;
-    }
-    // $entity_key still holds a reference to the last element of
-    // $relation->entity_keys.
-    unset($entity_key);
-    $relation->rid = $rid;
-
-    // Add relation data - don't need to change this for new relations..
-    $query = db_insert('relation_data')
-      ->fields(array('rid', 'entity_type', 'entity_id', 'r_index'));
-    foreach ($relation->entity_keys as $entity_key) {
-      $query->values($entity_key);
-    }
-    $query->execute();
     $relation->revision = TRUE;
   }
   if (!empty($relation->revision)) {
@@ -502,11 +407,9 @@ function relation_save($relation) {
       ->condition('rid', $relation->rid)
       ->fields(array(
         'uid'       => $relation->uid,
-        'created'   => $relation->created,
         'changed'   => $current_time,
         ))
       ->execute();
-    // we don't update the relation_data.
   }
 
   if ($relation->is_new) {
@@ -541,68 +444,8 @@ function relation_multiple_delete($rids) {
   $relations = relation_multiple_load($rids);
   foreach ($relations as $rid => $relation) {
     db_delete('relation')->condition('rid', $rid)->execute();
-    db_delete('relation_data')->condition('rid', $rid)->execute();
     module_invoke_all('entity_delete', $relation, 'relation');
     field_attach_delete('relation',  $relations);
-  }
-}
-
-/**
- * Validates relations against relation bundle settings.
- *
- * @param $predicate
- *   Relation type machine name (predicate).
- * @param $entity_keys
- *   An array of entity key arrays of the form:
- *   - entity_type: type of the entity to be added to the relation (eg. node)
- *   - entity_id: numerical id of the entity to be added to the relation.
- *   - entity_bundle: the bundle of the entity. Optional. Specifying it speeds
- *     up validation.
- *   - r_index: integer index of the entity to be added. This is ignored if
- *     the relation is non-directional. For directional relations, 0 is source,
- *     1 or higher is target.
- * @param $error
- *   Array of errors to be filled in, passed by reference.
- * @param $in_progress
- *   If TRUE, the relation is in progress so minimum arity is not checked.
- */
-function relation_validate($predicate, $entity_keys, &$errors, $in_progress = FALSE) {
-  $relation_type = relation_type_load($predicate);
-  // Check that predicate exists.
-  if (!$relation_type) {
-    $errors[] = t("The !predicate relation type does not exist!", array('!predicate' => $predicate));
-  }
-  // Check that arity is within acceptable bounds.
-  if (count($entity_keys) < $relation_type->min_arity && !$in_progress) {
-    $errors[] = t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $predicate, ':min_arity' => $relation_type->min_arity));
-  }
-  if ($relation_type->max_arity && count($entity_keys) > $relation_type->max_arity) {
-    $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $predicate, ':max_arity' => $relation_type->max_arity));
-  }
-  //Check that each entity is has acceptable bundle type and index.
-  $relation_type = relation_type_load($predicate);
-  foreach ($entity_keys as $entity_key) {
-    $acceptable = FALSE;
-    $directional = $relation_type->directional;
-    $r_index = isset($entity_key['r_index']) ? $entity_key['r_index'] : 0;
-    $endpoint = ($directional && ($r_index > 0)) ? 'target' : 'source';
-    $end_bundles = $endpoint . '_bundles';
-    foreach ($relation_type->$end_bundles as $relation_bundle) {
-      if (!isset($entity_key['entity_bundle'])) {
-        $entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
-        $entity = reset($entities);
-        list (, , $entity_key['entity_bundle']) = entity_extract_ids($entity_key['entity_type'], $entity);
-      }
-      $relation_bundle_array = explode(':', $relation_bundle, 2);
-      if (($relation_bundle == $entity_key['entity_type'] . ':' . $entity_key['entity_bundle']) || (($entity_key['entity_type'] == $relation_bundle_array[0]) && ($relation_bundle_array[1] == '*'))) {
-        $acceptable = TRUE;
-        break;
-      }
-    }
-    if (!$acceptable) {
-      $endpoint = $relation_type->directional ? $endpoint . ' endpoints' : 'an endpoint';
-      $errors[] = t("The <em>:predicate</em> relation type does not allow :bundle entities as $endpoint.", array(':predicate' => $predicate, ':bundle' => $entity_key['entity_bundle']));
-    }
   }
 }
 
@@ -672,20 +515,20 @@ function relation_uri($relation) {
  * @param $entity_id
  *   The entity id of one of the endpoints.
  *
+ *
  * @return RelationQuery
  *   The query object itself.
  */
-function relation_query($entity_type  = NULL, $entity_id = NULL) {
-  return new RelationQuery($entity_type, $entity_id);
+function relation_query($entity_type  = NULL, $entity_id = NULL, $index = NULL) {
+  return new RelationQuery($entity_type, $entity_id, $index);
 }
 
 /**
  * Implements hook_entity_delete.
  */
 function relation_entity_delete($entity, $entity_type) {
-  list($id, , ) = entity_extract_ids($entity_type, $entity);
-  $relations = relation_query($entity_type, $id)
-    ->execute();
+  list($id) = entity_extract_ids($entity_type, $entity);
+  $relations = relation_query($entity_type, $id)->execute();
   relation_multiple_delete(array_keys($relations));
   drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
 }

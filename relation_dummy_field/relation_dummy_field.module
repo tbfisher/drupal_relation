@@ -66,17 +66,17 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   foreach ($items as $delta => $item) {
     $links = array();
-    foreach ($item->entity_keys as $r_index => $entity_key) {
-      $related_entities = entity_load($entity_key['entity_type'], array($entity_key['entity_id']));
+    foreach ($item->endpoints[LANGUAGE_NONE] as $endpoint) {
+      $related_entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
       $related_entity = reset($related_entities);
-      if ($entity_key['entity_type'] == $entity_type && $entity_key['entity_id'] == $entity_id) {
+      if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $entity_id) {
         $link = array();
       }
       else {
-        $link = entity_uri($entity_key['entity_type'], $related_entity);
+        $link = entity_uri($endpoint['entity_type'], $related_entity);
         $link['href'] = $link['path'];
       }
-      $link['title'] = entity_label($entity_key['entity_type'], $related_entity);
+      $link['title'] = entity_label($endpoint['entity_type'], $related_entity);
       $links[] = $link;
     }
     $uri = entity_uri('relation', $item);
@@ -88,6 +88,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
       '#links' => $links,
     );
   }
+
   return $element;
 }
 
@@ -96,6 +97,8 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
  */
 function relation_dummy_field_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
   foreach ($entities as $id => $entity) {
-    $items[$id] = array_values(relation_query($entity_type, $id)->execute());;
+    $relation_ids = array_keys(relation_query($entity_type, $id)->execute());
+    // Who knows why but field does not like if the delta does not start at 0...
+    $items[$id] = $relation_ids ? array_values(entity_load('relation', $relation_ids)) : array();
   }
 }

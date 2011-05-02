@@ -194,7 +194,10 @@ function relation_type_delete_confirm($form, &$form_state, $predicate) {
   $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $predicate->label));
   $caption = '';
 
-  $num_relations = relation_query()->predicate($predicate->predicate)->count()->execute();
+  $num_relations = relation_query()
+    ->propertyCondition('predicate', $predicate->predicate)
+    ->count()
+    ->execute();
   if ($num_relations) {
     $caption .= '<p>' . format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $predicate->label, '@count' => $num_relations)) . '</p>';
   }

@@ -75,7 +75,7 @@ class RelationDummyFieldTestCase extends RelationTestCase {
       ),
     );
     field_create_instance($instance);
-    $this->drupalGet("node/$node1->nid");
+    $this->drupalGet("node/$node1->nid", array('query' => array('debug' => 1)));
     // As we have asserted node2 title not being on the page the only way this
     // click can succeed if the field formatter put it there.
     $this->clickLink($node2->title);
