@@ -336,6 +336,27 @@ function relation_edit($relation) {
 }
 
 /**
+ * Creates a relation from a predicate and a set of endpoints.
+ *
+ * @param $predicate
+ *   The relation type (bundle) of the relation to be created.
+ * @param $endpoints
+ *   A list of endpoints. Each endpoint is an associate array
+ *
+ * @return
+ *   The new relation id.
+ */
+function relation_create($predicate, $endpoints) {
+  global $user;
+  $relation = new stdClass();
+  $relation->is_new = TRUE;
+  $relation->predicate = $predicate;
+  $relation->uid = $user->uid;
+  $relation->endpoints[LANGUAGE_NONE] = $endpoints;
+  return relation_save($relation);
+}
+
+/**
  * Saves a relation.
  *
  * @param $relation
@@ -346,12 +367,7 @@ function relation_edit($relation) {
  *   The new relation id.
  */
 function relation_save($relation) {
-  global $user;
   $errors = array();
-  $relation->is_new = empty($relation->rid);
-  if (!isset($relation->uid)) {
-    $relation->uid = $user->uid;
-  }
   try {
     field_attach_validate('relation', $relation);
   }
