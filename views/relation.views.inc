@@ -12,10 +12,7 @@ function relation_views_data_alter(&$data) {
       $entity_tables[$entity_type] = $entity_info['base table'];
     }
   }
-  $field = field_info_field('endpoints');
-  $relation_data_table_name = _field_sql_storage_tablename($field);
-  $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
-  $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
+
   // Build the relations between the different tables.
   $types = relation_get_types();
   foreach ($types as $predicate => $relation_type) {
@@ -31,6 +28,7 @@ function relation_views_data_alter(&$data) {
         $entity_type_right = $target_bundle[0];
         $base_table_left = $entity_tables[$entity_type_left];
         $base_table_right = $entity_tables[$entity_type_right];
+
         $t_arguments = array(
           '@left' => $entity_type_left,
           '@right' => $entity_type_right,
@@ -50,39 +48,6 @@ function relation_views_data_alter(&$data) {
             'entity_type_right' => $entity_type_right,
             'directional' => $relation_type->directional,
             'join_handler' => 'relation_handler_join',
-          ),
-        );
-        $data['relation_joined_' . $base_table_left . '_' . $predicate]['table']['group'] = $data[$base_table_left]['table']['group'];
-        $data['relation_joined_' . $base_table_left . '_' . $predicate]['table']['join'] = array(
-          $base_table_left => array(
-            'table' => $relation_data_table_name,
-            'field' => $entity_id_field_name,
-            'left_field' => $entity_infos[$entity_type_left]['entity keys']['id'],
-            'extras' => array(
-              array(
-                'field' => $entity_type_field_name,
-                'value' => $entity_type_left,
-              ),
-            ),
-          ),
-        );
-        $data['relation_joined_' . $base_table_left . '_' . $predicate]['entity_id'] = array(
-          'title' => t('Relationship ID'),
-          'help' => t('Relationship ID -- use this to indicate whether the entity is in a @predicate_label relationship', $t_arguments),
-          'field' => array(
-            'handler' => 'views_handler_field_numeric',
-          ),
-          'filter' => array(
-            'handler' => 'views_handler_filter_numeric',
-            'allow empty' => TRUE,
-            'numeric' => TRUE,
-          ),
-          'argument' => array(
-            'handler' => 'views_handler_argument_numeric',
-            'numeric' => TRUE,
-          ),
-          'sort' => array(
-            'handler' => 'views_handler_sort',
           ),
         );
       }

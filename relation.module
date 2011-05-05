@@ -195,14 +195,12 @@ function relation_type_save($record, $write_record_keys = array()) {
     }
   }
   $query->execute();
-  if (!field_info_instance('relation', 'endpoints', $predicate)) {
-    $instance = array(
-      'field_name' => 'endpoints',
-      'entity_type' => 'relation',
-      'bundle' => $predicate,
-    );
-    field_create_instance($instance);
-  }
+  $instance = array(
+    'field_name' => 'endpoints',
+    'entity_type' => 'relation',
+    'bundle' => $predicate,
+  );
+  field_create_instance($instance);
   field_info_cache_clear();
 }
 
