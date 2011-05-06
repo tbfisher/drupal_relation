@@ -474,7 +474,7 @@ function relation_multiple_delete($rids) {
   foreach ($relations as $rid => $relation) {
     db_delete('relation')->condition('rid', $rid)->execute();
     module_invoke_all('entity_delete', $relation, 'relation');
-    field_attach_delete('relation',  $relations);
+    field_attach_delete('relation',  $relation);
   }
 }
 
