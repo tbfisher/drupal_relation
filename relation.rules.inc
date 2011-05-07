@@ -97,6 +97,7 @@ function relation_rules_create_two_ary_relation($predicate, $endpoint1, $endpoin
  * Rules action callback for loading relations.
  */
 function relation_rules_load($entity, $state, $element) {
-  $relations = relation_query($entity->type(), $entity->getIdentifier())->execute();
+  $relation_rids = relation_query($entity->type(), $entity->getIdentifier())->execute();
+  $relations = relation_multiple_load(array_keys($relation_rids));
   return array('relation_loaded' => $relations);
 }
