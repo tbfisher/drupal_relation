@@ -10,7 +10,7 @@ function relation_rules_action_info() {
     // entities in the exectuing rule. Unfortunately, there isn't an easy way
     // of doing that with the Rules API.
     'relation_rules_create_two_ary_relation' => array(
-      'label' => t('Creata a 2-ary relation'),
+      'label' => t('Create a 2-ary relation'),
       'group' => t('Relation'),
       'named parameter' => FALSE,
       'parameter' => array(
@@ -53,7 +53,7 @@ function relation_rules_action_info() {
       ),
       'provides' => array(
         'relation_loaded' => array(
-          'type' => 'entity',
+          'type' => 'list',
           'label' => t('Loaded relations'),
           'save' => TRUE,
         ),
