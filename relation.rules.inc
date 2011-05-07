@@ -5,7 +5,11 @@
  */
 function relation_rules_action_info() {
   return array(
-    'relation_create_two_ary_relation' => array(
+    // Optimally, we would like to have one generic action that can create
+    // relation entities with N number of endpoints, depending on available
+    // entities in the exectuing rule. Unfortunately, there isn't an easy way
+    // of doing that with the Rules API.
+    'relation_rules_create_two_ary_relation' => array(
       'label' => t('Creata a 2-ary relation'),
       'group' => t('Relation'),
       'named parameter' => FALSE,
@@ -35,7 +39,7 @@ function relation_rules_action_info() {
         ),
       ),
     ),
-
+    // Action for loading relations from an available entity.
     'relation_rules_load' => array(
       'label' => t('Load relations'),
       'group' => t('Relation'),
@@ -58,6 +62,9 @@ function relation_rules_action_info() {
   );
 }
 
+/**
+ * Options list callback for fetching relation types.
+ */
 function relation_rules_get_type_options() {
   $options = array();
   $types = relation_get_types();
@@ -67,7 +74,10 @@ function relation_rules_get_type_options() {
   return $options;
 }
 
-function relation_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
+/**
+ * Rules action callback for creating a 2-ary relation.
+ */
+function relation_rules_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
   $endpoints = array(
     array(
       'entity_type' => $endpoint1->type(),
@@ -78,12 +88,14 @@ function relation_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $s
       'entity_id' => $endpoint2->getIdentifier()
     ),
   );
-
   $rid = relation_create($predicate, $endpoints);
   $relation = relation_load($rid);
   return array('relation_created' => $relation);
 }
 
+/**
+ * Rules action callback for loading relations.
+ */
 function relation_rules_load($entity, $state, $element) {
   $relations = relation_query($entity->type(), $entity->getIdentifier())->execute();
   return array('relation_loaded' => $relations);
