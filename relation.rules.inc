@@ -9,8 +9,8 @@ function relation_rules_action_info() {
     // relation entities with N number of endpoints, depending on available
     // entities in the exectuing rule. Unfortunately, there isn't an easy way
     // of doing that with the Rules API.
-    'relation_rules_create_two_ary_relation' => array(
-      'label' => t('Create a 2-ary relation'),
+    'relation_rules_create_binary_relation' => array(
+      'label' => t('Create a binary relation'),
       'group' => t('Relation'),
       'named parameter' => FALSE,
       'parameter' => array(
@@ -75,9 +75,9 @@ function relation_rules_get_type_options() {
 }
 
 /**
- * Rules action callback for creating a 2-ary relation.
+ * Rules action callback for creating a binary relation.
  */
-function relation_rules_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
+function relation_rules_create_binary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
   $endpoints = array(
     array(
       'entity_type' => $endpoint1->type(),
