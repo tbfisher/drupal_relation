@@ -16,6 +16,7 @@ function relation_rules_action_info() {
       'parameter' => array(
         'predicate' => array(
            'type' => 'text',
+           'label' => t('Predicate'),
            'options list' => 'relation_rules_get_type_options',
            'restriction' => 'input',
         ),
@@ -30,7 +31,6 @@ function relation_rules_action_info() {
           'restriction' => 'selector',
         ),
       ),
-
       'provides' => array(
         'relation_created' => array(
           'type' => 'entity',
@@ -45,6 +45,15 @@ function relation_rules_action_info() {
       'group' => t('Relation'),
       'named parameter' => FALSE,
       'parameter' => array(
+        // @todo: We would probably like to have a multiple select here and an
+        // option for 'all'. Implementing hook_ACTION_NAME_form_alter() is
+        // probably the best way.
+        'predicate' => array(
+           'type' => 'text',
+           'label' => t('Predicate'),
+           'options list' => 'relation_rules_get_type_options',
+           'restriction' => 'input',
+        ),
         'entity' => array(
           'type' => 'entity',
           'label' => t('Entity'),
@@ -96,8 +105,10 @@ function relation_rules_create_binary_relation($predicate, $endpoint1, $endpoint
 /**
  * Rules action callback for loading relations.
  */
-function relation_rules_load($entity, $state, $element) {
-  $relation_rids = relation_query($entity->type(), $entity->getIdentifier())->execute();
+function relation_rules_load($predicate, $entity, $state, $element) {
+  $relation_rids = relation_query($entity->type(), $entity->getIdentifier())
+    ->entityCondition('bundle', $predicate)
+    ->execute();
   $relations = relation_multiple_load(array_keys($relation_rids));
   return array('relation_loaded' => $relations);
 }
