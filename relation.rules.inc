@@ -35,7 +35,7 @@ function relation_rules_action_info() {
         ),
       ),
       'callbacks' => array(
-        'form_alter' => 'relation_rules_action_form_alter',
+        //'form_alter' => 'relation_rules_action_form_alter',
       ),
     ),
   );
@@ -47,10 +47,17 @@ function relation_get_bundles() {
 
 function relation_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
   $endpoints = array(
-    array($endpoint1->type(), $endpoint1->getIdentifier()),
-    array($endpoint2->type(), $endpoint2->getIdentifier()),
+    array(
+      'entity_type' => $endpoint1->type(),
+      'entity_id' => $endpoint1->getIdentifier()
+    ),
+    array(
+      'entity_type' => $endpoint2->type(),
+      'entity_id' => $endpoint2->getIdentifier()
+    ),
   );
 
   $rid = relation_create($predicate, $endpoints);
-  return array('relation_created' => $rid);
+  $relation = relation_load($rid);
+  return array('relation_created' => $relation);
 }
