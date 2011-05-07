@@ -38,6 +38,25 @@ function relation_rules_action_info() {
         //'form_alter' => 'relation_rules_action_form_alter',
       ),
     ),
+    'relation_rules_load' => array(
+      'label' => t('Load relations'),
+      'group' => t('Relation'),
+      'named parameter' => FALSE,
+      'parameter' => array(
+        'entity' => array(
+          'type' => 'entity',
+          'label' => t('Entity'),
+          'restriction' => 'selector',
+        ),
+      ),
+      'provides' => array(
+        'relation_loaded' => array(
+          'type' => 'entity',
+          'label' => t('Loaded relations'),
+          'save' => TRUE,
+        ),
+      ),
+    ),
   );
 }
 
@@ -60,4 +79,9 @@ function relation_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $s
   $rid = relation_create($predicate, $endpoints);
   $relation = relation_load($rid);
   return array('relation_created' => $relation);
+}
+
+function relation_rules_load($entity, $state, $element) {
+  $relations = relation_query($entity->type(), $entity->getIdentifier())->execute();
+  return array('relation_loaded' => $relations);
 }
