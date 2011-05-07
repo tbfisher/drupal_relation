@@ -12,7 +12,7 @@ function relation_rules_action_info() {
       'parameter' => array(
         'predicate' => array(
            'type' => 'text',
-           'options list' => 'relation_get_bundles',
+           'options list' => 'relation_rules_get_type_options',
            'restriction' => 'input',
         ),
         'endpoint1' => array(
@@ -34,10 +34,8 @@ function relation_rules_action_info() {
           'save' => TRUE,
         ),
       ),
-      'callbacks' => array(
-        //'form_alter' => 'relation_rules_action_form_alter',
-      ),
     ),
+
     'relation_rules_load' => array(
       'label' => t('Load relations'),
       'group' => t('Relation'),
@@ -60,8 +58,13 @@ function relation_rules_action_info() {
   );
 }
 
-function relation_get_bundles() {
-  return array('event_galleries' => 'event galleries');
+function relation_rules_get_type_options() {
+  $options = array();
+  $types = relation_get_types();
+  foreach ($types as $type) {
+    $options[$type->predicate] = $type->label;
+  }
+  return $options;
 }
 
 function relation_create_two_ary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
