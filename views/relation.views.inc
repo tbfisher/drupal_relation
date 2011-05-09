@@ -32,7 +32,7 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@predicate_label' => $relation_type->label,
       );
-      $table_name = 'relation_joined_' . $base_table_left . '_' . $predicate;
+      $table = 'relation_joined_' . $base_table_left . '_' . $predicate;
       $data[$table]['table']['group'] = $data[$base_table_left]['table']['group'];
       $data[$table]['table']['join'] = array(
         $base_table_left => array(
