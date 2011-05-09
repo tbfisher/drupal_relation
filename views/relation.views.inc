@@ -32,8 +32,9 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@predicate_label' => $relation_type->label,
       );
-      $data['relation_joined_' . $base_table_left . '_' . $predicate]['table']['group'] = $data[$base_table_left]['table']['group'];
-      $data['relation_joined_' . $base_table_left . '_' . $predicate]['table']['join'] = array(
+      $table_name = 'relation_joined_' . $base_table_left . '_' . $predicate;
+      $data[$table]['table']['group'] = $data[$base_table_left]['table']['group'];
+      $data[$table]['table']['join'] = array(
         $base_table_left => array(
           'table' => $relation_data_table_name,
           'field' => $entity_id_field_name,
@@ -43,10 +44,14 @@ function relation_views_data_alter(&$data) {
               'field' => $entity_type_field_name,
               'value' => $entity_type_left,
             ),
+            array(
+              'field' => 'bundle',
+              'value' => $predicate,
+            ),
           ),
         ),
       );
-      $data['relation_joined_' . $base_table_left . '_' . $predicate]['entity_id'] = array(
+      $data[$table]['entity_id'] = array(
         'title' => t('Relationship ID'),
         'help' => t('Relationship ID -- use this to indicate whether the entity is in a @predicate_label relationship', $t_arguments),
         'field' => array(
@@ -65,6 +70,7 @@ function relation_views_data_alter(&$data) {
           'handler' => 'views_handler_sort',
         ),
       );
+
       foreach ($relation_type->$target_index as $target_bundle) {
         $target_bundle = explode(':', $target_bundle, 2);
         $entity_type_right = $target_bundle[0];
