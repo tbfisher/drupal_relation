@@ -113,7 +113,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     '#title' => t('Maximum Arity'),
     '#options' => $options,
     '#description' => t('Maximum number of entities joined by the relation. <em>In nearly all cases you will want to leave this set to 2</em>.'),
-    '#default_value' => $relation_type->max_arity ? $relation_type->max_arity : 2,
+    '#default_value' => isset($relation_type->max_arity) ? $relation_type->max_arity : 2,
     '#states' => array(
       'disabled' => array(   // action to take.
         ':input[name="directional"]' => array('checked' => TRUE),
