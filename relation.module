@@ -297,7 +297,7 @@ function relation_type_delete($predicate) {
  */
 function relation_load($rid, $vid = NULL, $reset = FALSE) {
   $conditions = (isset($vid) ? array('vid' => $vid) : array());
-  $relations = relation_multiple_load(array($rid), $conditions);
+  $relations = relation_load_multiple(array($rid), $conditions);
   return reset($relations);
 }
 
@@ -312,7 +312,7 @@ function relation_load($rid, $vid = NULL, $reset = FALSE) {
  *
  * @see relation_load()
  */
-function relation_multiple_load($rids, $conditions = array(), $reset = FALSE) {
+function relation_load_multiple($rids, $conditions = array(), $reset = FALSE) {
   // Entity load handles field_attach_load for us.
   return entity_load('relation', $rids, $conditions);
 }
@@ -517,7 +517,7 @@ function relation_delete($rid) {
  *   An array of numeric ids of the relation to be deleted.
  */
 function relation_multiple_delete($rids) {
-  $relations = relation_multiple_load($rids);
+  $relations = relation_load_multiple($rids);
   foreach ($relations as $rid => $relation) {
     db_delete('relation')->condition('rid', $rid)->execute();
     db_delete('relation_revision')->condition('rid', $rid)->execute();
