@@ -8,7 +8,7 @@
 /**
  * List all relation predicates (page callback).
  */
-function relation_list() {
+function relation_type_list() {
   $relation = relation_entity_info();
   $field_ui = module_exists('field_ui');
   $headers = array(

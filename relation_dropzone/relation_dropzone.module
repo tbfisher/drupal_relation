@@ -92,7 +92,7 @@ function relation_dropzone($form, &$form_state) {
     '#options'      => $form_state['relation_entities_options'],
     '#default_value' => '',
   );
-  if (count($options) > 1) {
+  if (count($form_state['relation_entities_options']) > 1) {
     $form['entity_key']['#empty_value'] = '';
     $form['entity_key']['#empty_option'] = t('Select an entity');
   }
