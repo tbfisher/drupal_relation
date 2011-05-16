@@ -146,6 +146,22 @@ function relation_menu() {
 }
 
 /**
+ * Implements hook_init()
+ */
+function relation_init() {
+  // Field info is cached enough not to be a performance problem. We can't do
+  // this in relation_type_save() because of http://drupal.org/node/1007830.
+  if (!field_info_field('endpoints')) {
+    $field = array(
+      'field_name' => 'endpoints',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'type' => 'relation_endpoint'
+    );
+    field_create_field($field);
+  }
+}
+
+/**
  * Saves a relation bundle.
  *
  * @param $record
@@ -197,15 +213,6 @@ function relation_type_save($record, $write_record_keys = array()) {
     }
   }
   $query->execute();
-
-  if (!field_info_field('endpoints')) {
-    $field = array(
-      'field_name' => 'endpoints',
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'type' => 'relation_endpoint'
-    );
-    field_create_field($field);
-  }
   if (!field_info_instance('relation', 'endpoints', $predicate)) {
     $instance = array(
       'field_name' => 'endpoints',
@@ -214,7 +221,6 @@ function relation_type_save($record, $write_record_keys = array()) {
     );
     field_create_instance($instance);
   }
-  field_info_cache_clear();
 }
 
 /**
