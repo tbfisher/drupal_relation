@@ -195,6 +195,15 @@ function relation_type_save($record, $write_record_keys = array()) {
     }
   }
   $query->execute();
+
+  if (!field_info_field('endpoints')) {
+    $field = array(
+      'field_name' => 'endpoints',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'type' => 'relation_endpoint'
+    );
+    field_create_field($field);
+  }
   if (!field_info_instance('relation', 'endpoints', $predicate)) {
     $instance = array(
       'field_name' => 'endpoints',
@@ -259,6 +268,10 @@ function relation_get_types($predicate = NULL) {
  *   The machine name of the relation type (bundle) to be deleted.
  */
 function relation_type_delete($predicate) {
+  $endpoints_field = field_read_instance('relation', 'endpoints', $predicate);
+  field_delete_instance($endpoints_field, FALSE);
+  field_attach_delete_bundle('relation', $predicate);
+
   db_delete('relation_type')->condition('predicate', $predicate)->execute();
   db_delete('relation_bundles')->condition('predicate', $predicate)->execute();
 }

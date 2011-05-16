@@ -6,27 +6,6 @@
  */
 
 /**
- * Implements hook_install().
- */
-function relation_install() {
-  // First, add relation to the module list.
-  $module_list = module_list();
-  $module_list['relation']['filename'] = dirname(__FILE__)  . '/relation.module';
-  module_list(TRUE, FALSE, FALSE, $module_list);
-  // Next, clear the module_implements() cache.
-  module_implements('', FALSE, TRUE);
-  // Finally, clear the field info cache. This way we can create a field our
-  // own module defines.
-  field_info_cache_clear();
-  $field = array(
-    'field_name' => 'endpoints',
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'type' => 'relation_endpoint'
-  );
-  field_create_field($field);
-}
-
-/**
  * Implements hook_schema().
  */
 function relation_schema() {
