@@ -154,6 +154,7 @@ function relation_menu() {
  *   - label: Relation type human-readable name (string).
  *   - directional: whether relation is directional (boolean) .
  *   - transitive: whether relation is transitive (boolean).
+ *   - r_unique: whether relations of this type are unique (boolean).
  *   - min_arity: minimum number of entities in relations of this type (int>=2).
  *   - max_arity: maximum number of entities in relations of this type (int>=min_arity).
  *   - source_bundles: array containing allowed bundle keys. This is used for
@@ -173,6 +174,7 @@ function relation_type_save($record, $write_record_keys = array()) {
     'max_arity' => 2,
     'directional' => FALSE,
     'transitive' => FALSE,
+    'r_unique' => FALSE,
   );
   $source_bundles = $record['source_bundles'];
   if ($record['directional']) {
@@ -243,7 +245,7 @@ function relation_type_load($predicate) {
  */
 function relation_get_types($predicate = NULL) {
   $query = db_select('relation_type', 'rt')
-    ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'min_arity', 'max_arity'));
+    ->fields('rt', array('predicate', 'label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
   if ($predicate) {
     $query->condition('predicate', $predicate);
   }
@@ -362,6 +364,30 @@ function relation_edit_form_submit($form, $form_state) {
 }
 
 /**
+ * Check if a relation exists
+ *
+ * @param $predicate
+ *   The relation type (bundle) of the relation to be checked
+ * @param $entity_keys
+ *   The entity keys of the relation to be created, to be compared to existing
+ *   relations. Entity_keys are arrays keyed by 'entity_type' and 'entity_id'.
+ * @return
+ *   Return FALSE if no relation exists, or an array of matching relations.
+ */
+function relation_relation_exists($entity_keys, $predicate = NULL ) {
+  $first_key = array_shift($entity_keys);
+  $query = relation_query($first_key['entity_type'], $first_key['entity_id']);
+  foreach ($entity_keys as $entity_key) {
+    $query->related($entity_key['entity_type'], $entity_key['entity_id']);
+  }
+  if ($predicate) {
+    $query->propertyCondition('predicate', $predicate);
+  }
+  $relation_ids = $query->execute();
+  return $relation_ids ? $relation_ids : FALSE;
+}
+
+/**
  * Creates a relation from a predicate and a set of endpoints.
  *
  * @param $predicate
@@ -373,6 +399,14 @@ function relation_edit_form_submit($form, $form_state) {
  *   The new relation id.
  */
 function relation_create($predicate, $endpoints) {
+  // Check for unqiue flag, if relation endpoints already exist, return FALSE
+  $relation_type = relation_get_types($predicate);
+  if ($relation_type[$predicate]->r_unique) {
+    if (relation_relation_exists($endpoints, $predicate)) {
+      return FALSE;
+    }
+  }
+
   global $user;
   $relation = new stdClass();
   $relation->is_new = TRUE;

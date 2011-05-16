@@ -57,6 +57,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
       'bundles' => array(),
       'directional' => FALSE,
       'transitive' => FALSE,
+      'r_unique' => FALSE,
       'min_arity' => 2,
       'max_arity' => 2,
       'source_bundles' => array(),
@@ -91,6 +92,12 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     '#type'           => 'checkbox',
     '#title'          => 'Transitive',
     '#default_value'  => $relation_type->transitive,
+  );
+  $form['r_unique'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Unique'),
+    '#description'    => t('Whether this relations of this type are unique'),
+    '#default_value'  => $relation_type->r_unique,
   );
   // these should probably be changed to numerical (validated) textfields.
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8');
@@ -175,6 +182,7 @@ function relation_type_form_submit($form, &$form_state) {
     'label' => $form_state['values']['label'],
     'directional' => $form_state['values']['directional'],
     'transitive' => $form_state['values']['transitive'],
+    'r_unique' => $form_state['values']['r_unique'],
     'source_bundles' => $form_state['values']['source_bundles'],
     'target_bundles' => $form_state['values']['target_bundles'],
   );
