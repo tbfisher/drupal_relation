@@ -206,8 +206,9 @@ function relation_dropzone_save($form, $form_state) {
     $rid = relation_create($_SESSION['relation_predicate'], $_SESSION['relation_entity_keys']);
     if ($rid) {
       $link = l($_SESSION['relation_predicate'], "relation/$rid");
-      $list = drupal_render(_relation_stored_entity_keys_list());
-      $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
+      $list = _relation_stored_entity_keys_list();
+      $rendered_list = drupal_render($list);
+      $message = t('Created new !link from !list', array('!link' => $link, '!list' => $rendered_list));
       drupal_set_message($message);
       relation_dropzone_clear($form, $form_state);
     }
