@@ -21,3 +21,5 @@
   - get_relation(user, term) ~~~> user --> node --> term
   - get_relation(user, file, term) ~~~> user --> file --> node --> term
 
+See also:
+http://drupal.org/project/issues/search/relation?status[]=Open&categories[]=task&categories[]=feature
