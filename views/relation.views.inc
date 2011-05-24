@@ -5,7 +5,7 @@
  */
 function relation_views_data_alter(&$data) {
   // Find out which entity type has which base table.
-  $entity_infos = module_invoke_all('entity_info');
+  $entity_infos = entity_get_info();
   $entity_tables = array();
   foreach ($entity_infos as $entity_type => $entity_info) {
     if (isset($entity_info['base table'])) {

@@ -128,7 +128,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     ),
   );
   $counter = 0;
-  foreach (module_invoke_all('entity_info') as $entity_type => $entity) {
+  foreach (entity_get_info() as $entity_type => $entity) {
     $bundles[$entity['label']]["$entity_type:*"] = 'all ' . $entity['label'] . ' bundles';
     $counter += 2;
     if (isset($entity['bundles'])) {
