@@ -68,7 +68,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
   $form['predicate'] = array(
     '#type'          => 'machine_name',
     '#title'         => t('Machine Name'),
-    '#description'   => t('Machine name (predicate) of the relation'),
+    '#description'   => t('Machine name of the relation'),
     '#default_value' => $predicate,
     '#required'      => TRUE,
     '#disabled'      => $predicate,
@@ -86,17 +86,19 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
   $form['directional'] = array(
     '#type'           => 'checkbox',
     '#title'          => 'Directional',
+    '#description'   => t('A directional relation is one that does not imply the reverse relation. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
     '#default_value'  => $relation_type->directional,
   );
   $form['transitive'] = array(
     '#type'           => 'checkbox',
     '#title'          => 'Transitive',
+    '#description'   => t('A transitive relation implies that the relation passes through intermediate entities (ie. A=>B and B=>C implies that A=>C). For example "Ancestor" is transitive: your ancestor\'s ancestor is also your ancestor. But a "Parent" relation is non-transitive: your parent\'s parent is not your parent, but your grand-parent.'),
     '#default_value'  => $relation_type->transitive,
   );
   $form['r_unique'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Unique'),
-    '#description'    => t('Whether this relations of this type are unique'),
+    '#description'    => t('Whether relations of this type are unique (ie. they can not contain exactly the same end points as other relations of this type).'),
     '#default_value'  => $relation_type->r_unique,
   );
   // these should probably be changed to numerical (validated) textfields.
@@ -105,7 +107,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     '#type' => 'select',
     '#title' => t('Minimum Arity'),
     '#options' => $options,
-    '#description' => t('Minimum number of entities joined by the relation (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
+    '#description' => t('Minimum number of entities joined by relations of this type (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => $relation_type->min_arity ? $relation_type->min_arity : 2,
     '#states' => array(
       'disabled' => array(   // action to take.
@@ -119,7 +121,7 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
     '#type' => 'select',
     '#title' => t('Maximum Arity'),
     '#options' => $options,
-    '#description' => t('Maximum number of entities joined by the relation. <em>In nearly all cases you will want to leave this set to 2</em>.'),
+    '#description' => t('Maximum number of entities joined by relations of this type. <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => isset($relation_type->max_arity) ? $relation_type->max_arity : 2,
     '#states' => array(
       'disabled' => array(   // action to take.
