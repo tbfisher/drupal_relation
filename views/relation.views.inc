@@ -18,7 +18,7 @@ function relation_views_data_alter(&$data) {
   $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
   // Build the relations between the different tables.
   $types = relation_get_types();
-  foreach ($types as $relation_type => $relation_type) {
+  foreach ($types as $type => $relation_type) {
     if ($relation_type->max_arity != 2) {
       continue;
     }
@@ -32,7 +32,7 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
       );
-      $table = 'relation_joined_' . $base_table_left . '_' . $relation_type;
+      $table = 'relation_joined_' . $base_table_left . '_' . $type;
       $data[$table]['table']['group'] = $data[$base_table_left]['table']['group'];
       $data[$table]['table']['join'] = array(
         $base_table_left => array(
@@ -46,7 +46,7 @@ function relation_views_data_alter(&$data) {
             ),
             array(
               'field' => 'bundle',
-              'value' => $relation_type,
+              'value' => $type,
             ),
           ),
         ),
@@ -76,7 +76,7 @@ function relation_views_data_alter(&$data) {
         $entity_type_right = $target_bundle[0];
         $base_table_right = $entity_tables[$entity_type_right];
         $t_arguments['@right'] = $entity_type_right;
-        $data[$base_table_left]['relation_' . $relation_type . '_' . $entity_type_right] = array(
+        $data[$base_table_left]['relation_' . $type . '_' . $entity_type_right] = array(
           'title' => t('Relation: @relation_type_label (@left <-> @right)', $t_arguments),
           'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
@@ -85,7 +85,7 @@ function relation_views_data_alter(&$data) {
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
             'relationship field' => $relationship_field,
             'handler' => 'relation_handler_relationship',
-            'relation_type' => $relation_type,
+            'relation_type' => $type,
             'entity_type_left' => $entity_type_left,
             'entity_type_right' => $entity_type_right,
             'directional' => $relation_type->directional,
