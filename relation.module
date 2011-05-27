@@ -615,7 +615,9 @@ function relation_entity_delete($entity, $entity_type) {
   list($id) = entity_extract_ids($entity_type, $entity);
   $relations = relation_query($entity_type, $id)->execute();
   relation_multiple_delete(array_keys($relations));
-  drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
+  if ($relations) {
+    drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
+  }
 }
 
 /**
