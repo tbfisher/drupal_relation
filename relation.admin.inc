@@ -42,17 +42,17 @@ function relation_type_list() {
  *   Relation type machine name. If this is not provided, assume that we're
  *   creating a new relation type.
  */
-function relation_type_form($form, &$form_state, $type = '', $op = 'edit') {
+function relation_type_form($form, &$form_state, $relation_type = array(), $op = 'edit') {
   $form['#write_record_keys'] = array();
-  if ($type) {
-    $relation_type = relation_type_load($type);
+  if ($relation_type) {
+    $relation_type = (object) $relation_type;
     if ($relation_type) {
       $form['#write_record_keys'][] = 'relation_type';
     }
   }
   else {
     $relation_type = (object) array(
-      'relation_type' => $type,
+      'relation_type' => '',
       'label' => '',
       'bundles' => array(),
       'directional' => FALSE,
@@ -68,9 +68,9 @@ function relation_type_form($form, &$form_state, $type = '', $op = 'edit') {
     '#type'          => 'machine_name',
     '#title'         => t('Machine Name'),
     '#description'   => t('Machine name of the relation'),
-    '#default_value' => $type,
+    '#default_value' => $relation_type->relation_type,
     '#required'      => TRUE,
-    '#disabled'      => $type,
+    '#disabled'      => $relation_type->relation_type,
     '#machine_name' => array(
       'exists' => 'relation_type_load',
     ),
