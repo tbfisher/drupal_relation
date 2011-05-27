@@ -43,24 +43,24 @@ class RelationDropzoneTestCase extends RelationTestCase {
 
     $this->createRelationTypes();
 
-    $predicate = $this->relation_types['symmetric']['predicate'];
+    $relation_type = $this->relation_types['symmetric']['relation_type'];
     $edit = array(
-      "predicate" => $predicate,
+      "relation_type" => $relation_type,
       "entity_key" => $node1key,
     );
     $this->drupalPost('node', $edit, t('Pick'));
     $edit = array(
-      "predicate" => $predicate,
+      "relation_type" => $relation_type,
       "entity_key" => $node2key,
     );
     $this->drupalPost('node', $edit, t('Pick'));
     $this->drupalPost('node', array(), t('Create relation'));
     // Now figure out the new rid.
     $result = array_keys(relation_query('node', $node1->nid)
-      ->propertyCondition('predicate', $predicate)
+      ->propertyCondition('relation_type', $relation_type)
       ->execute());
     $path = 'relation/'. $result[0];
-    $link = l($predicate, $path);
+    $link = l($relation_type, $path);
     // Rebuild the message. Use the known node labels to make sure the message
     // contains those.
     $node1_label = entity_label('node', $node1);

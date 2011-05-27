@@ -14,17 +14,17 @@ function relation_field_info() {
 }
 
 function relation_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  $relation_type = relation_type_load($entity->predicate);
-  // Check that predicate exists.
+  $relation_type = relation_type_load($entity->relation_type);
+  // Check that relation_type exists.
   if (!$relation_type) {
-    $errors[] = t("The !predicate relation type does not exist!", array('!predicate' => $entity->predicate));
+    $errors[] = t("The !relation_type relation type does not exist!", array('!relation_type' => $entity->relation_type));
   }
   // Check that arity is within acceptable bounds.
   if (count($items) < $relation_type->min_arity && empty($entity->in_progress)) {
-    $errors[] = t("Relation has too few end points (:predicate min arity :min_arity)", array(':predicate' => $entity->predicate, ':min_arity' => $relation_type->min_arity));
+    $errors[] = t("Relation has too few end points (:relation_type min arity :min_arity)", array(':relation_type' => $entity->relation_type, ':min_arity' => $relation_type->min_arity));
   }
   if ($relation_type->max_arity && count($items) > $relation_type->max_arity) {
-    $errors[] = t("Relation has too many end points (:predicate max arity :max_arity)", array(':predicate' => $entity->predicate, ':max_arity' => $relation_type->max_arity));
+    $errors[] = t("Relation has too many end points (:relation_type max arity :max_arity)", array(':relation_type' => $entity->relation_type, ':max_arity' => $relation_type->max_arity));
   }
   //Check that each entity is has acceptable bundle type and index.
   foreach ($items as $delta => $item) {
@@ -45,17 +45,17 @@ function relation_field_validate($entity_type, $entity, $field, $instance, $lang
       }
     }
     if (!$acceptable) {
-      $t_arguments = array('%predicate' => $entity->predicate, '@bundle' => $item['entity_bundle']);
+      $t_arguments = array('%relation_type' => $entity->relation_type, '@bundle' => $item['entity_bundle']);
       if ($relation_type->directional) {
         if ($endpoint == 'target') {
-          $errors[] = t("The %predicate relation type does not allow @bundle entities as target.", $t_arguments);
+          $errors[] = t("The %relation_type relation type does not allow @bundle entities as target.", $t_arguments);
         }
         else {
-          $errors[] = t("The %predicate relation type does not allow @bundle entities as source.", $t_arguments);
+          $errors[] = t("The %relation_type relation type does not allow @bundle entities as source.", $t_arguments);
         }
       }
       else {
-        $errors[] = t("The %predicate relation type does not allow @bundle entities as an endpoint.", $t_arguments);
+        $errors[] = t("The %relation_type relation type does not allow @bundle entities as an endpoint.", $t_arguments);
       }
     }
   }

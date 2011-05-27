@@ -6,7 +6,7 @@
  */
 
 /**
- * List all relation predicates (page callback).
+ * List all relation_types (page callback).
  */
 function relation_type_list() {
   $relation = relation_entity_info();
@@ -38,21 +38,21 @@ function relation_type_list() {
 /**
  * Relation relation type bundle settings form.
  *
- * @param $predicate
+ * @param $relation_type
  *   Relation type machine name. If this is not provided, assume that we're
  *   creating a new relation type.
  */
-function relation_type_form($form, &$form_state, $predicate = array(), $op = 'edit') {
+function relation_type_form($form, &$form_state, $type = '', $op = 'edit') {
   $form['#write_record_keys'] = array();
-  if ($predicate) {
-    $relation_type = (object) $predicate;
+  if ($type) {
+    $relation_type = relation_type_load($type);
     if ($relation_type) {
-      $form['#write_record_keys'][] = 'predicate';
+      $form['#write_record_keys'][] = 'relation_type';
     }
   }
-  if (empty($relation_type)) {
+  else {
     $relation_type = (object) array(
-      'predicate' => $predicate,
+      'relation_type' => $type,
       'label' => '',
       'bundles' => array(),
       'directional' => FALSE,
@@ -64,14 +64,13 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
       'target_bundles' => array(),
     );
   }
-  $predicate = $relation_type->predicate;
-  $form['predicate'] = array(
+  $form['relation_type'] = array(
     '#type'          => 'machine_name',
     '#title'         => t('Machine Name'),
     '#description'   => t('Machine name of the relation'),
-    '#default_value' => $predicate,
+    '#default_value' => $type,
     '#required'      => TRUE,
-    '#disabled'      => $predicate,
+    '#disabled'      => $type,
     '#machine_name' => array(
       'exists' => 'relation_type_load',
     ),
@@ -174,11 +173,11 @@ function relation_type_form($form, &$form_state, $predicate = array(), $op = 'ed
  * Submit data from bundle settings page.
  */
 function relation_type_form_submit($form, &$form_state) {
-  $predicate = $form_state['values']['predicate'];
+  $relation_type = $form_state['values']['relation_type'];
   $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
   $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
   $record = array(
-    'predicate'   => $predicate,
+    'relation_type'   => $relation_type,
     'min_arity'   => $min_arity,
     'max_arity'   => $max_arity,
     'label' => $form_state['values']['label'],
@@ -189,27 +188,30 @@ function relation_type_form_submit($form, &$form_state) {
     'target_bundles' => $form_state['values']['target_bundles'],
   );
   relation_type_save($record, $form['#write_record_keys']);
-  $form_state['redirect'] = "admin/structure/relation/edit/$predicate";
+  $form_state['redirect'] = "admin/structure/relation/edit/$relation_type";
 
-  drupal_set_message(t('The %predicate relation type has been saved.', array('%predicate' => $predicate)));
+  drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type)));
 }
 
 /**
  * Menu callback; deletes a single relation type.
  */
-function relation_type_delete_confirm($form, &$form_state, $predicate) {
-  $form['predicate'] = array('#type' => 'value', '#value' => $predicate->predicate);
-  $form['label'] = array('#type' => 'value', '#value' => $predicate->label);
+function relation_type_delete_confirm($form, &$form_state, $relation_type) {
+  $form['relation_type'] = array('#type' => 'value', '#value' => $relation_type->relation_type);
+  $form['label'] = array('#type' => 'value', '#value' => $relation_type->label);
 
-  $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $predicate->label));
+  $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $relation_type->label));
   $caption = '';
 
   $num_relations = relation_query()
-    ->propertyCondition('predicate', $predicate->predicate)
+    ->propertyCondition('relation_type', $relation_type->relation_type)
     ->count()
     ->execute();
   if ($num_relations) {
-    $caption .= '<p>' . format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $predicate->label, '@count' => $num_relations)) . '</p>';
+    $caption .= '<p>' . format_plural($num_relations,
+      'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.',
+      'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.',
+      array('%label' => $relation_type->label, '@count' => $num_relations)) . '</p>';
   }
 
   $caption .= '<p>' . t('This action cannot be undone.') . '</p>';
@@ -221,7 +223,7 @@ function relation_type_delete_confirm($form, &$form_state, $predicate) {
  * Process relation type delete confirm submissions.
  */
 function relation_type_delete_confirm_submit($form, &$form_state) {
-  relation_type_delete($form_state['values']['predicate']);
+  relation_type_delete($form_state['values']['relation_type']);
 
   $t_args = array('%label' => $form_state['values']['label']);
   drupal_set_message(t('The %label relation type has been deleted.', $t_args));

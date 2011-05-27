@@ -84,12 +84,12 @@ function relation_dropzone($form, &$form_state) {
     $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the dropzone until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
   }
-  $form['predicate'] = array(
+  $form['relation_type'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('Predicate'),
+    '#title'         => t('Relation type'),
     '#description'   => 'Name of the relation',
     '#autocomplete_path' => 'relation/autocomplete/bundles',
-    '#default_value' => isset($_SESSION['relation_predicate']) ? $_SESSION['relation_predicate'] : '',
+    '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
     '#required'      => TRUE,
   );
   $form['entity_key'] = array(
@@ -161,7 +161,7 @@ function _relation_stored_entity_keys_list() {
  */
 function relation_dropzone_pick($form, &$form_state) {
   $_SESSION['relation_entity_keys'][] = $form_state['pick'];
-  $_SESSION['relation_predicate'] = $form_state['values']['predicate'];
+  $_SESSION['relation_type'] = $form_state['values']['relation_type'];
   $form_state['rebuild'] = TRUE;
 }
 
@@ -169,7 +169,7 @@ function relation_dropzone_pick($form, &$form_state) {
  * Validate form submission for the dropzone.
  */
 function relation_dropzone_validate($form, &$form_state) {
-  $predicate = $form_state['values']['predicate'];
+  $relation_type = $form_state['values']['relation_type'];
   $errors = array();
   $current = array();
   $in_progress = FALSE;
@@ -197,9 +197,9 @@ function relation_dropzone_validate($form, &$form_state) {
     $in_progress = TRUE;
   }
 
-#  relation_validate($predicate, array_merge($_SESSION['relation_entity_keys'], $current), $errors, $in_progress);
+#  relation_validate($relation_type, array_merge($_SESSION['relation_entity_keys'], $current), $errors, $in_progress);
   foreach ($errors as $error) {
-    form_set_error('predicate', $error);
+    form_set_error('relation_type', $error);
   }
 }
 
@@ -207,10 +207,10 @@ function relation_dropzone_validate($form, &$form_state) {
  * Submit handler for the save button.
  */
 function relation_dropzone_save($form, $form_state) {
-  if (isset($_SESSION['relation_predicate'])) {
-    $rid = relation_create($_SESSION['relation_predicate'], $_SESSION['relation_entity_keys']);
+  if (isset($_SESSION['relation_type'])) {
+    $rid = relation_create($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
     if ($rid) {
-      $link = l($_SESSION['relation_predicate'], "relation/$rid");
+      $link = l($_SESSION['relation_type'], "relation/$rid");
       $list = _relation_stored_entity_keys_list();
       $rendered_list = drupal_render($list);
       $message = t('Created new !link from !list', array('!link' => $link, '!list' => $rendered_list));
@@ -227,6 +227,6 @@ function relation_dropzone_save($form, $form_state) {
  * Submit handler for the clear button.
  */
 function relation_dropzone_clear($form, &$form_state) {
-  unset($_SESSION['relation_predicate'], $_SESSION['relation_entity_keys']);
+  unset($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
   $form_state['rebuild'] = TRUE;
 }

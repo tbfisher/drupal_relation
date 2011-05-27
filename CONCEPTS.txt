@@ -20,9 +20,8 @@ example:
   donations123 -> transaction456 -> BankC
   that is, "Company A made a donation to Political Pary B, via Bank C".
 
-Types of relations are bundles, called predicates, in deference to the RDF
-standard. The entities in the relation can be thought of as the subject and
-object(s) of the relation.
+The entities in the relation can be thought of as the subject and object(s)
+of the relation.
 
   Entity relation type    = SUBJECT   + PREDICATE      + OBJECT
   Node author relation    = node      + creator        + user

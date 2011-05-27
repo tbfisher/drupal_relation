@@ -6,7 +6,7 @@
 
 - The relation module should be able to ask the relation bundle provider things
   like:
-  - what is your subject type + predicate + object type?
+  - what is your subject type + relation_type + object type?
   - what relations of your type exist, given a set of subject or object ids?
     -> what relations of your type exist for subject id *?
     -> what relations of your type exist for object id (123, 456, 78, 9)?
