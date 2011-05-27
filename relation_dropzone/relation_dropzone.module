@@ -66,6 +66,11 @@ function relation_dropzone($form, &$form_state) {
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'relation_dropzone') . '/relation_dropzone.css',
   );
+  $types = relation_get_types();
+  if (empty($types)) {
+    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the dropzone until cleared or a relation is created so it is possible to collect the entities from several pages.', array( '!link' => l('relation types', 'admin/structure/relation')));
+    return $form;
+  }
   if ($relation_entities = drupal_static('relation_entities', array())) {
     foreach ($relation_entities as $entity_type => $entities) {
       foreach ($entities as $entity_id => $entity) {
