@@ -235,26 +235,26 @@ function relation_type_save($record, $write_record_keys = array()) {
  *   relation_type_save().
  */
 function relation_type_load($relation_type) {
-  $types = relation_get_types($relation_type);
+  $types = relation_get_types(array($relation_type));
   return isset($types[$relation_type]) ? $types[$relation_type] : FALSE;
 }
 
 /**
  * Loads a relation type (bundle), or all relation bundles.
  *
- * @param $relation_type
- *   The machine name of the relation type to be loaded. If $relation_type
- *   is NULL, load all relation entity types.
+ * @param $types
+ *   An array of machine names of the relation types to be loaded. If $types
+ *   is empty, load all relation types.
  *
  * @return
  *   A an array of relation type records in the same format as expected by
  *   relation_type_save(), keyed by relation_type.
  */
-function relation_get_types($relation_type = NULL) {
+function relation_get_types($types = array()) {
   $query = db_select('relation_type', 'rt')
     ->fields('rt', array('relation_type', 'label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
-  if ($relation_type) {
-    $query->condition('relation_type', $relation_type);
+  if ($types) {
+    $query->condition('relation_type', $types);
   }
   $results = $query->execute();
   $relation_types = array();
