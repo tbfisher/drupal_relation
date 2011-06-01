@@ -59,7 +59,7 @@ class RelationEntityCollectorTestCase extends RelationTestCase {
     $result = array_keys(relation_query('node', $node1->nid)
       ->propertyCondition('relation_type', $relation_type)
       ->execute());
-    $path = 'relation/'. $result[0];
+    $path = 'relation/' . $result[0];
     $link = l($relation_type, $path);
     // Rebuild the message. Use the known node labels to make sure the message
     // contains those.

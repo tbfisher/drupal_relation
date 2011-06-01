@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Views support.
+ */
+
+/**
  * Implements hook_views_data_alter().
  */
 function relation_views_data_alter(&$data) {
@@ -30,7 +35,7 @@ function relation_views_data_alter(&$data) {
       $base_table_left = $entity_tables[$entity_type_left];
       $t_arguments = array(
         '@left' => $entity_type_left,
-        '@relation_type_label' => $relation_type->label,
+        '@relation_type_name' => $relation_type->name,
       );
       $table = 'relation_joined_' . $base_table_left . '_' . $type;
       $data[$table]['table']['group'] = $data[$base_table_left]['table']['group'];
@@ -53,7 +58,7 @@ function relation_views_data_alter(&$data) {
       );
       $data[$table]['entity_id'] = array(
         'title' => t('Relationship ID'),
-        'help' => t('Relationship ID -- use this to indicate whether the entity is in a @relation_type_label relationship', $t_arguments),
+        'help' => t('Relationship ID -- use this to indicate whether the entity is in a @relation_type_name relationship', $t_arguments),
         'field' => array(
           'handler' => 'views_handler_field_numeric',
         ),
@@ -77,10 +82,10 @@ function relation_views_data_alter(&$data) {
         $base_table_right = $entity_tables[$entity_type_right];
         $t_arguments['@right'] = $entity_type_right;
         $data[$base_table_left]['relation_' . $type . '_' . $entity_type_right] = array(
-          'title' => t('Relation: @relation_type_label (@left <-> @right)', $t_arguments),
-          'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $t_arguments),
+          'title' => t('Relation: @relation_type_name (@left <-> @right)', $t_arguments),
+          'help' => t('Provides a relationship from @left to @right via the relation @relation_type_name', $t_arguments),
           'relationship' => array(
-            'label' => check_plain($relation_type->label),
+            'name' => check_plain($relation_type->name),
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
             'relationship field' => $relationship_field,

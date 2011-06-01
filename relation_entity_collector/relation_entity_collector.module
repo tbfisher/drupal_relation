@@ -87,7 +87,6 @@ function relation_entity_collector($form, &$form_state) {
   $form['relation_type'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Relation type'),
-    '#description'   => 'Name of the relation',
     '#autocomplete_path' => 'relation/autocomplete/bundles',
     '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
     '#required'      => TRUE,

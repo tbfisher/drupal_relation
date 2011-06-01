@@ -35,19 +35,19 @@ class RelationTestCase extends DrupalWebTestCase {
   function createRelationTypes() {
     $this->relation_types['symmetric'] = array(
       'relation_type'   => 'symm' . $this->randomName(),
-      'label' => 'symm' . $this->randomString(),
+      'name' => 'symm' . $this->randomString(),
       'source_bundles' => array('node:article', 'node:page', 'term:*'),
     );
     $this->relation_types['directional'] = array(
       'relation_type'   => 'dir' . $this->randomName(),
-      'label' => 'dir' . $this->randomString(),
+      'name' => 'dir' . $this->randomString(),
       'directional' => TRUE,
       'source_bundles' => array('node:article'),
       'target_bundles' => array('node:page'),
     );
     $this->relation_types['octopus'] = array(
       'relation_type'   => 'octo' . $this->randomName(),
-      'label' => 'octo' . $this->randomString(),
+      'name' => 'octo' . $this->randomString(),
       'min_arity' => 3,
       'max_arity' => 5,
       'source_bundles' => array('node:article', 'node:page'),
@@ -198,7 +198,7 @@ class RelationAPITestCase extends RelationTestCase {
 
     // Get all relations on node 1 and sort them in reverse created order
     $relations = relation_query('node', $node1->nid)
-      ->propertyOrderBy('created','DESC')
+      ->propertyOrderBy('created', 'DESC')
       ->execute();
     $this->assertEqual(array_keys($relations), array(3, 2, 1), 'Got relations 3, 2, 1: ' . implode(', ', array_keys($relations)));
 
@@ -216,6 +216,6 @@ class RelationAPITestCase extends RelationTestCase {
     $this->drupalGet("admin/structure/relation/manage/$relation_type_symmetric/delete");
     $num_relations = 1;
     // See relation_type_delete_confirm() in relation.admin.inc
-    $this->assertRaw(format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => $num_relations)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
+    $this->assertRaw(format_plural($num_relations, 'The %name relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %name relations and they may not display correctly.', 'The %name relation type is used by @count relations on your site. If you remove %name, you will not be able to edit %name relations and they may not display correctly.', array('%name' => $this->relation_types['symmetric']['name'], '@count' => $num_relations)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['name'] . ' relation type.');
   }
 }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Relation endpoints field.
+ */
+
 function relation_field_info() {
   return array(
     'relation_endpoint' => array(
