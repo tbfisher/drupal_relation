@@ -3,10 +3,10 @@
 /**
  * Implements hook_block_info().
  */
-function relation_dropzone_block_info() {
+function relation_entity_collector_block_info() {
   return array(
-    'dropzone' => array(
-      'info' => t('Relation dropzone'),
+    'block' => array(
+      'info' => t('Relation Entity Collector'),
     ),
   );
 }
@@ -14,24 +14,24 @@ function relation_dropzone_block_info() {
 /**
  * Implements hook_block_view().
  */
-function relation_dropzone_block_view() {
-  $block['subject'] = t('Pick an entity');
-  $block['content']['#pre_render'] = array('relation_dropzone_pre_render');
+function relation_entity_collector_block_view() {
+  $block['subject'] = t('Entity Collector');
+  $block['content']['#pre_render'] = array('relation_entity_collector_pre_render');
   return $block;
 }
 
 /**
- * Pre render callback for the dropzone block.
+ * Pre render callback for the entity_collector block.
  */
-function relation_dropzone_pre_render($element) {
-  $element['form'] = drupal_get_form('relation_dropzone');
+function relation_entity_collector_pre_render($element) {
+  $element['form'] = drupal_get_form('relation_entity_collector');
   return $element;
 }
 
 /**
  * Implements hook_entity_load().
  */
-function relation_dropzone_entity_load($entities, $type) {
+function relation_entity_collector_entity_load($entities, $type) {
   $entities_store = &drupal_static('relation_entities', array());
   $enabled = &drupal_static(__FUNCTION__);
   // Recursion protection.
@@ -47,7 +47,7 @@ function relation_dropzone_entity_load($entities, $type) {
     $block_info = _block_load_blocks();
     $enabled = FALSE;
     foreach ($block_info as $region => $blocks) {
-      if (isset($blocks['relation_dropzone_dropzone'])) {
+      if (isset($blocks['relation_entity_collector_block'])) {
         $enabled = TRUE;
         break;
       }
@@ -60,15 +60,15 @@ function relation_dropzone_entity_load($entities, $type) {
 }
 
 /**
- * The dropzone form.
+ * The entity_collector form.
  */
-function relation_dropzone($form, &$form_state) {
+function relation_entity_collector($form, &$form_state) {
   $form['#attached']['css'] = array(
-    drupal_get_path('module', 'relation_dropzone') . '/relation_dropzone.css',
+    drupal_get_path('module', 'relation_entity_collector') . '/relation_entity_collector.css',
   );
   $types = relation_get_types();
   if (empty($types)) {
-    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the dropzone until cleared or a relation is created so it is possible to collect the entities from several pages.', array( '!link' => l('relation types', 'admin/structure/relation')));
+    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array( '!link' => l('relation types', 'admin/structure/relation')));
     return $form;
   }
   if ($relation_entities = drupal_static('relation_entities', array())) {
@@ -81,7 +81,7 @@ function relation_dropzone($form, &$form_state) {
     $form_state['relation_entities_options'] = $options;
   }
   if (empty($form_state['relation_entities_options'])) {
-    $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the dropzone until cleared or a relation is created so it is possible to collect the entities from several pages.');
+    $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
   }
   $form['relation_type'] = array(
@@ -103,41 +103,46 @@ function relation_dropzone($form, &$form_state) {
   }
   $form['pick'] = array(
     '#type' => 'submit',
-    '#submit' => array('relation_dropzone_pick'),
+    '#submit' => array('relation_entity_collector_pick'),
     '#value' => t('Pick'),
     '#ajax'  => array(
-      'wrapper' => 'relation_dropzone_reload',
-      'callback' => '_relation_dropzone_ajax',
+      'wrapper' => 'relation_entity_collector_reload',
+      'callback' => '_relation_entity_collector_ajax',
     ),
   );
-  $form['reload']['#prefix'] = '<span id="relation_dropzone_reload">';
+  $form['reload']['#prefix'] = '<span id="relation_entity_collector_reload">';
   $form['reload']['#suffix'] = '</span>';
   if (!empty($_SESSION['relation_entity_keys'])) {
     $form['reload']['stored'] = _relation_stored_entity_keys_list();
     $form['reload']['save'] = array(
       '#type' => 'submit',
       '#value' => t('Create relation'),
-      '#submit' => array('relation_dropzone_save'),
+      '#submit' => array('relation_entity_collector_save'),
     );
     if (isset($_SESSION['relation_entity_keys'])) {
       $form['reload']['clear'] = array(
         '#type' => 'submit',
         '#value' => t('Clear'),
-        '#submit' => array('relation_dropzone_clear'),
+        '#submit' => array('relation_entity_collector_clear'),
         '#ajax'  => array(
-          'wrapper' => 'relation_dropzone_reload',
-          'callback' => '_relation_dropzone_ajax',
+          'wrapper' => 'relation_entity_collector_reload',
+          'callback' => '_relation_entity_collector_ajax',
         ),
       );
     }
   }
+  $form['explanation'] = array(
+    '#prefix' => '<div id=\'relation-entity-collector-explanation\'>',
+    '#markup' => t('This block shows all loaded entities on the page. Entities picked stay in the Entity Collector until cleared or a relation is created so it is possible to collect the entities from several pages.'),
+    '#suffix' => '</div>',
+  );
   return $form;
 }
 
 /**
  * Trivial AJAX helper.
  */
-function _relation_dropzone_ajax($form) {
+function _relation_entity_collector_ajax($form) {
   return $form['reload'];
 }
 
@@ -159,16 +164,16 @@ function _relation_stored_entity_keys_list() {
 /**
  * Submit handler for the pick button.
  */
-function relation_dropzone_pick($form, &$form_state) {
+function relation_entity_collector_pick($form, &$form_state) {
   $_SESSION['relation_entity_keys'][] = $form_state['pick'];
   $_SESSION['relation_type'] = $form_state['values']['relation_type'];
   $form_state['rebuild'] = TRUE;
 }
 
 /**
- * Validate form submission for the dropzone.
+ * Validate form submission for the entity_collector.
  */
-function relation_dropzone_validate($form, &$form_state) {
+function relation_entity_collector_validate($form, &$form_state) {
   $relation_type = $form_state['values']['relation_type'];
   $errors = array();
   $current = array();
@@ -206,7 +211,7 @@ function relation_dropzone_validate($form, &$form_state) {
 /**
  * Submit handler for the save button.
  */
-function relation_dropzone_save($form, $form_state) {
+function relation_entity_collector_save($form, $form_state) {
   if (isset($_SESSION['relation_type'])) {
     $relation = relation_create($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
     $rid = relation_save($relation);
@@ -216,7 +221,7 @@ function relation_dropzone_save($form, $form_state) {
       $rendered_list = drupal_render($list);
       $message = t('Created new !link from !list', array('!link' => $link, '!list' => $rendered_list));
       drupal_set_message($message);
-      relation_dropzone_clear($form, $form_state);
+      relation_entity_collector_clear($form, $form_state);
     }
     else {
       drupal_set_message('Relation not created', 'error');
@@ -227,7 +232,7 @@ function relation_dropzone_save($form, $form_state) {
 /**
  * Submit handler for the clear button.
  */
-function relation_dropzone_clear($form, &$form_state) {
+function relation_entity_collector_clear($form, &$form_state) {
   unset($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
   $form_state['rebuild'] = TRUE;
 }
