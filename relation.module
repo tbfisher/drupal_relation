@@ -119,10 +119,11 @@ function relation_menu() {
   );
   $items['admin/structure/relation/manage/%relation_type'] = array(
     'title' => 'Edit relation type',
+    'title callback' => 'relation_type_page_title',
+    'title arguments' => array(4),
     'access arguments' => array('administer relation types'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_type_form', 4),
-    'type' => MENU_CALLBACK,
     'file' => 'relation.admin.inc',
   );
   $items['admin/structure/relation/manage/%relation_type/edit'] = array(
@@ -344,10 +345,17 @@ function relation_page($relation) {
 }
 
 /**
- * Relation display page title.
+ * Relation display page title callback.
  */
 function relation_page_title($relation) {
   return 'Relation ' . $relation->rid;
+}
+
+/**
+ * Relation type display/edit page title callback.
+ */
+function relation_type_page_title($type) {
+  return $type->label;
 }
 
 /**
