@@ -422,7 +422,7 @@ function relation_create($type, $endpoints) {
   $relation->relation_type = $type;
   $relation->uid = $user->uid;
   $relation->endpoints[LANGUAGE_NONE] = $endpoints;
-  return relation_save($relation);
+  return $relation;
 }
 
 /**

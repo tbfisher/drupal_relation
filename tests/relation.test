@@ -61,9 +61,9 @@ class RelationTestCase extends DrupalWebTestCase {
    * Validates and saves relations, and checks the process.
    */
   function RelationSaveHelper($relation_type, $endpoints) {
-    $rid = relation_create($relation_type, $endpoints);
+    $relation = relation_create($relation_type, $endpoints);
+    $rid = relation_save($relation);
     $this->assertTrue($rid, 'Relation created.');
-    $relation = relation_load($rid);
     $count = count($relation->endpoints[LANGUAGE_NONE]);
     $this->assertEqual($count, count($endpoints), 'There are two entities: ' . $count);
     $this->assertEqual($relation->arity, count($endpoints), 'Arity is 2: ' . $relation->arity);
