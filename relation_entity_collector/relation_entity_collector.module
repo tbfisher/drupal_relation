@@ -114,11 +114,13 @@ function relation_entity_collector($form, &$form_state) {
   $form['reload']['#suffix'] = '</span>';
   if (!empty($_SESSION['relation_entity_keys'])) {
     $form['reload']['stored'] = _relation_stored_entity_keys_list();
-    $form['reload']['save'] = array(
-      '#type' => 'submit',
-      '#value' => t('Create relation'),
-      '#submit' => array('relation_entity_collector_save'),
-    );
+    if (count($form['reload']['stored']['#items']) > 1) {
+      $form['reload']['save'] = array(
+        '#type' => 'submit',
+        '#value' => t('Create relation'),
+        '#submit' => array('relation_entity_collector_save'),
+      );
+    }
     if (isset($_SESSION['relation_entity_keys'])) {
       $form['reload']['clear'] = array(
         '#type' => 'submit',
