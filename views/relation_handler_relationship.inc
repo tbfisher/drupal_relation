@@ -5,7 +5,6 @@
  * Views relationship support.
  */
 
-
 class relation_handler_relationship extends views_handler_relationship {
 }
 
@@ -25,21 +24,22 @@ class relation_handler_join extends views_join {
     $entity_type_left = $this->definition['entity_type_left'];
     $conditions = "$left[alias].$this->left_field = %alias.$entity_id_field_name AND %alias.$entity_type_field_name = '$entity_type_left'";
     if ($directional) {
-      $conditions .= " AND %alias.$r_index_field_name = 0";
+#      $conditions .= " AND %alias.$r_index_field_name = 0";
     }
     // Left join alias.
-    $l = $select_query->innerJoin($relation_data_table_name, NULL, $conditions);
+    $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
 
     // Execute a self-join.
     $entity_type_right = $this->definition['entity_type_right'];
     // entity_id here is the ID of the relation entity. delta or
     // $r_index_field_name does not matter.
-    $conditions = "%alias.entity_id = $l.entity_id AND %alias.delta != $l.delta AND %alias.$entity_type_field_name = '$entity_type_right'";
+    $relation_type = $this->definition['relation_type'];
+    $conditions = "%alias.entity_id = $l.entity_id AND %alias.delta != $l.delta AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
     // Right join alias.
-    $r = $select_query->innerJoin($relation_data_table_name, NULL, $conditions);
+    $r = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
 
     // Join the right table to the relation_data table.
     $conditions = "%alias.$this->field = $r.$entity_id_field_name";
-    $select_query->innerJoin($table['table'], $table['alias'], $conditions);
+    $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
   }
 }
