@@ -232,3 +232,47 @@ function relation_type_delete_confirm_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/structure/relation';
   return;
 }
+
+/**
+ * Generate relations
+ */
+function relation_generate_form($form, &$form_state) {
+  $types = relation_get_types();
+  foreach( $types as $id => $type) {
+    $types[$id] = $type->label;
+  }
+
+  $form['relation_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Relation types'),
+    '#description' => t('Select relation types to create relations from. If no types are selected, relations will be generated for all types.'),
+    '#options' => $types,
+  );
+  $form['relation_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('How many relations would you like to generate of each type?'),
+    '#default_value' => 10,
+    '#size' => 10,
+  );
+  $form['relation_kill'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Kill all existing relations first.'),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Generate'),
+  );
+  return $form;
+}
+
+function relation_generate_form_submit($form, &$form_state) {
+  $number = $form_state['values']['relation_number'];
+  $types = $form_state['values']['relation_types'];
+  $kill = $form_state['values']['relation_kill'];
+  if (is_numeric($number) && $number>0) {
+    $types = array_keys(array_filter($types));
+    $rids = relation_generate_relations($number, $types, $kill);
+    drupal_set_message(t("Generated %count relations (rids from %first to %last).", array('%count' => count($rids),'%first' => $rids[0],'%last' => end($rids))));
+  }
+}
