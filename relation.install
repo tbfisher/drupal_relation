@@ -121,7 +121,7 @@ function relation_schema() {
         'default' => '',
         'description' => 'The machine-readable name of this type.',
       ),
-      'name' => array(
+      'label' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,

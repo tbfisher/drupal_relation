@@ -168,7 +168,7 @@ function relation_init() {
  * @param $record
  *   Array containing:
  *   - relation_type: Relation type machine name (string).
- *   - name: Relation type human-readable name (string).
+ *   - label: Relation type human-readable name (string).
  *   - directional: whether relation is directional (boolean) .
  *   - transitive: whether relation is transitive (boolean).
  *   - r_unique: whether relations of this type are unique (boolean).
@@ -252,7 +252,7 @@ function relation_type_load($relation_type) {
  */
 function relation_get_types($types = array()) {
   $query = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'name', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
+    ->fields('rt', array('relation_type', 'label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
   if ($types) {
     $query->condition('relation_type', $types);
   }
@@ -541,15 +541,15 @@ function relation_multiple_delete($rids) {
 function relation_type_autocomplete($string = '') {
   $like_string = db_like($string) . '%';
   $result = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'name'))
+    ->fields('rt', array('relation_type', 'label'))
     ->condition(db_or()
       ->condition('relation_type', $like_string, 'LIKE')
-      ->condition('name', $like_string, 'LIKE'))
+      ->condition('label', $like_string, 'LIKE'))
     ->range(0, 10)
     ->execute();
   $matches = array();
   foreach ($result as $row) {
-    $matches[$row->relation_type] = $row->name;
+    $matches[$row->relation_type] = $row->label;
   }
   drupal_json_output($matches);
 }

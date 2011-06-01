@@ -52,7 +52,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   else {
     $relation_type = (object) array(
       'relation_type' => '',
-      'name' => '',
+      'label' => '',
       'bundles' => array(),
       'directional' => FALSE,
       'transitive' => FALSE,
@@ -63,11 +63,11 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
       'target_bundles' => array(),
     );
   }
-  $form['name'] = array(
+  $form['name'] = array( // use 'name' for /misc/machine-name.js
     '#type'          => 'textfield',
-    '#title'         => t('Name'),
+    '#title'         => t('Label'),
     '#description'   => t('Display name of the relation type.'),
-    '#default_value' => $relation_type->name,
+    '#default_value' => $relation_type->label,
     '#required'      => TRUE,
   );
   $form['relation_type'] = array(
@@ -177,7 +177,7 @@ function relation_type_form_submit($form, &$form_state) {
     'relation_type'   => $relation_type,
     'min_arity'   => $min_arity,
     'max_arity'   => $max_arity,
-    'name' => $form_state['values']['name'],
+    'label' => $form_state['values']['name'],
     'directional' => $form_state['values']['directional'],
     'transitive' => $form_state['values']['transitive'],
     'r_unique' => $form_state['values']['r_unique'],
@@ -195,9 +195,9 @@ function relation_type_form_submit($form, &$form_state) {
  */
 function relation_type_delete_confirm($form, &$form_state, $relation_type) {
   $form['relation_type'] = array('#type' => 'value', '#value' => $relation_type->relation_type);
-  $form['name'] = array('#type' => 'value', '#value' => $relation_type->name);
+  $form['label'] = array('#type' => 'value', '#value' => $relation_type->label);
 
-  $message = t('Are you sure you want to delete the %name relation type?', array('%name' => $relation_type->name));
+  $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $relation_type->label));
   $caption = '';
 
   $num_relations = relation_query()
@@ -206,9 +206,9 @@ function relation_type_delete_confirm($form, &$form_state, $relation_type) {
     ->execute();
   if ($num_relations) {
     $caption .= '<p>' . format_plural($num_relations,
-      'The %name relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %name relations and they may not display correctly.',
-      'The %name relation type is used by @count relations on your site. If you remove %name, you will not be able to edit %name relations and they may not display correctly.',
-      array('%name' => $relation_type->name, '@count' => $num_relations)) . '</p>';
+      'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.',
+      'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.',
+      array('%label' => $relation_type->label, '@count' => $num_relations)) . '</p>';
   }
 
   $caption .= '<p>' . t('This action cannot be undone.') . '</p>';
@@ -222,9 +222,9 @@ function relation_type_delete_confirm($form, &$form_state, $relation_type) {
 function relation_type_delete_confirm_submit($form, &$form_state) {
   relation_type_delete($form_state['values']['relation_type']);
 
-  $t_args = array('%name' => $form_state['values']['name']);
-  drupal_set_message(t('The %name relation type has been deleted.', $t_args));
-  watchdog('relation', 'Deleted the %name relation type.', $t_args, WATCHDOG_NOTICE);
+  $t_args = array('%label' => $form_state['values']['label']);
+  drupal_set_message(t('The %label relation type has been deleted.', $t_args));
+  watchdog('relation', 'Deleted the %label relation type.', $t_args, WATCHDOG_NOTICE);
 
   // TODO: relation_types_rebuild() ?;
   menu_rebuild();
