@@ -626,6 +626,51 @@ function relation_query($entity_type  = NULL, $entity_id = NULL, $index = NULL) 
 }
 
 /**
+ * Returns the entity object of the first other entity in the first relation
+ * that matches the given conditions. Do not expect to get exactly what you
+ * want, especially if you have multiple relations of the same type on the
+ * search entity.
+ *
+ * @param $entity_type
+ *   The entity type of one of the endpoints.
+ * @param $entity_id
+ *   The entity id of one of the endpoints.
+ * @param $relation_type
+ *   (optional) The relation type of the relation to find.
+ * @param $r_index
+ *   (optional) The index of the search entity in the relation to be found
+ *   (0 = source, 1 = target).
+ *
+ * @return
+ *   The entity object from the other endpoint.
+ */
+function relation_get_related_entity($entity_type, $entity_id, $relation_type = NULL, $r_index = NULL) {
+  $query = relation_query($entity_type, $entity_id);
+  if ($relation_type) {
+    $query->propertyCondition('relation_type', $relation_type);
+  }
+  if (isset($r_index)) {
+    $query->propertyCondition('r_index', $r_index);
+  }
+  $results = $query->execute();
+  $result = reset($results);
+  $relation = relation_load($result->rid);
+  $request_key = $entity_type . ':' . $entity_id;
+  $entities = $relation->endpoints[LANGUAGE_NONE];
+  $first_entity_key = $entities[0]['entity_type'] . ':' . $entities[0]['entity_id'];
+  if (isset($r_index)) {
+    $request_key = $request_key . ':' . $r_index;
+    $first_entity_key = $first_entity_key . ':' . $entities[0]['r_index'];
+  }
+  if ($request_key == $first_entity_key) {
+    $other_endpoints = entity_load($entities[1]['entity_type'], array($entities[1]['entity_id']));
+    return reset($other_endpoints);
+  }
+  $other_endpoints = entity_load($entities[0]['entity_type'], array($entities[0]['entity_id']));
+  return reset($other_endpoints);
+}
+
+/**
  * Implements hook_entity_delete.
  */
 function relation_entity_delete($entity, $entity_type) {

@@ -120,12 +120,16 @@ class RelationAPITestCase extends RelationTestCase {
     // Create a symmetric relation article 1 -- page 4
     $relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
     $rid_symmetric = $this->RelationSaveHelper($relation_type_symmetric, $endpoints);
+    $related = relation_get_related_entity('node', $node4->nid);
+    $this->assertEqual($node1->nid, $related->nid);
     sleep(2);
     // Create a correct directional relation: article 1 -> page 3
     $endpoints[1]['entity_id'] = $node3->nid;
     $endpoints[1]['r_index'] = 1;
     $relation_type_directional = $this->relation_types['directional']['relation_type'];
     $rid_directional = $this->RelationSaveHelper($relation_type_directional, $endpoints);
+    $related = relation_get_related_entity('node', $node3->nid, $this->relation_types['directional']['relation_type']);
+    $this->assertEqual($node1->nid, $related->nid);
     sleep(2);
     // Create a 4-ary octopus, nodes 1-4.
     $relation_type_octopus = $this->relation_types['octopus']['relation_type'];
