@@ -37,45 +37,6 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
       );
-      $table = 'relation_joined_' . $base_table_left . '_' . $type;
-      $data[$table]['table']['group'] = $data[$base_table_left]['table']['group'];
-      $data[$table]['table']['join'] = array(
-        $base_table_left => array(
-          'table' => $relation_data_table_name,
-          'field' => $entity_id_field_name,
-          'left_field' => $relationship_field,
-          'extra' => array(
-            array(
-              'field' => $entity_type_field_name,
-              'value' => $entity_type_left,
-            ),
-            array(
-              'field' => 'bundle',
-              'value' => $type,
-            ),
-          ),
-        ),
-      );
-      $data[$table]['entity_id'] = array(
-        'title' => t('Relationship ID'),
-        'help' => t('Relationship ID -- use this to indicate whether the entity is in a @relation_type_label relationship', $t_arguments),
-        'field' => array(
-          'handler' => 'views_handler_field_numeric',
-        ),
-        'filter' => array(
-          'handler' => 'views_handler_filter_numeric',
-          'allow empty' => TRUE,
-          'numeric' => TRUE,
-        ),
-        'argument' => array(
-          'handler' => 'views_handler_argument_numeric',
-          'numeric' => TRUE,
-        ),
-        'sort' => array(
-          'handler' => 'views_handler_sort',
-        ),
-      );
-
       foreach ($relation_type->$target_index as $target_bundle) {
         $target_bundle = explode(':', $target_bundle, 2);
         $entity_type_right = $target_bundle[0];
