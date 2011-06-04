@@ -46,6 +46,7 @@ function relation_views_data_alter(&$data) {
           'title' => t('Relation: @relation_type_label (@left <-> @right)', $t_arguments),
           'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
+            // relation_handler_relationship::options_form() relies on this check_plain().
             'label' => check_plain($relation_type->label),
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],

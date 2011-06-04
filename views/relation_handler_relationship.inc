@@ -28,7 +28,8 @@ class relation_handler_relationship extends views_handler_relationship {
         '#options' => $options,
         '#title' => t('Position of the relationship base'),
         '#default_value' => $this->options['r_index'],
-        '#description' => t('Select whether the entity you are adding the relationship to is source or target of @relation_type_label relation.', array('@relation_type_label' => $this->definition['label'])),
+        // check_plain()'d in the definition.
+        '#description' => t('Select whether the entity you are adding the relationship to is source or target of !relation_type_label relation.', array('!relation_type_label' => $this->definition['label'])),
       );
     }
   }
