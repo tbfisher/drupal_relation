@@ -6,15 +6,12 @@
  */
 
 class relation_handler_relationship extends views_handler_relationship {
-}
-
-class relation_handler_join extends views_join {
   /**
    * Define r_index option.
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['r_index'] = array('default' => 0);
+    $options['r_index'] = array('default' => -1);
     return $options;  
   }
 
@@ -45,7 +42,9 @@ class relation_handler_join extends views_join {
       1 => t('Target'),
     ) : array();
   }
+}
 
+class relation_handler_join extends views_join {
   /**
    * Build the SQL for the join this object represents.
    */
@@ -67,10 +66,9 @@ class relation_handler_join extends views_join {
 
     // Execute a self-join.
     $entity_type_right = $this->definition['entity_type_right'];
-    // entity_id here is the ID of the relation entity. delta or
-    // $r_index_field_name does not matter.
+    // entity_id here is the ID of the relation entity. 
     $relation_type = $this->definition['relation_type'];
-    $conditions = "%alias.entity_id = $l.entity_id AND %alias.delta != $l.delta AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
+    $conditions = "%alias.entity_id = $l.entity_id AND %alias.$r_index_field_name != $l.$r_index_field_name AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
     // Right join alias.
     $r = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
 

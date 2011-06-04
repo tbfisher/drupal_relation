@@ -231,7 +231,7 @@ function relation_field_schema() {
   return array(
     'columns' => $columns,
     'indexes' => array(
-      'entity' => array('entity_type', 'entity_id'),
+      'relation' => array('entity_type', 'entity_id', 'r_index'),
     ),
   );
 }
