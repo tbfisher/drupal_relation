@@ -515,11 +515,11 @@ function relation_save($relation) {
 
   if (!empty($relation->is_new)) {
     field_attach_insert('relation', $relation);
-    module_invoke_all('entity_insert', $relation);
+    module_invoke_all('entity_insert', $relation, 'relation');
   }
   else {
     field_attach_update('relation', $relation);
-    module_invoke_all('entity_update', $relation);
+    module_invoke_all('entity_update', $relation, 'relation');
   }
 
   return $relation->rid;
