@@ -102,7 +102,7 @@ function relation_menu() {
     'access arguments' => array('administer relation types'),
     'page callback' => 'relation_type_list',
     'file' => 'relation.admin.inc',
-    'description' => 'Manage content types, including default status, front page promotion, comment settings, etc.',
+    'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
   );
   $items['admin/structure/relation/list'] = array(
     'title' => 'List',
