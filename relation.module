@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__FILE__) . '/relation.field.inc';
+require_once dirname(__FILE__) . '/relation.devel.inc';
 
 /**
  * @file
@@ -690,64 +691,4 @@ function relation_views_api() {
     'api' => 3.0,
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
-}
-
-/**
- * Generates random relations.
- */
-function relation_generate_relations($number = 10, $types = array(), $kill = FALSE) {
-  if ($kill) {
-    $query = new EntityFieldQuery();
-    $results = $query->entityCondition('entity_type', 'relation')
-      ->execute();
-    if ($results) {
-      $rids = array_keys($results['relation']);
-      relation_multiple_delete($rids);
-    }
-  }
-  $relation_types = relation_get_types($types);
-  $new_rids = array();
-  foreach ($relation_types as $type => $relation_type) {
-    $available_types = array();
-    foreach ($relation_type->source_bundles as $bundle_key) {
-      list($entity_type, $bundle) = explode(':', $bundle_key, 2);
-      $available_types['source'][$entity_type][] = $bundle;
-    }
-    foreach ($relation_type->target_bundles as $bundle_key) {
-      list($entity_type, $bundle) = explode(':', $bundle_key, 2);
-      $available_types['target'][$entity_type][] = $bundle;
-    }
-    $arity = rand($relation_type->min_arity, $relation_type->min_arity);
-    for ($i = $number; $i > 0; $i--) { // start new relation
-      $entity_keys = array();
-      for ($r_index = 0; $r_index < $arity; $r_index++) {
-        if ($relation_type->directional && $r_index > 0) {
-          $direction = 'target';
-        }
-        else { //use source bundles
-          $direction = 'source';
-        }
-        $entity_type = array_rand($available_types[$direction]);
-        $query = new EntityFieldQuery();
-        $query->entityCondition('entity_type', $entity_type, '=')
-          // Would be nice to ->entityOrderBy('RAND()'); here, and set
-          // range(0, 1). See http://drupal.org/node/1174806
-          ->range(0, 2*$number);
-        if (!in_array('*', $available_types[$direction][$entity_type])) {
-          $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
-        }
-        $results = $query->execute();
-        $entity_ids = array_keys(reset($results));
-        $key = array_rand($entity_ids); //pseudorandomise until EFQ does random.
-        $entity_keys[] = array(
-          'entity_type' => $entity_type,
-          'entity_id'   => $entity_ids[$key],
-          'r_index'     => $r_index,
-          );
-      }
-      $relation = relation_create($type, $entity_keys);
-      $new_rids[] = relation_save($relation);
-    }
-  }
-  return $new_rids;
 }
