@@ -52,6 +52,10 @@ function relation_permission() {
       'title' => t('Administer Relation types'),
       'description' => t('Create, edit, delete, and perform administration tasks for relation types.'),
     ),
+    'export relation types' => array(
+      'title' => t('Export Relation types'),
+      'description' => t('Export relation types.'),
+    ),
     'create relations' => array(
       'title' => t('Create Relations'),
       'description' => t('Create Relations between entities.'),
@@ -133,13 +137,24 @@ function relation_menu() {
     'weight' => -10,
   );
   $items['admin/structure/relation/manage/%relation_type/delete'] = array(
-    'title' => 'Delete relation type',
+    'title' => 'Delete',
     'page arguments' => array('relation_type_delete_confirm', 4),
     'access arguments' => array('administer relation types'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'relation.admin.inc',
-    'weight' => 10,
+    'weight' => 20,
   );
+  if (module_exists('ctools')) {
+    $items['admin/structure/relation/manage/%relation_type/export'] = array(
+      'title' => 'Export',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('relation_export_relation_type', 4),
+      'access arguments' => array('export relation types'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'relation.devel.inc',
+      'weight' => 10,
+    );
+  }
   $items['admin/config/development/generate/relation'] = array(
     'title' => 'Generate relations',
     'access arguments' => array('administer relation types'),
@@ -147,7 +162,6 @@ function relation_menu() {
     'page arguments' => array('relation_generate_form'),
     'file' => 'relation.admin.inc',
   );
-
   $items['relation/autocomplete/bundles'] = array(
     'type' => MENU_CALLBACK,
     'access arguments' => array('access content'),
@@ -269,20 +283,22 @@ function relation_get_types($types = array()) {
   $results = $query->execute();
   $relation_types = array();
   foreach ($results as $relation_type) {
-    _relation_get_type_bundles($relation_type);
     $relation_types[$relation_type->relation_type] = $relation_type;
   }
+  _relation_get_types_bundles($relation_types);
   return $relation_types;
 }
 /**
- * Helper function. Attaches bundles to a relation type object.
+ * Helper function. Attaches bundles to relation type objects in an array.
  */
-function _relation_get_type_bundles(&$relation_type) {
-  $relation_type->source_bundles = array();
-  $relation_type->target_bundles = array();
-  foreach (db_query('SELECT relation_type, entity_type, bundle, r_index  FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
-    $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
-    $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+function _relation_get_types_bundles(&$relation_types) {
+  foreach ($relation_types as &$relation_type) {
+    $relation_type->source_bundles = array();
+    $relation_type->target_bundles = array();
+    foreach (db_query('SELECT relation_type, entity_type, bundle, r_index  FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
+      $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
+      $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+    }
   }
 }
 
