@@ -269,15 +269,21 @@ function relation_get_types($types = array()) {
   $results = $query->execute();
   $relation_types = array();
   foreach ($results as $relation_type) {
-    $relation_type->source_bundles = array();
-    $relation_type->target_bundles = array();
-    foreach (db_query('SELECT relation_type, entity_type, bundle, r_index  FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
-      $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
-      $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
-    }
+    _relation_get_type_bundles($relation_type);
     $relation_types[$relation_type->relation_type] = $relation_type;
   }
   return $relation_types;
+}
+/**
+ * Helper function. Attaches bundles to a relation type object.
+ */
+function _relation_get_type_bundles(&$relation_type) {
+  $relation_type->source_bundles = array();
+  $relation_type->target_bundles = array();
+  foreach (db_query('SELECT relation_type, entity_type, bundle, r_index  FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
+    $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
+    $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+  }
 }
 
 /**
