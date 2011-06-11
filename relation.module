@@ -187,17 +187,24 @@ function relation_init() {
 }
 
 /**
- * Saves a relation bundle.
+ * Create a relation bundle.
  *
- * @param $record
- *   Array containing:
+ * @param $info
+ *   Array of relation type settings. All but relation_type are optional,
+ *   although if the bundles arrays are empty, relations might be difficult to
+ *   create! Keys are:
  *   - relation_type: Relation type machine name (string).
- *   - label: Relation type human-readable name (string).
- *   - directional: whether relation is directional (boolean) .
- *   - transitive: whether relation is transitive (boolean).
- *   - r_unique: whether relations of this type are unique (boolean).
- *   - min_arity: minimum number of entities in relations of this type (int>=2).
- *   - max_arity: maximum number of entities in relations of this type (int>=min_arity).
+ *   - label: Relation type human-readable name (string). Defaults to
+ *     duplicating relation_type.
+ *   - directional: whether relation is directional (boolean). Defaults to
+ *     FALSE.
+ *   - transitive: whether relation is transitive (boolean). Defaults to FALSE.
+ *   - r_unique: whether relations of this type are unique (boolean). Defaults
+ *     to FALSE.
+ *   - min_arity: minimum number of entities in relations of this type
+ *     (int >= 2). Defaults to 2.
+ *   - max_arity: maximum number of entities in relations of this type
+ *     (int >= min_arity). Defaults to 2.
  *   - source_bundles: array containing allowed bundle keys. This is used for
  *     both directional and non-directional relations. Bundle key arrays are
  *     of the form 'entity:bundle', eg. 'node:article', or 'entity:*' for all
@@ -205,44 +212,75 @@ function relation_init() {
  *   - target_bundles: array containing arrays allowed target bundle keys.
  *     This is the same format as source_bundles, but is only used for
  *     directional relations.
- * @param $write_record_keys
- *   Array containing the primary key of the relation ('relation_type'), if we are
- *   updating a relation, or an empty array if we are creating a new relation.
+ *
+ * @return
+ *   Relation type object, or FALSE if creation fails.
  */
-function relation_type_save($record, $write_record_keys = array()) {
-  $record += array(
+function relation_type_create($info = array()) {
+  $info = (array) $info;
+  if (empty($info['relation_type'])) {
+    return FALSE;
+  };
+  $info += array(
     'min_arity' => 2,
     'max_arity' => 2,
     'directional' => FALSE,
     'transitive' => FALSE,
     'r_unique' => FALSE,
+    'source_bundles' => array(),
+    'target_bundles' => array(),
   );
-  $source_bundles = $record['source_bundles'];
-  if ($record['directional']) {
-    $target_bundles = $record['target_bundles'];
+  if (empty($info['label'])) {
+    $info['label'] = $info['relation_type'];
   }
-  unset($record['source_bundles'], $record['target_bundles']);
-  $relation_type = $record['relation_type'];
+
+  return (object) $info;
+}
+
+/**
+ * Saves a relation bundle.
+ *
+ * @param $relation_type
+ *   stdClass object with relation type properties. See relation_type_create().
+ * @param $write_record_keys
+ *   Array containing the primary key of the relation ('relation_type'), if we are
+ *   updating a relation, or an empty array if we are creating a new relation.
+ */
+function relation_type_save($relation_type, $write_record_keys = array()) {
+  // Make sure all keys are populated.
+  $relation_type = relation_type_create($relation_type);
+
+  $type = $relation_type->relation_type;
+  $source_bundles = $relation_type->source_bundles;
+  $target_bundles = $relation_type->target_bundles;
+  unset($relation_type->source_bundles, $relation_type->target_bundles);
+
   $transaction = db_transaction();
-  drupal_write_record('relation_type', $record, $write_record_keys);
-  db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
-  $query = db_insert('relation_bundles')->fields(array('relation_type', 'entity_type', 'bundle', 'r_index'));
+  drupal_write_record('relation_type', $relation_type, $write_record_keys);
+
+  // Remove all existing bundles from the relation type before re-adding.
+  db_delete('relation_bundles')
+    ->condition('relation_type', $type)
+    ->execute();
+  $query = db_insert('relation_bundles')
+    ->fields(array('relation_type', 'entity_type', 'bundle', 'r_index'));
   foreach ($source_bundles as $entity_bundles) {
     list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
-    $query->values(array($relation_type, $entity_type, $bundle, 0));
+    $query->values(array($type, $entity_type, $bundle, 0));
   }
-  if ($record['directional']) {
+  if ($relation_type->directional) {
     foreach ($target_bundles as $entity_bundles) {
       list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
-      $query->values(array($relation_type, $entity_type, $bundle, 1));
+      $query->values(array($type, $entity_type, $bundle, 1));
     }
   }
   $query->execute();
-  if (!field_info_instance('relation', 'endpoints', $relation_type)) {
+
+  if (!field_info_instance('relation', 'endpoints', $type)) {
     $instance = array(
       'field_name' => 'endpoints',
       'entity_type' => 'relation',
-      'bundle' => $relation_type,
+      'bundle' => $type,
     );
     field_create_instance($instance);
   }
