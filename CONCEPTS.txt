@@ -1,4 +1,3 @@
-
 -- SUMMARY --
 
 Describes relations between entities.
@@ -65,9 +64,14 @@ For a full description of the module, visit the project page:
 To submit bug reports and feature suggestions, or to track changes:
   http://drupal.org/project/issues/relation
 
+--- ROADMAP ---
+See the Live, Self-Organising RoadMap (LSORM™) at:
+http://drupal.org/project/issues/search/relation?status[]=Open&categories[]=task&categories[]=feature
+
 --- Some related discussions/projects: ---
 - http://drupal.org/node/533222 (nodereference/userreference fields in D7)
 - http://drupal.pastebin.com/avnKvCD0 (notes from chx)
+- http://drupal.org/project/graphapi - provides some relation-based graphing capabilities.
 
 -- CONTACT --
 

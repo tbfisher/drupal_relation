@@ -13,6 +13,8 @@
 * To see the relation later, the relation_dummy_field shows it on the entities
   belonging to the relation.
 
+For details on why this works, and what the hell we were thinking, see CONCEPTS.txt
+
 -- CONTACT --
 
 Current maintainers:
