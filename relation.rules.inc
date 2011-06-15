@@ -71,16 +71,22 @@ function relation_rules_action_info() {
   );
 }
 
-/**
- * Options list callback for fetching relation types.
- */
-function relation_rules_get_type_options() {
-  $options = array();
-  $types = relation_get_types();
-  foreach ($types as $type) {
-    $options[$type->predicate] = $type->label;
+function relation_rules_create($values = array()) {
+  dpm($values, 'values');
+  // Check for unqiue flag, if relation endpoints already exist, return FALSE
+  $relation_type = relation_type_load($values['type']);
+  if ($relation_type->r_unique) {
+    if (relation_relation_exists(array(), $values['type'])) {
+      return FALSE;
+    }
   }
-  return $options;
+
+  global $user;
+  $relation = new stdClass();
+  $relation->is_new = TRUE;
+  $relation->relation_type = $values['type'];
+  $relation->uid = $user->uid;
+  $relation->endpoints[LANGUAGE_NONE] = array();
 }
 
 /**

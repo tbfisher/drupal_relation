@@ -18,6 +18,9 @@ function relation_entity_info() {
     'revision table' => 'relation_revision',
     'fieldable' => TRUE,
     'controller class' => 'DrupalDefaultEntityController',
+    'save callback' => 'relation_save',
+    'creation callback' => 'relation_rules_create',
+    'access callback' => 'relation_rules_access',
     'uri callback' => 'relation_uri',
     'entity keys' => array(
       'id' => 'rid',
@@ -41,6 +44,68 @@ function relation_entity_info() {
     );
   }
   return $entities;
+}
+
+/**
+ * Implementation of hook_entity_property_info().
+ */
+function relation_entity_property_info() {
+  $info = array();
+  $properties = &$info['relation']['properties'];
+
+  $properties['relation_type'] = array(
+    'label' => t('Relation type'),
+    'type' => 'token',
+    'description' => t("The type of the relation."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer nodes',
+    'options list' => 'relation_rules_get_type_options',
+    'required' => TRUE,
+    'schema field' => 'relation_type',
+  );
+
+  $types = relation_get_types();
+  foreach ($types as $type) {
+    $properties['relation_type__' . $type->relation_type] = array(
+      'label' => t('@type endpoint', array('@type' => $type->relation_type)),
+      'type' => 'list<entity>',
+      'description' => t('Endpoints of the relation type @type', array('@type' => $type->relation_type)),
+      // TODO: We will probably need our own setter callback since setting
+      // endpoints aren't as easy as setting a plain property.
+      'setter callback' => 'entity_property_verbatim_set',
+      'options list' => 'relation_rules_get_endpoints',
+      'required' => TRUE,
+    );
+  }
+
+  return $info;
+}
+
+function relation_rules_access($op, $entity = NULL, $account = NULL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+  return TRUE;
+}
+
+/**
+ * Options list for endpoints.
+ */
+function relation_rules_get_endpoints($type = NULL) {
+  return array('foo' => 'bar');
+}
+
+/**
+ * Options list callback for fetching relation types.
+ */
+function relation_rules_get_type_options() {
+  $options = array();
+  $types = relation_get_types();
+  foreach ($types as $type) {
+    $options[$type->relation_type] = $type->label;
+  }
+  return $options;
 }
 
 /**
