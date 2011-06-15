@@ -6,27 +6,6 @@
  */
 
 /**
- * Implements hook_install().
- */
-function relation_install() {
-  // First, add relation to the module list.
-  $module_list = module_list();
-  $module_list['relation']['filename'] = dirname(__FILE__)  . '/relation.module';
-  module_list(TRUE, FALSE, FALSE, $module_list);
-  // Next, clear the module_implements() cache.
-  module_implements('', FALSE, TRUE);
-  // Finally, clear the field info cache. This way we can create a field our
-  // own module defines.
-  field_info_cache_clear();
-  $field = array(
-    'field_name' => 'endpoints',
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'type' => 'relation_endpoint'
-  );
-  field_create_field($field);
-}
-
-/**
  * Implements hook_schema().
  */
 function relation_schema() {
@@ -39,7 +18,7 @@ function relation_schema() {
         'not null' => TRUE,
         'description' => 'Unique relation id (entity id).',
       ),
-      'predicate' => array(
+      'relation_type' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -81,7 +60,7 @@ function relation_schema() {
     ),
     'primary key' => array('rid'),
     'indexes' => array(
-      'predicates' => array('predicate', 'rid'),
+      'relation_types' => array('relation_type', 'rid'),
     ),
   );
   $schema['relation_revision'] = array(
@@ -94,7 +73,7 @@ function relation_schema() {
         'default' => 0,
         'description' => 'Unique relation id (entity id).',
       ),
-      'predicate' => array(
+      'relation_type' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -134,8 +113,22 @@ function relation_schema() {
   );
   $schema['relation_type'] = array(
     'description' => 'Relation settings.',
+    // Add exportability using ctools.
+    'export' => array(
+      'key' => 'relation_type',
+      'identifier' => 'relation_type',
+      'default hook' => 'relation_default_relation_types',  // Function hook name.
+      'api' => array(
+        'owner' => 'relation',
+        'api' => 'relation_default',  // Base name for api include files.
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
+      // the callback to load the available bundles
+      'subrecords callback' => '_relation_get_types_bundles',
+    ),
     'fields' => array(
-      'predicate' => array(
+      'relation_type' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -163,6 +156,13 @@ function relation_schema() {
         'default' => 0,
         'description' => 'Whether this relation type is transitive.',
       ),
+      'r_unique' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Whether relations of this type are unique.',
+      ),
       'min_arity' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -178,12 +178,12 @@ function relation_schema() {
         'description' => 'The maximum number of rows that can make up a relation of this type. Similar to field cardinality.',
       ),
     ),
-    'primary key' => array('predicate'),
+    'primary key' => array('relation_type'),
   );
   $schema['relation_bundles'] = array(
     'description' => 'Relation type available bundles',
     'fields' => array(
-      'predicate' => array(
+      'relation_type' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -245,7 +245,7 @@ function relation_field_schema() {
   return array(
     'columns' => $columns,
     'indexes' => array(
-      'entity' => array('entity_type', 'entity_id'),
+      'relation' => array('entity_type', 'entity_id', 'r_index'),
     ),
   );
 }

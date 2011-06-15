@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Installation functions for Relation dropzone block.
+ * Installation functions for Relation entity_collector block.
  */
 
 /**
  * Implements hook_install. Attempts to enable block on module install.
  */
-function relation_dropzone_install() {
+function relation_entity_collector_install() {
   $select = db_select('block', 'b')
     ->condition('status', 1)
     ->condition('module', 'system')
     ->condition('delta', 'management');
-  $select->addExpression(':module',  'module', array(':module' => 'relation_dropzone'));
-  $select->addExpression(':delta',   'delta', array(':delta' => 'dropzone'));
+  $select->addExpression(':module',  'module', array(':module' => 'relation_entity_collector'));
+  $select->addExpression(':delta',   'delta', array(':delta' => 'entity_collector'));
   $select->addExpression('theme',    'theme');
   $select->addExpression('status',   'status');
   $select->addExpression('weight+1', 'weight');

@@ -1,7 +1,49 @@
 <?php
 
+/**
+ * @file
+ * Views relationship support.
+ */
 
 class relation_handler_relationship extends views_handler_relationship {
+  /**
+   * Define r_index option.
+   */
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['r_index'] = array('default' => -1);
+    return $options;  
+  }
+
+  /**
+   * Let the user choose r_index.
+   */
+  function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+
+    $options = $this->options_form_summary_options();
+    if ($this->definition['directional']) {
+      $form['r_index'] = array(
+        '#type' => 'select',
+        '#options' => $options,
+        '#title' => t('Position of the relationship base'),
+        '#default_value' => $this->options['r_index'],
+        // check_plain()'d in the definition.
+        '#description' => t('Select whether the entity you are adding the relationship to is source or target of !relation_type_label relation.', array('!relation_type_label' => $this->definition['label'])),
+      );
+    }
+  }
+
+  /**
+   * Return the main options, which are shown in the summary title.
+   */
+  function options_form_summary_options() {
+    return $this->definition['directional'] ? array(
+      -1 => t('Any'),
+      0 => t('Source'),
+      1 => t('Target'),
+    ) : array();
+  }
 }
 
 class relation_handler_join extends views_join {
@@ -14,27 +56,26 @@ class relation_handler_join extends views_join {
     $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
     $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
     $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
-    $directional = $this->definition['directional'];
     // Join the left table with the entity type to the relation_data table.
     $left = $view_query->get_table_info($this->left_table);
     $entity_type_left = $this->definition['entity_type_left'];
     $conditions = "$left[alias].$this->left_field = %alias.$entity_id_field_name AND %alias.$entity_type_field_name = '$entity_type_left'";
-    if ($directional) {
-      $conditions .= " AND %alias.$r_index_field_name = 0";
+    if ($this->definition['directional'] && $this->options['r_index'] > -1) {
+      $conditions .= " AND %alias.$r_index_field_name = " . $this->options['r_index'];
     }
     // Left join alias.
-    $l = $select_query->innerJoin($relation_data_table_name, NULL, $conditions);
+    $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
 
     // Execute a self-join.
     $entity_type_right = $this->definition['entity_type_right'];
-    // entity_id here is the ID of the relation entity. delta or
-    // $r_index_field_name does not matter.
-    $conditions = "%alias.entity_id = $l.entity_id AND %alias.delta != $l.delta AND %alias.$entity_type_field_name = '$entity_type_right'";
+    // entity_id here is the ID of the relation entity. 
+    $relation_type = $this->definition['relation_type'];
+    $conditions = "%alias.entity_id = $l.entity_id AND %alias.$r_index_field_name != $l.$r_index_field_name AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
     // Right join alias.
-    $r = $select_query->innerJoin($relation_data_table_name, NULL, $conditions);
+    $r = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
 
     // Join the right table to the relation_data table.
     $conditions = "%alias.$this->field = $r.$entity_id_field_name";
-    $select_query->innerJoin($table['table'], $table['alias'], $conditions);
+    $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
   }
 }

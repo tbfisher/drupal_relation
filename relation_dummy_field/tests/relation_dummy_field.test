@@ -46,8 +46,8 @@ class RelationDummyFieldTestCase extends RelationTestCase {
         'entity_id' => $node2->nid,
       )
     );
-    $predicate_symmetric = $this->relation_types['symmetric']['predicate'];
-    $this->RelationSaveHelper($predicate_symmetric, $entity_keys);
+    $relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
+    $this->RelationSaveHelper($relation_type_symmetric, $entity_keys);
     $this->drupalGet("node/$node1->nid");
     $this->assertNoRaw($node2->title, 'Node 2 title is not found');
     $this->field_name = strtolower($this->randomName()) . '_field_name';
