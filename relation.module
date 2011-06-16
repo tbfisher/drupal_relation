@@ -771,3 +771,17 @@ function relation_views_api() {
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
 }
+
+/**
+ * Gets the label of the relation type of the given relation
+ *
+ * @param $relation
+ *   A relation object.
+ *
+ * @return
+ *   The label of the relation type.
+ */
+function relation_get_type_label($relation) {
+  $type = relation_type_load($relation->relation_type);
+  return $type->label;
+}
