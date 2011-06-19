@@ -2,6 +2,7 @@
 
 require_once dirname(__FILE__) . '/relation.field.inc';
 require_once dirname(__FILE__) . '/relation.devel.inc';
+require_once dirname(__FILE__) . '/relation.rules.inc';
 
 /**
  * @file
@@ -63,22 +64,56 @@ function relation_entity_property_info() {
     'required' => TRUE,
     'schema field' => 'relation_type',
   );
-
-  $types = relation_get_types();
-  foreach ($types as $type) {
-    $properties['relation_type__' . $type->relation_type] = array(
-      'label' => t('@type endpoint', array('@type' => $type->relation_type)),
-      'type' => 'list<entity>',
-      'description' => t('Endpoints of the relation type @type', array('@type' => $type->relation_type)),
-      // TODO: We will probably need our own setter callback since setting
-      // endpoints aren't as easy as setting a plain property.
-      'setter callback' => 'entity_property_verbatim_set',
-      'options list' => 'relation_rules_get_endpoints',
-      'required' => TRUE,
-    );
-  }
+  
+  $properties['endpoints'] = array(
+    'label' => t('Endpoints'),
+    'type' => 'list',
+    'description' => t("The endpoints of the relation."),
+    'setter callback' => 'relation_rules_set_endpoints',
+    'getter callback' => 'relation_rules_get_endpoints',
+    'setter permission' => 'administer nodes',
+    'required' => TRUE,
+  );
 
   return $info;
+}
+
+function relation_rules_get_endpoints($relation, array $options, $property_name, $entity_type) {
+  return $relation->endpoints[LANGUAGE_NONE];
+}
+
+/**
+ * We don't actually set the endpoints, as that is done by the relation_save function.
+ * This function acts as a static store for the endpoints when Rules creates a Relation
+ * and we need to retrieve them again later for database storage.
+ */
+function relation_rules_set_endpoints(&$data = NULL, $name = NULL, $value = NULL) {
+  //if (relation_relation_exists($entity_keys, $relation_type = NULL ) {
+  for ($i = 0; $i < count($value); $i++) {
+    if (is_object($value[$i])) {
+      $value[$i] = array('entity_type' => 'node', 'entity_id' => $value[$i]->nid, 'r_index' => $i);
+    }
+  }
+/*  dpm($data, 'Data');
+  dpm($name);
+  dpm($value);*/
+
+  static $relation_rules_endpoints = '';
+  if ($value == NULL) {
+    $endpoints = array();
+    // @todo Hard coded to node here because Rules WSOD's on entities
+    foreach ($relation_rules_endpoints as $key => $entity) {
+      $endpoints[] = array(
+        'entity_type' => 'node',
+        'entity_id' => $entity->nid,
+      );
+    }
+    return $endpoints;
+  }
+  else {
+    $relation_rules_endpoints = $value;
+    return NULL;
+  }
 }
 
 function relation_rules_access($op, $entity = NULL, $account = NULL) {
@@ -87,13 +122,6 @@ function relation_rules_access($op, $entity = NULL, $account = NULL) {
     $account = $user;
   }
   return TRUE;
-}
-
-/**
- * Options list for endpoints.
- */
-function relation_rules_get_endpoints($type = NULL) {
-  return array('foo' => 'bar');
 }
 
 /**
@@ -597,6 +625,13 @@ function relation_create($type, $endpoints) {
  *   The new relation id.
  */
 function relation_save($relation) {
+  
+  if ($relation->endpoints[LANGUAGE_NONE] == NULL) {
+    // If there are no endpoints set, we check if the relation is being created
+    // by Rules.
+    $relation->endpoints[LANGUAGE_NONE] = relation_rules_set_endpoints();
+  }
+
   $errors = array();
   try {
     field_attach_validate('relation', $relation);

@@ -39,8 +39,26 @@ function relation_rules_action_info() {
         ),
       ),
     ),
-    // Action for loading relations from an available entity.
     'relation_rules_load' => array(
+      'label' => t('Loads a relation from a relation id'),
+      'group' => t('Relation'),
+      'named parameter' => FALSE,
+      'parameter' => array(
+        'rid' => array(
+          'type' => 'integer',
+          'label' => t('Relation id'),
+        ),
+      ),
+      'provides' => array(
+        'relation_loaded' => array(
+          'type' => 'relation',
+          'label' => t('Loaded relation'),
+          'save' => TRUE,
+        ),
+      ),
+    ),
+    // Action for loading relations from an available entity.
+/*    'relation_rules_load' => array(
       'label' => t('Load relations'),
       'group' => t('Relation'),
       'named parameter' => FALSE,
@@ -67,16 +85,15 @@ function relation_rules_action_info() {
           'save' => TRUE,
         ),
       ),
-    ),
+    ),*/
   );
 }
 
 function relation_rules_create($values = array()) {
-  dpm($values, 'values');
   // Check for unqiue flag, if relation endpoints already exist, return FALSE
-  $relation_type = relation_type_load($values['type']);
+  $relation_type = relation_type_load($values['relation_type']);
   if ($relation_type->r_unique) {
-    if (relation_relation_exists(array(), $values['type'])) {
+    if (relation_relation_exists(array(), $values['relation_type'])) {
       return FALSE;
     }
   }
@@ -84,9 +101,10 @@ function relation_rules_create($values = array()) {
   global $user;
   $relation = new stdClass();
   $relation->is_new = TRUE;
-  $relation->relation_type = $values['type'];
+  $relation->relation_type = $values['relation_type'];
   $relation->uid = $user->uid;
-  $relation->endpoints[LANGUAGE_NONE] = array();
+  $relation->endpoints[LANGUAGE_NONE] = NULL;
+  return $relation;
 }
 
 /**
@@ -111,10 +129,11 @@ function relation_rules_create_binary_relation($predicate, $endpoint1, $endpoint
 /**
  * Rules action callback for loading relations.
  */
-function relation_rules_load($predicate, $entity, $state, $element) {
-  $relation_rids = relation_query($entity->type(), $entity->getIdentifier())
+function relation_rules_load($entity, $state, $element) {
+  return relation_load($entity);
+ /* $relation_rids = relation_query($entity->type(), $entity->getIdentifier())
     ->entityCondition('bundle', $predicate)
     ->execute();
-  $relations = relation_multiple_load(array_keys($relation_rids));
-  return array('relation_loaded' => $relations);
+  $relations = relation_load_multiple(array_keys($relation_rids));
+  return array('relation_loaded' => $relations);*/
 }

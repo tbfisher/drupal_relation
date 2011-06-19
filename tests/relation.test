@@ -223,3 +223,77 @@ class RelationAPITestCase extends RelationTestCase {
     $this->assertRaw(format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => $num_relations)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
   }
 }
+
+class RelationRulesTestCase extends RelationTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Relation rules integration test',
+      'description' => 'Test using Rules to manipulate relations.',
+      'group' => 'Relation',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('relation', 'rules');
+  }
+
+  function testRelationCreateRelation() {
+    $error = NULL;
+    $creation_rule = $this->get_create_rule($error);
+    $this->verbose('rules_import returned: ' . $error);
+
+    $this->assertIdentical('A', 'A');
+    $this->assertIdentical('A', 'B');
+  }
+
+  function get_create_rule(&$error) {
+    $rule = rules_import('{ "rules_create_a_relation_for_test" : {
+    "LABEL" : "Create a relation for test",
+    "PLUGIN" : "reaction rule",
+    "REQUIRES" : [ "rules" ],
+    "ON" : [ "node_view" ],
+    "DO" : [
+      { "entity_create" : {
+          "USING" : {
+            "type" : "node",
+            "param_type" : "article",
+            "param_title" : "1",
+            "param_author" : [ "site:current-user" ]
+          },
+          "PROVIDE" : { "entity_created" : { "entity_created" : "Created entity" } }
+        }
+      },
+      { "entity_create" : {
+          "USING" : {
+            "type" : "comment",
+            "param_subject" : "A comment",
+            "param_node" : [ "node" ],
+            "param_author" : [ "site:current-user" ],
+            "param_comment_body" : { "value" : { "value" : "Test", "format" : "filtered_html" } }
+          },
+          "PROVIDE" : { "entity_created" : { "comment_created" : "Created entity" } }
+        }
+      },
+      { "variable_add" : {
+          "USING" : { "type" : "list", "value" : [ "" ] },
+          "PROVIDE" : { "variable_added" : { "endpoint_list" : "Endpoints" } }
+        }
+      },
+      { "list_add" : { "list" : [ "endpoint-list" ], "item" : [ "entity-created" ] } },
+      { "list_add" : { "list" : [ "endpoint-list" ], "item" : [ "comment-created" ] } },
+      { "entity_create" : {
+          "USING" : {
+            "type" : "relation",
+            "param_relation_type" : "a_relation_bundle",
+            "param_endpoints" : [ "endpoint-list" ]
+          },
+          "PROVIDE" : { "entity_created" : { "created_relation" : "Created relation" } }
+        }
+      }
+    ]
+  }
+}', $error);
+
+    return $rule;
+  }
+}
