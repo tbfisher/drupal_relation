@@ -88,27 +88,23 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
  * and we need to retrieve them again later for database storage.
  */
 function relation_rules_set_endpoints(&$data = NULL, $name = NULL, $value = NULL) {
-  //if (relation_relation_exists($entity_keys, $relation_type = NULL ) {
+  // Check that we are creating a new relation
+  $relation = relation_load($data->rid);
+  if ($relation) {
+    drupal_set_message('Manipulating existing relations is not supported.');
+    return;
+  }
+
+  // @todo Check if this is really necessary once http://drupal.org/node/1191398 is solved
   for ($i = 0; $i < count($value); $i++) {
     if (is_object($value[$i])) {
       $value[$i] = array('entity_type' => 'node', 'entity_id' => $value[$i]->nid, 'r_index' => $i);
     }
   }
-/*  dpm($data, 'Data');
-  dpm($name);
-  dpm($value);*/
 
   static $relation_rules_endpoints = '';
   if ($value == NULL) {
-    $endpoints = array();
-    // @todo Hard coded to node here because Rules WSOD's on entities
-    foreach ($relation_rules_endpoints as $key => $entity) {
-      $endpoints[] = array(
-        'entity_type' => 'node',
-        'entity_id' => $entity->nid,
-      );
-    }
-    return $endpoints;
+    return $relation_rules_endpoints;
   }
   else {
     $relation_rules_endpoints = $value;
@@ -625,7 +621,6 @@ function relation_create($type, $endpoints) {
  *   The new relation id.
  */
 function relation_save($relation) {
-  
   if ($relation->endpoints[LANGUAGE_NONE] == NULL) {
     // If there are no endpoints set, we check if the relation is being created
     // by Rules.
