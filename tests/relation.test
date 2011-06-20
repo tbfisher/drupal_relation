@@ -238,9 +238,35 @@ class RelationRulesTestCase extends RelationTestCase {
   }
 
   function testRelationCreateRelation() {
+    $this->createRelationTypes();
     $error = NULL;
-    $creation_rule = $this->get_create_rule($error);
-    $this->verbose('rules_import returned: ' . $error);
+ //   $creation_rule = $this->get_create_rule($error);
+
+    if (!empty($error)) {
+      $this->verbose('rules_import returned: ' . $error);
+    }
+    $node1 = $this->drupalCreateNode(array('status' => 1, 'type' => 'page'));
+    $node2 = $this->drupalCreateNode(array('status' => 1, 'type' => 'page'));
+    $rule = rule(array(
+      'endpoint_list' => array(
+        'type' => 'list<node>',
+        'label' => 'Endpoint list',
+      )
+    ));
+    $rule->action('entity_create', array(
+      'type' => 'node',
+      'param_type' => 'page',
+      'param_title' => 'foo',
+      'param_author' => $GLOBALS['user'],
+    ));
+
+    $rule->action('entity_create', array(
+      'type' => 'relation',
+      'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
+      'param_endpoints' => 'endpoint_list',
+    ));
+
+    $rule->execute(array($node1, $node2));
 
     $this->assertIdentical('A', 'A');
     $this->assertIdentical('A', 'B');
@@ -294,6 +320,25 @@ class RelationRulesTestCase extends RelationTestCase {
   }
 }', $error);
 
+    $rule = rules_import('{ "rules_create_a_relation" : {
+    "LABEL" : "Create a relation",
+    "PLUGIN" : "reaction rule",
+    "REQUIRES" : [ "rules" ],
+    "ON" : [ "node_view" ],
+    "DO" : [
+      { "entity_fetch" : {
+          "USING" : { "type" : "node", "id" : "1" },
+          "PROVIDE" : { "entity_fetched" : { "entity_fetched" : "Fetched entity" } }
+        }
+      },
+      { "entity_fetch" : {
+          "USING" : { "type" : "node", "id" : "2" },
+          "PROVIDE" : { "entity_fetched" : { "entity_fetched_2" : "Fetched entity" } }
+        }
+      }
+    ]
+  }
+}', $error);
     return $rule;
   }
 }
