@@ -222,6 +222,7 @@ function relation_type_create($info = array()) {
     return FALSE;
   };
   $info += array(
+    'reverse_label' => '',
     'min_arity' => 2,
     'max_arity' => 2,
     'directional' => FALSE,
@@ -314,7 +315,7 @@ function relation_type_load($relation_type) {
  */
 function relation_get_types($types = array()) {
   $query = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
+    ->fields('rt', array('relation_type', 'label', 'reverse_label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
   if ($types) {
     $query->condition('relation_type', $types);
   }
