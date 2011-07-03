@@ -285,6 +285,8 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
     );
     field_create_instance($instance);
   }
+
+  menu_rebuild();
 }
 
 /**
