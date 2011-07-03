@@ -55,6 +55,10 @@ function relation_dummy_field_field_formatter_info() {
       'label' => t('Default'),
       'field types' => array('relation'),
     ),
+    'relation_otherendpoint' => array(
+      'label' => t('Other endpoint'),
+      'field types' => array('relation'),
+    ),
   );
 }
 
@@ -70,6 +74,9 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
       $related_entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
       $related_entity = reset($related_entities);
       if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $entity_id) {
+        if ($display['type'] == 'relation_otherendpoint') {
+          continue;
+        }
         $link = array();
       }
       else {
@@ -83,6 +90,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
     $relation_link = l(t('Relation @rid', array('@rid' => $item->rid)), $uri['path'], $uri['options']);
     // Can't use #heading as it's mercilessly check_plain'd.
     $element[$delta]['relation']['heading']['#markup'] = t('<h4>Part of !link</h4>', array('!link' => $relation_link));
+    $element[$delta]['relation']['heading']['#access'] = $display['type'] == 'relation_default';
     $element[$delta]['relation']['links'] = array(
       '#theme' => 'links',
       '#links' => $links,
