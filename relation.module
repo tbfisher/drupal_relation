@@ -504,10 +504,10 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  *   A list of endpoints. Each endpoint is an associate array
  *
  * @return
- *   The new relation id.
+ *   The new relation object.
  */
 function relation_create($type, $endpoints) {
-  // Check for unqiue flag, if relation endpoints already exist, return FALSE
+  // Check for unique flag, if relation endpoints already exist, return FALSE
   $relation_type = relation_type_load($type);
   if ($relation_type->r_unique) {
     if (relation_relation_exists($endpoints, $type)) {
