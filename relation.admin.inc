@@ -190,7 +190,7 @@ function relation_type_form_submit($form, &$form_state) {
     'min_arity'   => $min_arity,
     'max_arity'   => $max_arity,
     'label' => $form_state['values']['name'],
-    'label' => $form_state['values']['reverse_label'],
+    'reverse_label' => $form_state['values']['reverse_label'],
     'directional' => $form_state['values']['directional'],
     'transitive' => $form_state['values']['transitive'],
     'r_unique' => $form_state['values']['r_unique'],
