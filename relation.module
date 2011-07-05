@@ -162,11 +162,6 @@ function relation_menu() {
     'page arguments' => array('relation_generate_form'),
     'file' => 'relation.admin.inc',
   );
-  $items['relation/autocomplete/bundles'] = array(
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
-    'page callback' => 'relation_type_autocomplete',
-  );
   return $items;
 }
 
@@ -632,25 +627,6 @@ function relation_multiple_delete($rids) {
     module_invoke_all('entity_delete', $relation, 'relation');
     field_attach_delete('relation',  $relation);
   }
-}
-
-/**
- * Autocomplete page for listing bundles.
- */
-function relation_type_autocomplete($string = '') {
-  $like_string = db_like($string) . '%';
-  $result = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label'))
-    ->condition(db_or()
-      ->condition('relation_type', $like_string, 'LIKE')
-      ->condition('label', $like_string, 'LIKE'))
-    ->range(0, 10)
-    ->execute();
-  $matches = array();
-  foreach ($result as $row) {
-    $matches[$row->relation_type] = $row->label;
-  }
-  drupal_json_output($matches);
 }
 
 /**

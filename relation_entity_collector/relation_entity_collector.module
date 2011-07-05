@@ -84,12 +84,18 @@ function relation_entity_collector($form, &$form_state) {
     $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
   }
+  $relation_types = array();
+  foreach ($types as $type) {
+    $relation_types[$type->relation_type] = $type->label;
+  }
   $form['relation_type'] = array(
-    '#type'          => 'textfield',
+    '#type'          => 'select',
     '#title'         => t('Relation type'),
-    '#autocomplete_path' => 'relation/autocomplete/bundles',
     '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
     '#required'      => TRUE,
+    '#options'       => $relation_types,
+    '#empty_value'   => '',
+    '#empty_option'  => t('Select a relation type'),
   );
   $form['entity_key'] = array(
     '#type'         => 'select',
