@@ -81,40 +81,6 @@ function relation_entity_property_info() {
   return $info;
 }
 
-function relation_rules_get_endpoints($relation, array $options, $property_name, $entity_type) {
-  return $relation->endpoints[LANGUAGE_NONE];
-}
-
-/**
- * We don't actually set the endpoints, as that is done by the relation_save function.
- * This function acts as a static store for the endpoints when Rules creates a Relation
- * and we need to retrieve them again later for database storage.
- */
-function relation_rules_set_endpoints(&$data = NULL, $name = NULL, $value = NULL) {
-  // Check that we are creating a new relation
-  $relation = relation_load($data->rid);
-  if ($relation) {
-    drupal_set_message('Manipulating existing relations is not supported.');
-    return;
-  }
-
-  // @todo Check if this is really necessary once http://drupal.org/node/1191398 is solved
-  for ($i = 0; $i < count($value); $i++) {
-    if (is_object($value[$i])) {
-      $value[$i] = array('entity_type' => 'node', 'entity_id' => $value[$i]->nid, 'r_index' => $i);
-    }
-  }
-
-  static $relation_rules_endpoints = '';
-  if ($value == NULL) {
-    return $relation_rules_endpoints;
-  }
-  else {
-    $relation_rules_endpoints = $value;
-    return NULL;
-  }
-}
-
 function relation_rules_access($op, $entity = NULL, $account = NULL) {
   if (empty($account)) {
     global $user;
@@ -622,13 +588,6 @@ function relation_create($type, $endpoints) {
  *   The new relation id.
  */
 function relation_save($relation) {
-  if ($relation->endpoints[LANGUAGE_NONE] == NULL) {
-    // If there are no endpoints set, we check if the relation is being created
-    // by Rules.
-    $relation->endpoints[LANGUAGE_NONE] = relation_rules_set_endpoints();
-  }
-
-  $errors = array();
   try {
     field_attach_validate('relation', $relation);
   }

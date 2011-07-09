@@ -5,58 +5,6 @@
  */
 function relation_rules_action_info() {
   return array(
-    // Optimally, we would like to have one generic action that can create
-    // relation entities with N number of endpoints, depending on available
-    // entities in the exectuing rule. Unfortunately, there isn't an easy way
-    // of doing that with the Rules API.
-    'relation_rules_create_binary_relation' => array(
-      'label' => t('Create a binary relation'),
-      'group' => t('Relation'),
-      'named parameter' => FALSE,
-      'parameter' => array(
-        'predicate' => array(
-           'type' => 'text',
-           'label' => t('Predicate'),
-           'options list' => 'relation_rules_get_type_options',
-           'restriction' => 'input',
-        ),
-        'endpoint1' => array(
-          'type' => 'entity',
-          'label' => t('Endpoint entity 1'),
-          'restriction' => 'selector',
-        ),
-        'endpoint2' => array(
-          'type' => 'entity',
-          'label' => t('Endpoint entity 2'),
-          'restriction' => 'selector',
-        ),
-      ),
-      'provides' => array(
-        'relation_created' => array(
-          'type' => 'entity',
-          'label' => t('The created relation'),
-          'save' => TRUE,
-        ),
-      ),
-    ),
-    'relation_rules_load' => array(
-      'label' => t('Loads a relation from a relation id'),
-      'group' => t('Relation'),
-      'named parameter' => FALSE,
-      'parameter' => array(
-        'rid' => array(
-          'type' => 'integer',
-          'label' => t('Relation id'),
-        ),
-      ),
-      'provides' => array(
-        'relation_loaded' => array(
-          'type' => 'relation',
-          'label' => t('Loaded relation'),
-          'save' => TRUE,
-        ),
-      ),
-    ),
     // Action for loading relations from an available entity.
 /*    'relation_rules_load' => array(
       'label' => t('Load relations'),
@@ -89,6 +37,52 @@ function relation_rules_action_info() {
   );
 }
 
+/**
+ * Endpoint property getter function
+ */
+function relation_rules_get_endpoints($relation, array $options, $property_name, $entity_type) {
+  return $relation->endpoints[LANGUAGE_NONE];
+}
+
+/**
+ * $data is the relation, so we take the endpoints from the argument we get, and copy into the relation.
+ */
+function relation_rules_set_endpoints(&$data = NULL, $name = NULL, $endpoint_wrapper_list = NULL) {
+  // Check that we are creating a new relation
+  if (isset($data->rid)) {
+    drupal_set_message('Manipulating existing relations is not supported.');
+    // @todo We need to prevent a call to relation_save now
+    return;
+  }
+
+  for ($i = 0; $i < count($endpoint_wrapper_list); $i++) {
+    $entity = $endpoint_wrapper_list[$i]->value();
+    $key = $endpoint_wrapper_list[$i]->entityKey('id');
+    $data->endpoints[LANGUAGE_NONE][] = array(
+      'entity_type' => $endpoint_wrapper_list[$i]->type(),
+      'entity_id' => $entity->$key,
+      'entity_bundle' => _entity_get_bundle($entity, $endpoint_wrapper_list[$i]->type()),
+      'r_index' => $i,
+    );
+  }
+}
+
+/**
+ * Returns the bundle name to which the arguments belong
+ */
+function _entity_get_bundle($entity, $entity_type) {
+  $info = entity_get_info($entity_type);
+  if (empty($info['entity keys']['bundle'])) {
+    return $entity_type;
+  } else {
+    return $entity->{$info['entity keys']['bundle']};
+  }
+}
+
+/**
+ * Callback for creation of new relation entities.
+ * @todo This isn't really rules speicfic, and should be merged into the main module
+ */
 function relation_rules_create($values = array()) {
   // Check for unqiue flag, if relation endpoints already exist, return FALSE
   $relation_type = relation_type_load($values['relation_type']);
@@ -105,35 +99,4 @@ function relation_rules_create($values = array()) {
   $relation->uid = $user->uid;
   $relation->endpoints[LANGUAGE_NONE] = NULL;
   return $relation;
-}
-
-/**
- * Rules action callback for creating a binary relation.
- */
-function relation_rules_create_binary_relation($predicate, $endpoint1, $endpoint2, $state, $element) {
-  $endpoints = array(
-    array(
-      'entity_type' => $endpoint1->type(),
-      'entity_id' => $endpoint1->getIdentifier()
-    ),
-    array(
-      'entity_type' => $endpoint2->type(),
-      'entity_id' => $endpoint2->getIdentifier()
-    ),
-  );
-  $rid = relation_create($predicate, $endpoints);
-  $relation = relation_load($rid);
-  return array('relation_created' => $relation);
-}
-
-/**
- * Rules action callback for loading relations.
- */
-function relation_rules_load($entity, $state, $element) {
-  return relation_load($entity);
- /* $relation_rids = relation_query($entity->type(), $entity->getIdentifier())
-    ->entityCondition('bundle', $predicate)
-    ->execute();
-  $relations = relation_load_multiple(array_keys($relation_rids));
-  return array('relation_loaded' => $relations);*/
 }
