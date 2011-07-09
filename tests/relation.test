@@ -241,25 +241,25 @@ class RelationRulesTestCase extends RelationTestCase {
     $this->createRelationTypes();
     $node1 = $this->drupalCreateNode();
     $node2 = $this->drupalCreateNode();
-    $endpoints = array($node1, $node2);
+    $endpoints = array(
+      new EntityDrupalWrapper('node', $node1),
+      new EntityDrupalWrapper('node', $node2),
+    );
 
     $rule = rule();
+    $first_type = reset($this->relation_types);
     $rule->action('entity_create', array(
       'type' => 'relation',
-      'param_relation_type' => reset($this->relation_types),
+      'param_relation_type' => $first_type['relation_type'],
       'param_author:select' => 'site:current-user',
       'param_endpoints' => $endpoints,
       'entity_created:var' => 'relation',
     ));
 
     $rule->execute();
-    debug(relation_load(1));
-
-    $this->assertIdentical('A', 'A');
-    $this->assertIdentical('A', 'B');
 
     // If all went well, we should now have a relation
     $relation = relation_load(1);
-    $this->assertIdentical($relation->rid, 1);
+    $this->assertIdentical($relation->rid, '1');
   }
 }
