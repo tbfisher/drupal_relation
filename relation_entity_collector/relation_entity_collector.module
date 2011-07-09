@@ -84,30 +84,38 @@ function relation_entity_collector($form, &$form_state) {
     $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
   }
+  $relation_types = array();
+  foreach ($types as $type) {
+    $relation_types[$type->relation_type] = $type->label;
+  }
   $form['relation_type'] = array(
-    '#type'          => 'textfield',
+    '#type'          => 'select',
     '#title'         => t('Relation type'),
-    '#autocomplete_path' => 'relation/autocomplete/bundles',
     '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
-    '#required'      => TRUE,
+    '#options'       => $relation_types,
+    '#empty_value'   => '',
+    '#empty_option'  => t('Select a relation type'),
   );
   $form['entity_key'] = array(
-    '#type'         => 'select',
-    '#options'      => $form_state['relation_entities_options'],
-    '#default_value' => '',
+    '#type'           => 'select',
+    '#title'          => t('Entity'),
+    '#options'        => $form_state['relation_entities_options'],
+    '#default_value'  => '',
+    '#empty_value'    => '',
+    '#empty_option'   => t('Select an entity'),
   );
-  if (count($form_state['relation_entities_options']) > 1) {
-    $form['entity_key']['#empty_value'] = '';
-    $form['entity_key']['#empty_option'] = t('Select an entity');
-  }
   $form['pick'] = array(
     '#type' => 'submit',
-    '#submit' => array('relation_entity_collector_pick'),
     '#value' => t('Pick'),
+    '#submit' => array('relation_entity_collector_pick'),
     '#ajax'  => array(
       'wrapper' => 'relation_entity_collector_reload',
       'callback' => '_relation_entity_collector_ajax',
     ),
+  );
+  $form['reload'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Picked entities'),
   );
   $form['reload']['#prefix'] = '<span id="relation_entity_collector_reload">';
   $form['reload']['#suffix'] = '</span>';
@@ -175,13 +183,23 @@ function relation_entity_collector_pick($form, &$form_state) {
  * Validate form submission for the entity_collector.
  */
 function relation_entity_collector_validate($form, &$form_state) {
-  $relation_type = $form_state['values']['relation_type'];
-  $errors = array();
-  $current = array();
-  $in_progress = FALSE;
-
   if ($form_state['clicked_button']['#value'] == t('Pick')) {
+    // Require values.
+    $relation_type = $form_state['values']['relation_type'];
     $entity_key = $form_state['values']['entity_key'];
+    $errors = FALSE;
+    if (empty($relation_type)) {
+      form_set_error('relation_type', t('Please select a relation type.'));
+      $errors = TRUE;
+    }
+    if (empty($entity_key)) {
+      form_set_error('entity_key', t('Please select an entity.'));
+      $errors = TRUE;
+    }
+    // If either of these are not selected we can not continue.
+    if ($errors) {
+      return;
+    }
     // Here we get (entity_type, entity_id).
     $break = explode(':', $entity_key);
     // Add the label for later display. #options is check_plain'd but we need
@@ -199,13 +217,11 @@ function relation_entity_collector_validate($form, &$form_state) {
       'r_index' => $next_index,
       'entity_key' => $entity_key,
     );
-    $current[] = $form_state['pick'];
-    $in_progress = TRUE;
-  }
-
-#  relation_validate($relation_type, array_merge($_SESSION['relation_entity_keys'], $current), $errors, $in_progress);
-  foreach ($errors as $error) {
-    form_set_error('relation_type', $error);
+    $endpoints = $_SESSION['relation_entity_keys'];
+    $endpoints[] = $form_state['pick'];
+    $relation = relation_create($form_state['values']['relation_type'], $endpoints);
+    $relation->in_progress = TRUE;
+    field_attach_form_validate('relation', $relation, $form, $form_state);
   }
 }
 
@@ -225,7 +241,7 @@ function relation_entity_collector_save($form, $form_state) {
       relation_entity_collector_clear($form, $form_state);
     }
     else {
-      drupal_set_message('Relation not created', 'error');
+      drupal_set_message('Relation not created.', 'error');
     }
   }
 }

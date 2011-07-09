@@ -142,6 +142,13 @@ function relation_schema() {
         'default' => '',
         'description' => 'The human-readable name of this type.',
       ),
+      'reverse_label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The reverse human-readable name of this type. Only used for directional relations.',
+      ),
       'directional' => array(
         'type' => 'int',
         'unsigned' => TRUE,

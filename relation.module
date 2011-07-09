@@ -254,11 +254,6 @@ function relation_menu() {
     'page arguments' => array('relation_generate_form'),
     'file' => 'relation.admin.inc',
   );
-  $items['relation/autocomplete/bundles'] = array(
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
-    'page callback' => 'relation_type_autocomplete',
-  );
   return $items;
 }
 
@@ -314,6 +309,7 @@ function relation_type_create($info = array()) {
     return FALSE;
   };
   $info += array(
+    'reverse_label' => '',
     'min_arity' => 2,
     'max_arity' => 2,
     'directional' => FALSE,
@@ -376,6 +372,8 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
     );
     field_create_instance($instance);
   }
+
+  menu_rebuild();
 }
 
 /**
@@ -406,7 +404,7 @@ function relation_type_load($relation_type) {
  */
 function relation_get_types($types = array()) {
   $query = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
+    ->fields('rt', array('relation_type', 'label', 'reverse_label', 'directional', 'transitive', 'r_unique', 'min_arity', 'max_arity'));
   if ($types) {
     $query->condition('relation_type', $types);
   }
@@ -593,10 +591,10 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  *   A list of endpoints. Each endpoint is an associate array
  *
  * @return
- *   The new relation id.
+ *   The new relation object.
  */
 function relation_create($type, $endpoints) {
-  // Check for unqiue flag, if relation endpoints already exist, return FALSE
+  // Check for unique flag, if relation endpoints already exist, return FALSE
   $relation_type = relation_type_load($type);
   if ($relation_type->r_unique) {
     if (relation_relation_exists($endpoints, $type)) {
@@ -730,25 +728,6 @@ function relation_multiple_delete($rids) {
 }
 
 /**
- * Autocomplete page for listing bundles.
- */
-function relation_type_autocomplete($string = '') {
-  $like_string = db_like($string) . '%';
-  $result = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label'))
-    ->condition(db_or()
-      ->condition('relation_type', $like_string, 'LIKE')
-      ->condition('label', $like_string, 'LIKE'))
-    ->range(0, 10)
-    ->execute();
-  $matches = array();
-  foreach ($result as $row) {
-    $matches[$row->relation_type] = $row->label;
-  }
-  drupal_json_output($matches);
-}
-
-/**
  * Menu callback: ask for confirmation of relation deletion
  */
 function relation_delete_confirm($form, &$form_state, $relation) {
@@ -868,4 +847,18 @@ function relation_views_api() {
     'api' => 3.0,
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
+}
+
+/**
+ * Gets the label of the relation type of the given relation
+ *
+ * @param $relation
+ *   A relation object.
+ *
+ * @return
+ *   The label of the relation type.
+ */
+function relation_get_type_label($relation) {
+  $type = relation_type_load($relation->relation_type);
+  return $type->label;
 }

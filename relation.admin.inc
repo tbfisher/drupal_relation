@@ -53,6 +53,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     $relation_type = (object) array(
       'relation_type' => '',
       'label' => '',
+      'reverse_label' => '',
       'bundles' => array(),
       'directional' => FALSE,
       'transitive' => FALSE,
@@ -66,7 +67,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   $form['name'] = array( // use 'name' for /misc/machine-name.js
     '#type'          => 'textfield',
     '#title'         => t('Label'),
-    '#description'   => t('Display name of the relation type.'),
+    '#description'   => t('Display name of the relation type. This is also used as the predicate in natural language formatters (ie. if A is related to B, you get "A [label] B")'),
     '#default_value' => $relation_type->label,
     '#required'      => TRUE,
   );
@@ -84,6 +85,17 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     '#title'          => 'Directional',
     '#description'   => t('A directional relation is one that does not imply the reverse relation. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
     '#default_value'  => $relation_type->directional,
+  );
+  $form['reverse_label'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Reverse label'),
+    '#description'   => t('Reverse label of the relation type. This is used as the predicate by formatters of directional relations, when you need to display the reverse direction (ie. from the target entity to the source entity). If this is not supplied, the forward label is used.'),
+    '#default_value' => $relation_type->reverse_label,
+    '#states' => array(
+      'visible' => array(   // action to take.
+        ':input[name="directional"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['transitive'] = array(
     '#type'           => 'checkbox',
@@ -178,6 +190,7 @@ function relation_type_form_submit($form, &$form_state) {
     'min_arity'   => $min_arity,
     'max_arity'   => $max_arity,
     'label' => $form_state['values']['name'],
+    'reverse_label' => $form_state['values']['reverse_label'],
     'directional' => $form_state['values']['directional'],
     'transitive' => $form_state['values']['transitive'],
     'r_unique' => $form_state['values']['r_unique'],
