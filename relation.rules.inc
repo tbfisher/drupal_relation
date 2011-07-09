@@ -84,19 +84,5 @@ function _entity_get_bundle($entity, $entity_type) {
  * @todo This isn't really rules speicfic, and should be merged into the main module
  */
 function relation_rules_create($values = array()) {
-  // Check for unqiue flag, if relation endpoints already exist, return FALSE
-  $relation_type = relation_type_load($values['relation_type']);
-  if ($relation_type->r_unique) {
-    if (relation_relation_exists(array(), $values['relation_type'])) {
-      return FALSE;
-    }
-  }
-
-  global $user;
-  $relation = new stdClass();
-  $relation->is_new = TRUE;
-  $relation->relation_type = $values['relation_type'];
-  $relation->uid = $user->uid;
-  $relation->endpoints[LANGUAGE_NONE] = NULL;
-  return $relation;
+  return relation_create($values['relation_type'], array());
 }
