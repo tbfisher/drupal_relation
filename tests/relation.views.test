@@ -26,28 +26,37 @@ class RelationViewsTestCase extends RelationTestCase {
    */
   function testRelationViews() {
     // Symmetric.
-    $view = new view;
+    foreach (array(3, 1) as $required => $count) {
+      $view = new view;
 
-    $handler = $view->new_display('default');
+      $handler = $view->new_display('default');
 
-    $handler->display->display_options['relationships']['relation_symmetric_node']['id'] = 'relation_symmetric_node';
-    $handler->display->display_options['relationships']['relation_symmetric_node']['table'] = 'node';
-    $handler->display->display_options['relationships']['relation_symmetric_node']['field'] = 'relation_symmetric_node';
+      $handler->display->display_options['relationships']['relation_symmetric_node']['id'] = 'relation_symmetric_node';
+      $handler->display->display_options['relationships']['relation_symmetric_node']['table'] = 'node';
+      $handler->display->display_options['relationships']['relation_symmetric_node']['field'] = 'relation_symmetric_node';
+      $handler->display->display_options['relationships']['relation_symmetric_node']['required'] = $required;
 
-    $handler->display->display_options['fields']['nid']['id'] = 'nid';
-    $handler->display->display_options['fields']['nid']['table'] = 'node';
-    $handler->display->display_options['fields']['nid']['field'] = 'nid';
+      $handler->display->display_options['fields']['nid']['id'] = 'nid';
+      $handler->display->display_options['fields']['nid']['table'] = 'node';
+      $handler->display->display_options['fields']['nid']['field'] = 'nid';
+      $handler->display->display_options['fields']['nid']['relationship'] = 'relation_symmetric_node';
 
-    $handler->display->display_options['arguments']['nid']['id'] = 'nid';
-    $handler->display->display_options['arguments']['nid']['table'] = 'node';
-    $handler->display->display_options['arguments']['nid']['field'] = 'nid';
-    $handler->display->display_options['arguments']['nid']['relationship'] = 'relation_symmetric_node';
+      $handler->display->display_options['arguments']['nid']['id'] = 'nid';
+      $handler->display->display_options['arguments']['nid']['table'] = 'node';
+      $handler->display->display_options['arguments']['nid']['field'] = 'nid';
 
-    $view->set_arguments(array($this->node1->nid));
-    $view->execute();
-
-    $this->assertEqual(count($view->result), 1);
-    $this->assertEqual($view->result[0]->nid, $this->node4->nid);
+      $view->set_arguments(array($this->node1->nid));
+      $view->execute();
+      $this->assertEqual(count($view->result), $count);
+      $match_count = 0;
+      foreach ($view->result as $result) {
+        if (isset($result->node_node_nid)) {
+          $match_count++;
+          $this->assertEqual($result->node_node_nid, $this->node4->nid);
+        }
+      }
+      $this->assertEqual($match_count, 1);
+    }
 
     // Directional to source, to target and to both.
     for ($r_index = -1 ; $r_index < 2; $r_index++) {
@@ -64,11 +73,11 @@ class RelationViewsTestCase extends RelationTestCase {
       $handler->display->display_options['fields']['nid']['id'] = 'nid';
       $handler->display->display_options['fields']['nid']['table'] = 'node';
       $handler->display->display_options['fields']['nid']['field'] = 'nid';
+      $handler->display->display_options['fields']['nid']['relationship'] = 'relation_directional_node';
 
       $handler->display->display_options['arguments']['nid']['id'] = 'nid';
       $handler->display->display_options['arguments']['nid']['table'] = 'node';
       $handler->display->display_options['arguments']['nid']['field'] = 'nid';
-      $handler->display->display_options['arguments']['nid']['relationship'] = 'relation_directional_node';
 
       $view->set_arguments(array($this->node3->nid));
       $view->execute();
@@ -79,21 +88,19 @@ class RelationViewsTestCase extends RelationTestCase {
           $this->assertEqual(count($view->result), 2);
           $matches = array($this->node1->nid => TRUE, $this->node4->nid => TRUE);
           foreach ($view->result as $result) {
-            unset($matches[$result->nid]);
+            unset($matches[$result->node_node_nid]);
           }
           $this->assertFalse($matches);
           break;
         case 0:
-          // Source.
-          // Here, because the argument is using the Views relation, it stands
-          // on the opossite end of the relation and so this is backwards.
+          // Source. This finds the 3->4 relation.
           $this->assertEqual(count($view->result), 1);
-          $this->assertEqual($view->result[0]->nid, $this->node1->nid);
+          $this->assertEqual($view->result[0]->node_node_nid, $this->node4->nid);
           break;
         case 1:
-          // Target.
+          // Target. This finds the 1->3 relation.
           $this->assertEqual(count($view->result), 1);
-          $this->assertEqual($view->result[0]->nid, $this->node4->nid);
+          $this->assertEqual($view->result[0]->node_node_nid, $this->node1->nid);
           break;
       }
     }
