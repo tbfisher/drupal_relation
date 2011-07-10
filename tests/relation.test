@@ -239,23 +239,21 @@ class RelationRulesTestCase extends RelationTestCase {
 
   function testRelationCreateRelation() {
     $this->createRelationTypes();
-    $node1 = $this->drupalCreateNode();
-    $node2 = $this->drupalCreateNode();
+    $node1 = $this->drupalCreateNode(array('type' => 'article'));
+    $node2 = $this->drupalCreateNode(array('type' => 'page'));
     $endpoints = array(
-      new EntityDrupalWrapper('node', $node1),
-      new EntityDrupalWrapper('node', $node2),
+      entity_metadata_wrapper('node', $node1),
+      entity_metadata_wrapper('node', $node2),
     );
 
     $rule = rule();
-    $first_type = reset($this->relation_types);
     $rule->action('entity_create', array(
       'type' => 'relation',
-      'param_relation_type' => $first_type['relation_type'],
+      'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
       'param_author:select' => 'site:current-user',
       'param_endpoints' => $endpoints,
       'entity_created:var' => 'relation',
     ));
-
     $rule->execute();
 
     // If all went well, we should now have a relation

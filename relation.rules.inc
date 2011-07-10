@@ -35,18 +35,21 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
 function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $endpoint_wrappers = NULL) {
   // Check that we are creating a new relation. Updating existing relations
   // aren't supported.
-  if (isset($relation->rid)) {
+  if (isset($relation->rid) || empty($endpoint_wrappers)) {
     return;
   }
 
   for ($i = 0; $i < count($endpoint_wrappers); $i++) {
     $entity = $endpoint_wrappers[$i]->value();
-    $key = $endpoint_wrappers[$i]->entityKey('id');
-    $relation->endpoints[LANGUAGE_NONE][] = array(
-      'entity_type' => $endpoint_wrappers[$i]->type(),
-      'entity_id' => $entity->$key,
-      'entity_bundle' => $endpoint_wrappers[$i]->entityKey('bundle'),
-      'r_index' => $i,
-    );
+    $id_key = $endpoint_wrappers[$i]->entityKey('id');
+    $bundle_key = $endpoint_wrappers[$i]->entityKey('bundle');
+    if (isset($entity->{$id_key})) {
+      $relation->endpoints[LANGUAGE_NONE][] = array(
+        'entity_type' => $endpoint_wrappers[$i]->type(),
+        'entity_id' => $entity->{$id_key},
+        'entity_bundle' => $entity->{$bundle_key},
+        'r_index' => $i,
+      );
+    }
   }
 }
