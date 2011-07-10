@@ -32,20 +32,20 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
  * @param $endpoint_wrappers
  *   Array of entity wrappers that we are going to add to the relation object.
  */
-function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $endpoint_wrappers = NULL) {
+function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $entity_wrappers = NULL) {
   // Check that we are creating a new relation. Updating existing relations
   // aren't supported.
-  if (isset($relation->rid) || empty($endpoint_wrappers)) {
+  if (isset($relation->rid) || empty($entity_wrappers)) {
     return;
   }
 
-  for ($i = 0; $i < count($endpoint_wrappers); $i++) {
-    $entity = $endpoint_wrappers[$i]->value();
-    $id_key = $endpoint_wrappers[$i]->entityKey('id');
-    $bundle_key = $endpoint_wrappers[$i]->entityKey('bundle');
+  foreach ($entity_wrappers as $i => $entity_wrapper) {
+    $entity = $entity_wrapper->value();
+    $id_key = $entity_wrapper->entityKey('id');
+    $bundle_key = $entity_wrapper->entityKey('bundle');
     if (isset($entity->{$id_key})) {
       $relation->endpoints[LANGUAGE_NONE][] = array(
-        'entity_type' => $endpoint_wrappers[$i]->type(),
+        'entity_type' => $entity_wrapper->type(),
         'entity_id' => $entity->{$id_key},
         'entity_bundle' => $entity->{$bundle_key},
         'r_index' => $i,
