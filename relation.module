@@ -49,8 +49,6 @@ function relation_entity_info() {
 
 /**
  * Implementation of hook_entity_property_info().
- *
- * This is separated from hook_entity_info() for performance reasons only.
  */
 function relation_entity_property_info() {
   $info = array();
@@ -79,14 +77,6 @@ function relation_entity_property_info() {
   );
 
   return $info;
-}
-
-function relation_rules_access($op, $entity = NULL, $account = NULL) {
-  if (empty($account)) {
-    global $user;
-    $account = $user;
-  }
-  return TRUE;
 }
 
 /**
