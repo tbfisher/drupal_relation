@@ -36,7 +36,7 @@ class RelationTestCase extends DrupalWebTestCase {
     $this->relation_types['symmetric'] = array(
       'relation_type'   => 'symm' . $this->randomName(),
       'label' => 'symm' . $this->randomString(),
-      'source_bundles' => array('node:article', 'node:page', 'term:*'),
+      'source_bundles' => array('node:article', 'node:page', 'term:*', 'user:*'),
     );
     $this->relation_types['directional'] = array(
       'relation_type'   => 'dir' . $this->randomName(),
@@ -237,13 +237,19 @@ class RelationRulesTestCase extends RelationTestCase {
     parent::setUp('relation', 'rules');
   }
 
+  /**
+   * Test to create a relation by executing a rule. This test creates a relation
+   * between two types of entities; one with a specific bundle (the node) and
+   * one that doesn't have bundles (the user). This is to ensure that the logic
+   * surrounding the key 'entity_bundle' is working.
+   */
   function testRelationCreateRelation() {
     $this->createRelationTypes();
-    $node1 = $this->drupalCreateNode(array('type' => 'article'));
-    $node2 = $this->drupalCreateNode(array('type' => 'page'));
+    $node = $this->drupalCreateNode(array('type' => 'article'));
+    $user = $this->drupalCreateUser();
     $endpoints = array(
-      entity_metadata_wrapper('node', $node1),
-      entity_metadata_wrapper('node', $node2),
+      entity_metadata_wrapper('node', $node),
+      entity_metadata_wrapper('user', $user),
     );
 
     $rule = rule();
@@ -256,8 +262,9 @@ class RelationRulesTestCase extends RelationTestCase {
     ));
     $rule->execute();
 
-    // If all went well, we should now have a relation
+    // If all went well, we should now have a relation with correct endpoints.
     $relation = relation_load(1);
-    $this->assertIdentical($relation->rid, '1');
+    $correct = ($relation->endpoints[LANGUAGE_NONE][0]['entity_id'] == $node->nid) && ($relation->endpoints[LANGUAGE_NONE][1]['entity_id'] == $user->uid);
+    $this->assertTrue($correct, 'Relation was created by executing a rule.');
   }
 }

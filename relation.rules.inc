@@ -41,13 +41,15 @@ function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $entity_w
 
   foreach ($entity_wrappers as $i => $entity_wrapper) {
     $entity = $entity_wrapper->value();
+    $entity_type = $entity_wrapper->type();
     $id_key = $entity_wrapper->entityKey('id');
     $bundle_key = $entity_wrapper->entityKey('bundle');
+
     if (isset($entity->{$id_key})) {
-      $relation->endpoints[LANGUAGE_NONE][] = array(
+      $relation->endpoints[LANGUAGE_NONE][$i] = array(
         'entity_type' => $entity_wrapper->type(),
         'entity_id' => $entity->{$id_key},
-        'entity_bundle' => $entity->{$bundle_key},
+        'entity_bundle' => isset($entity->{$bundle_key}) ? $entity->{$bundle_key} : $entity_type,
         'r_index' => $i,
       );
     }
