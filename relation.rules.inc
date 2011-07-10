@@ -19,7 +19,12 @@ function relation_rules_access($op, $entity = NULL, $account = NULL) {
  * Endpoint property getter callback.
  */
 function relation_rules_get_endpoints($relation, array $options, $property_name, $entity_type) {
-  return $relation->endpoints[LANGUAGE_NONE];
+  $array = array();
+  foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+    $entity = reset(entity_load($endpoint['entity_type'], array($endpoint['entity_id'])));
+    $array[] = entity_metadata_wrapper($endpoint['entity_type'], $entity);
+  }
+  return $array;
 }
 
 /**
