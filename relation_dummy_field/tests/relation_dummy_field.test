@@ -6,50 +6,30 @@
  */
 
 /**
- * Test relation.
+ * Functional test of Relation's integration with the Dummy Field.
  */
 class RelationDummyFieldTestCase extends RelationTestCase {
 
   public static function getInfo() {
     return array(
       'name' => 'Relation Dummy Field test',
-      'description' => 'Test the relation dummy field.',
+      'description' => 'Tests the Relation Dummy Field.',
       'group' => 'Relation',
     );
   }
 
   function setUp() {
     parent::setUp('relation', 'relation_dummy_field');
-    $web_user = $this->drupalCreateUser(array('create article content', 'create page content'));
-    $this->drupalLogin($web_user);
   }
 
   /**
-   * Create some nodes, create a relation field on the Article node type, and
+   * Create a relation field on the Article node type, and
    * check if it displays the relations correctly on the node page.
    */
   function testDummyFieldDisplayed() {
-    $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
-    $node2 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
-
-    $errors = array();
-
-    // create a symmetric relation
-    $entity_keys = array(
-      array(
-        'entity_type' => 'node',
-        'entity_id' => $node1->nid,
-      ),
-      array(
-        'entity_type' => 'node',
-        'entity_id' => $node2->nid,
-      )
-    );
-    $relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
-    $this->saveRelation($relation_type_symmetric, $entity_keys);
-    $this->drupalGet("node/$node1->nid");
-    $this->assertNoRaw($node2->title, 'Node 2 title is not found');
-    $this->field_name = strtolower($this->randomName()) . '_field_name';
+    $this->drupalGet('node/' . $this->node1->nid);
+    $this->assertNoRaw($this->node4->title, 'Node 4 title is not found');
+    $this->field_name = drupal_strtolower($this->randomName()) . '_field_name';
     $field = array(
       'field_name' => $this->field_name,
       'type' => 'relation',
@@ -74,9 +54,9 @@ class RelationDummyFieldTestCase extends RelationTestCase {
       ),
     );
     field_create_instance($instance);
-    $this->drupalGet("node/$node1->nid", array('query' => array('debug' => 1)));
-    // As we have asserted node2 title not being on the page the only way this
+    $this->drupalGet('node/' . $this->node1->nid);
+    // As we have asserted Node 4 title not being on the page the only way this
     // click can succeed if the field formatter put it there.
-    $this->clickLink($node2->title);
+    $this->clickLink($this->node4->title);
   }
 }
