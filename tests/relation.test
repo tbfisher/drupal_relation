@@ -10,6 +10,7 @@
  */
 class RelationTestCase extends DrupalWebTestCase {
   protected $sleep = FALSE;
+
   function setUp() {
     // Other modules will reuse this class, make sure to pass the arguments up.
     if (func_num_args()) {
@@ -18,12 +19,8 @@ class RelationTestCase extends DrupalWebTestCase {
     else {
       parent::setUp('relation');
     }
-    // debug('Entering RelationTestCase.');
 
-    // Setup sensible default enviornment with a variety of relations.
-    // @todo: doxygen what the default enviornment looks like.
-
-    // Define users and permissions.
+    // Defines users and permissions.
     $permissions = array(
       'create article content',
       'create page content',
@@ -32,8 +29,8 @@ class RelationTestCase extends DrupalWebTestCase {
       'edit relations',
       'delete relations',
     );
-    $web_user = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($web_user);
+    $this->web_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->web_user);
 
     // Defines entities.
     $this->createRelationNodes();
@@ -54,7 +51,6 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates nodes.
    */
   function createRelationNodes() {
-    // debug('Creating nodes.');
     $this->node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'title' => 'Grandfather'));
     $this->node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
     $this->node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1, 'title' => 'Father'));
@@ -66,7 +62,6 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates end points.
    */
   function createRelationEndPoints() {
-    // debug('Creating end points.');
     $this->endpoints = array(
       array('entity_type' => 'node', 'entity_id' => $this->node1->nid),
       array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
@@ -83,7 +78,6 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates a set of standard relation types.
    */
   function createRelationTypes() {
-    // debug('Creating a set of standard relation types.');
     $this->relation_types['symmetric'] = array(
       'relation_type'   => 'symmetric',
       'label' => 'symmetric',
@@ -112,8 +106,7 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates a Symmetric relation.
    */
   function createRelationSymmetric() {
-    // debug('Creating a Symmetric relation.');
-    // article 1 <--> page 4
+    // Article 1 <--> Page 4
     $this->relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
     $this->rid_symmetric = $this->saveRelation($this->relation_type_symmetric, $this->endpoints);
   }
@@ -122,8 +115,7 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates a Directional relation.
    */
   function createRelationDirectional() {
-    // debug('Creating a Directional relation.');
-    // article 1 --> page 3
+    // Article 1 --> Page 3
     $this->endpoints[1]['entity_id'] = $this->node3->nid;
     $this->endpoints[1]['r_index'] = 1;
     $this->relation_type_directional = $this->relation_types['directional']['relation_type'];
@@ -137,8 +129,7 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates an Octopus (4-ary) relation.
    */
   function createRelationOctopus() {
-    // debug('Creating an Octopus relation.');
-    // nodes 1, 2, 3, 4 are related.
+    // Nodes 1, 2, 3, 4 are related.
     $this->relation_type_octopus = $this->relation_types['octopus']['relation_type'];
     $this->rid_octopus = $this->saveRelation($this->relation_type_octopus, $this->endpoints_4);
   }
@@ -147,7 +138,6 @@ class RelationTestCase extends DrupalWebTestCase {
    * Saves a relation.
    */
   function saveRelation($relation_type, $endpoints) {
-    // debug('Saving relation.');
     $relation = relation_create($relation_type, $endpoints);
     $rid = relation_save($relation);
     if ($this->sleep) {
@@ -158,19 +148,19 @@ class RelationTestCase extends DrupalWebTestCase {
 }
 
 /**
- * Test relation API.
+ * Tests Relation API.
  * Create nodes, add relations and verify that they are related.
  * This test suite also checks all methods available in RelationQuery.
  */
 class RelationAPITestCase extends RelationTestCase {
+
   public static function getInfo() {
     return array(
       'name' => 'Relation test',
-      'description' => 'Test relations.',
+      'description' => 'Tests Relation API.',
       'group' => 'Relation',
     );
   }
-
 
   function setUp() {
     // This is necessary for the ->propertyOrderBy('created', 'DESC') test.
@@ -261,40 +251,28 @@ class RelationAPITestCase extends RelationTestCase {
   }
 
   /**
-   * Tests a Symmetric relation.
+   * Tests relation types.
    */
-  function testRelationSymmetric() {
+  function testRelationTypes() {
+    // Symmetric.
     $related = relation_get_related_entity('node', $this->node4->nid);
     $this->assertEqual($this->node1->nid, $related->nid);
-  }
 
-  /**
-   * Tests a Directional relation.
-   */
-  function testRelationDirectional() {
+    // Directional.
     $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type']);
     $this->assertEqual($this->node1->nid, $related->nid);
-    // @todo: Assert other direction?
-  }
-
-  /**
-   * @todo: Tests an Octopus relation.
-   */
-  function testRelationOctopus() {
-    // debug('Testing a Octopus relation.');
   }
 
   /**
    * Tests saving of relations.
-   * @todo: FIXME for Octopus.
    */
   function testRelationSave() {
     foreach ($this->relation_types as $value) {
-      // debug('Testing saving of ' . $value['relation_type'] . ' relation.');
       $relation_type = $value['relation_type'];
       $endpoints = isset($value['min_arity']) ? $this->endpoints_4 : $this->endpoints;
       $relation = relation_create($relation_type, $endpoints);
       $rid = relation_save($relation);
+
       $this->assertTrue($rid, 'Relation created.');
       $count = count($relation->endpoints[LANGUAGE_NONE]);
       $this->assertEqual($count, count($endpoints));
@@ -308,7 +286,7 @@ class RelationAPITestCase extends RelationTestCase {
         $this->assertTrue(isset($need_ids[$endpoint['entity_id']]), 'The entity ID is correct: ' . $need_ids[$endpoint['entity_id']]);
         unset($need_ids[$endpoint['entity_id']]);
       }
-      $this->assertFalse($need_ids, 'All ids found');
+      $this->assertFalse($need_ids, 'All ids found.');
     }
   }
 
@@ -316,7 +294,6 @@ class RelationAPITestCase extends RelationTestCase {
    * Tests deletion of a relation.
    */
   function testRelationDelete() {
-    // debug('Testing deletion of a relation.');
     $relations = relation_query('node', $this->node1->nid)
       ->propertyOrderBy('created', 'DESC')
       ->execute();
