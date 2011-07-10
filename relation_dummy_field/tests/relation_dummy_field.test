@@ -32,7 +32,6 @@ class RelationDummyFieldTestCase extends RelationTestCase {
     $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
     $node2 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
 
-    $this->createRelationTypes();
     $errors = array();
 
     // create a symmetric relation
@@ -47,7 +46,7 @@ class RelationDummyFieldTestCase extends RelationTestCase {
       )
     );
     $relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
-    $this->RelationSaveHelper($relation_type_symmetric, $entity_keys);
+    $this->saveRelation($relation_type_symmetric, $entity_keys);
     $this->drupalGet("node/$node1->nid");
     $this->assertNoRaw($node2->title, 'Node 2 title is not found');
     $this->field_name = strtolower($this->randomName()) . '_field_name';
