@@ -9,6 +9,7 @@
  * Relation helper class.
  */
 class RelationTestCase extends DrupalWebTestCase {
+  protected $sleep = FALSE;
   function setUp() {
     // Other modules will reuse this class, make sure to pass the arguments up.
     if (func_num_args()) {
@@ -17,7 +18,13 @@ class RelationTestCase extends DrupalWebTestCase {
     else {
       parent::setUp('relation');
     }
-    $perms = array(
+    // debug('Entering RelationTestCase.');
+
+    // Setup sensible default enviornment with a variety of relations.
+    // @todo: doxygen what the default enviornment looks like.
+
+    // Define users and permissions.
+    $permissions = array(
       'create article content',
       'create page content',
       'administer relation types',
@@ -25,29 +32,73 @@ class RelationTestCase extends DrupalWebTestCase {
       'edit relations',
       'delete relations',
     );
-    $web_user = $this->drupalCreateUser($perms);
+    $web_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($web_user);
+
+    // Defines entities.
+    $this->createRelationNodes();
+
+    // Defines relation types.
+    $this->createRelationTypes();
+
+    // Defines end points.
+    $this->createRelationEndPoints();
+
+    // Defines relations.
+    $this->createRelationSymmetric();
+    $this->createRelationDirectional();
+    $this->createRelationOctopus();
+  }
+
+  /**
+   * Creates nodes.
+   */
+  function createRelationNodes() {
+    // debug('Creating nodes.');
+    $this->node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'title' => 'Grandfather'));
+    $this->node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
+    $this->node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1, 'title' => 'Father'));
+    $this->node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0, 'title' => 'Baby'));
+    $this->node5 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
+  }
+
+  /**
+   * Creates end points.
+   */
+  function createRelationEndPoints() {
+    // debug('Creating end points.');
+    $this->endpoints = array(
+      array('entity_type' => 'node', 'entity_id' => $this->node1->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
+    );
+    $this->endpoints_4 = array(
+      array('entity_type' => 'node', 'entity_id' => $this->node1->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node2->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node3->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
+    );
   }
 
   /**
    * Creates a set of standard relation types.
    */
   function createRelationTypes() {
+    // debug('Creating a set of standard relation types.');
     $this->relation_types['symmetric'] = array(
-      'relation_type'   => 'symm' . $this->randomName(),
-      'label' => 'symm' . $this->randomString(),
-      'source_bundles' => array('node:article', 'node:page', 'term:*'),
+      'relation_type'   => 'symmetric',
+      'label' => 'symmetric',
+      'source_bundles' => array('node:article', 'node:page', 'taxonomy_term:*'),
     );
     $this->relation_types['directional'] = array(
-      'relation_type'   => 'dir' . $this->randomName(),
-      'label' => 'dir' . $this->randomString(),
+      'relation_type'   => 'directional',
+      'label' => 'directional',
       'directional' => TRUE,
-      'source_bundles' => array('node:article'),
+      'source_bundles' => array('node:*'),
       'target_bundles' => array('node:page'),
     );
     $this->relation_types['octopus'] = array(
-      'relation_type'   => 'octo' . $this->randomName(),
-      'label' => 'octo' . $this->randomString(),
+      'relation_type'   => 'octopus',
+      'label' => 'octopus',
       'min_arity' => 3,
       'max_arity' => 5,
       'source_bundles' => array('node:article', 'node:page'),
@@ -58,31 +109,58 @@ class RelationTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Validates and saves relations, and checks the process.
+   * Creates a Symmetric relation.
    */
-  function RelationSaveHelper($relation_type, $endpoints) {
+  function createRelationSymmetric() {
+    // debug('Creating a Symmetric relation.');
+    // article 1 <--> page 4
+    $this->relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
+    $this->rid_symmetric = $this->saveRelation($this->relation_type_symmetric, $this->endpoints);
+  }
+
+  /**
+   * Creates a Directional relation.
+   */
+  function createRelationDirectional() {
+    // debug('Creating a Directional relation.');
+    // article 1 --> page 3
+    $this->endpoints[1]['entity_id'] = $this->node3->nid;
+    $this->endpoints[1]['r_index'] = 1;
+    $this->relation_type_directional = $this->relation_types['directional']['relation_type'];
+    $this->rid_directional = $this->saveRelation($this->relation_type_directional, $this->endpoints);
+    $this->endpoints[0]['entity_id'] = $this->node3->nid;
+    $this->endpoints[1]['entity_id'] = $this->node4->nid;
+    $this->saveRelation($this->relation_type_directional, $this->endpoints);
+  }
+
+  /**
+   * Creates an Octopus (4-ary) relation.
+   */
+  function createRelationOctopus() {
+    // debug('Creating an Octopus relation.');
+    // nodes 1, 2, 3, 4 are related.
+    $this->relation_type_octopus = $this->relation_types['octopus']['relation_type'];
+    $this->rid_octopus = $this->saveRelation($this->relation_type_octopus, $this->endpoints_4);
+  }
+
+  /**
+   * Saves a relation.
+   */
+  function saveRelation($relation_type, $endpoints) {
+    // debug('Saving relation.');
     $relation = relation_create($relation_type, $endpoints);
     $rid = relation_save($relation);
-    $this->assertTrue($rid, 'Relation created.');
-    $count = count($relation->endpoints[LANGUAGE_NONE]);
-    $this->assertEqual($count, count($endpoints), 'There are two entities: ' . $count);
-    $this->assertEqual($relation->arity, count($endpoints), 'Arity is 2: ' . $relation->arity);
-    $this->assertEqual($relation->relation_type, $relation_type, 'Relation type is correct: ' . $relation->relation_type);
-    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
-      $need_ids[$endpoint['entity_id']] = TRUE;
+    if ($this->sleep) {
+      sleep(1);
     }
-    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
-      $this->assertEqual($endpoint['entity_type'], 'node', 'The entity type is node: ' . $endpoint['entity_type']);
-      $this->assertTrue(isset($need_ids[$endpoint['entity_id']]), 'The entity ID is correct: ' . $need_ids[$endpoint['entity_id']]);
-      unset($need_ids[$endpoint['entity_id']]);
-    }
-    $this->assertFalse($need_ids, 'All ids found');
     return $rid;
   }
 }
 
 /**
  * Test relation API.
+ * Create nodes, add relations and verify that they are related.
+ * This test suite also checks all methods available in RelationQuery.
  */
 class RelationAPITestCase extends RelationTestCase {
   public static function getInfo() {
@@ -93,121 +171,157 @@ class RelationAPITestCase extends RelationTestCase {
     );
   }
 
+
+  function setUp() {
+    // This is necessary for the ->propertyOrderBy('created', 'DESC') test.
+    $this->sleep = TRUE;
+    parent::setUp();
+  }
+
   /**
-   * Create some nodes, add some relations and check they are related. This
-   * test suite also checks all methods available in RelationQuery.
+   * Tests all available methods in RelationQuery.
+   * Creates some nodes, add some relations and checks if they are related.
    */
-  function testRelationCRDMultiple() {
-    $node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1));
-    $node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
-    $node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
-    $node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
-    $node5 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
+  function testRelationQuery() {
+    $relations = entity_load('relation', array_keys(relation_query('node', $this->node1->nid)->execute()));
 
-    $this->createRelationTypes();
+    // Check that symmetric relation is correctly related to node 4.
+    $this->assertEqual($relations[$this->rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'], $this->node4->nid, 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'] . '==' . $this->node4->nid);
 
-    $endpoints = array(
-      array('entity_type' => 'node', 'entity_id' => $node1->nid),
-      array('entity_type' => 'node', 'entity_id' => $node4->nid),
-    );
-    $endpoints_4 = array(
-      array('entity_type' => 'node', 'entity_id' => $node1->nid),
-      array('entity_type' => 'node', 'entity_id' => $node2->nid),
-      array('entity_type' => 'node', 'entity_id' => $node3->nid),
-      array('entity_type' => 'node', 'entity_id' => $node4->nid),
-    );
-
-    // Create a symmetric relation article 1 -- page 4
-    $relation_type_symmetric = $this->relation_types['symmetric']['relation_type'];
-    $rid_symmetric = $this->RelationSaveHelper($relation_type_symmetric, $endpoints);
-    $related = relation_get_related_entity('node', $node4->nid);
-    $this->assertEqual($node1->nid, $related->nid);
-    sleep(2);
-    // Create a correct directional relation: article 1 -> page 3
-    $endpoints[1]['entity_id'] = $node3->nid;
-    $endpoints[1]['r_index'] = 1;
-    $relation_type_directional = $this->relation_types['directional']['relation_type'];
-    $rid_directional = $this->RelationSaveHelper($relation_type_directional, $endpoints);
-    $related = relation_get_related_entity('node', $node3->nid, $this->relation_types['directional']['relation_type']);
-    $this->assertEqual($node1->nid, $related->nid);
-    sleep(2);
-    // Create a 4-ary octopus, nodes 1-4.
-    $relation_type_octopus = $this->relation_types['octopus']['relation_type'];
-    $rid_octopus = $this->RelationSaveHelper($relation_type_octopus, $endpoints_4);
-
-    // Get relations for node 1, should return 3 relations
-    $relations = entity_load('relation', array_keys(relation_query('node', $node1->nid)->execute()));
+    // Get relations for node 1, should return 3 relations.
     $count = count($relations);
-    $this->assertEqual($count, 3, $count . ' relations found for nid=1, should be 3');
-    // Check that symmetric relation is correctly related to node 4
-    $this->assertEqual($relations[$rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'], $node4->nid, 'Correct entity is related: ' . $relations[$rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'] . '==' . $node4->nid);
+    $this->assertEqual($count, 3);
 
-    // Get number of relations for node 4, should return 2 relations.
-    $count = relation_query('node', $node4->nid)
+    // Get number of relations for node 4, should return 3 relations, 1 is in
+    // symmetrical, 3 and 4 is in octopus.
+    $count = relation_query('node', $this->node4->nid)
       ->count()
       ->execute();
-    $this->assertEqual($count, 2, $count . ' relations foundfor nid=4, should be 2');
+    $this->assertEqual($count, 3);
 
     // Get number of relations for node 5, should return 0 relations.
-    $count = relation_query('node', $node5->nid)
+    $count = relation_query('node', $this->node5->nid)
       ->count()
       ->execute();
-    $this->assertEqual($count, 0, $count . ' relations found for nid=5, should be 0');
+    $this->assertFalse($count);
 
-    // Get relations between entities 2 and 5 (none)
-    $count = relation_query('node', $node2->nid)
-      ->related('node', $node5->nid)
+    // Get relations between entities 2 and 5 (none).
+    $count = relation_query('node', $this->node2->nid)
+      ->related('node', $this->node5->nid)
       ->count()
       ->execute();
-    $this->assertEqual($count, 0, $count . ' relations found, should be 0');
+    $this->assertFalse($count);
 
-    // Get directed relations for node 3 using index, should return >=1 relation.
-    $relations = relation_query('node', $node3->nid, 1)
+    // Get directed relations for node 3 using index, should return only one
+    // relation. The other node 3 relation has an r_index 0.
+    $relations = relation_query('node', $this->node3->nid, 1)
+      ->execute();
+    $this->assertEqual(count($relations), 1);
+    $this->assertTrue(isset($relations[$this->rid_directional]), 'Got the correct directional relation for nid=3.');
+
+    // Get relations between entities 2 and 3 (octopus).
+    $relations = relation_query('node', $this->node2->nid)
+      ->related('node', $this->node3->nid)
       ->execute();
     $count = count($relations);
-    $this->assertTrue(isset($relations[$rid_directional]), 'Got the correct directional relation for nid=3.');
-
-    // Get relations between entities 2 and 3 (octopus)
-    $relations = relation_query('node', $node2->nid)
-      ->related('node', $node3->nid)
-      ->execute();
-    $count = count($relations);
-    $this->assertEqual($count, 1, $count . ' relation found, should be 1');
+    $this->assertEqual($count, 1);
     // Check that we have the correct relations
-    $this->assertEqual(isset($relations[$rid_octopus]), 'Got one correct relation.');
+    $this->assertEqual(isset($relations[$this->rid_octopus]), 'Got one correct relation.');
 
     // Get relations for node 1 (symmetric, directional, octopus), limit to
-    // octopus with relation_type()
-    $relations = relation_query('node', $node1->nid)
+    // directional and octopus with relation_type().
+    $relations = relation_query('node', $this->node1->nid)
       ->propertyCondition('relation_type', array(
         $this->relation_types['directional']['relation_type'],
         $this->relation_types['octopus']['relation_type'],
       ))
       ->execute();
     $count = count($relations);
-    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
-    // Check that we have the correct relations
-    $this->assertTrue(isset($relations[$rid_directional]), 'Got one correct relation.');
-    $this->assertTrue(isset($relations[$rid_octopus]), 'Got a second one.');
+    $this->assertEqual($count, 2);
+    // Check that we have the correct relations.
+    $this->assertTrue(isset($relations[$this->rid_directional]), 'Got one correct relation.');
+    $this->assertTrue(isset($relations[$this->rid_octopus]), 'Got a second one.');
 
-    // Get last two relations for node 1
-    $relations = relation_query('node', $node1->nid)
+    // Get last two relations for node 1.
+    $relations = relation_query('node', $this->node1->nid)
       ->range(1, 2)
+      ->propertyOrderBy('rid', 'ASC')
       ->execute();
     $count = count($relations);
-    $this->assertEqual($count, 2, $count . ' relations found, should be 2');
-    // Check that we have the correct relations
-    $this->assertTrue(isset($relations[$rid_directional]), 'Got one correct relation.');
-    $this->assertTrue(isset($relations[$rid_octopus]), 'Got a second one.');
+    $this->assertEqual($count, 2);
+    // Check that we have the correct relations.
+    $this->assertTrue(isset($relations[$this->rid_directional]), 'Got one correct relation.');
+    $this->assertTrue(isset($relations[$this->rid_octopus]), 'Got a second one.');
 
-    // Get all relations on node 1 and sort them in reverse created order
-    $relations = relation_query('node', $node1->nid)
+    // Get all relations on node 1 and sort them in reverse created order.
+    $relations = relation_query('node', $this->node1->nid)
       ->propertyOrderBy('created', 'DESC')
       ->execute();
-    $this->assertEqual(array_keys($relations), array(3, 2, 1), 'Got relations 3, 2, 1: ' . implode(', ', array_keys($relations)));
+    $this->assertEqual(array_keys($relations), array($this->rid_octopus, $this->rid_directional, $this->rid_symmetric));
+  }
 
-    // Try deleting a relation.
-    $relation = $relations[$rid_directional];
+  /**
+   * Tests a Symmetric relation.
+   */
+  function testRelationSymmetric() {
+    $related = relation_get_related_entity('node', $this->node4->nid);
+    $this->assertEqual($this->node1->nid, $related->nid);
+  }
+
+  /**
+   * Tests a Directional relation.
+   */
+  function testRelationDirectional() {
+    $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type']);
+    $this->assertEqual($this->node1->nid, $related->nid);
+    // @todo: Assert other direction?
+  }
+
+  /**
+   * @todo: Tests an Octopus relation.
+   */
+  function testRelationOctopus() {
+    // debug('Testing a Octopus relation.');
+  }
+
+  /**
+   * Tests saving of relations.
+   * @todo: FIXME for Octopus.
+   */
+  function testRelationSave() {
+    foreach ($this->relation_types as $value) {
+      // debug('Testing saving of ' . $value['relation_type'] . ' relation.');
+      $relation_type = $value['relation_type'];
+      $endpoints = isset($value['min_arity']) ? $this->endpoints_4 : $this->endpoints;
+      $relation = relation_create($relation_type, $endpoints);
+      $rid = relation_save($relation);
+      $this->assertTrue($rid, 'Relation created.');
+      $count = count($relation->endpoints[LANGUAGE_NONE]);
+      $this->assertEqual($count, count($endpoints));
+      $this->assertEqual($relation->arity, count($endpoints));
+      $this->assertEqual($relation->relation_type, $relation_type);
+      foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+        $need_ids[$endpoint['entity_id']] = TRUE;
+      }
+      foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+        $this->assertEqual($endpoint['entity_type'], 'node', 'The entity type is node: ' . $endpoint['entity_type']);
+        $this->assertTrue(isset($need_ids[$endpoint['entity_id']]), 'The entity ID is correct: ' . $need_ids[$endpoint['entity_id']]);
+        unset($need_ids[$endpoint['entity_id']]);
+      }
+      $this->assertFalse($need_ids, 'All ids found');
+    }
+  }
+
+  /**
+   * Tests deletion of a relation.
+   */
+  function testRelationDelete() {
+    // debug('Testing deletion of a relation.');
+    $relations = relation_query('node', $this->node1->nid)
+      ->propertyOrderBy('created', 'DESC')
+      ->execute();
+    $relation = $relations[$this->rid_directional];
+
     $this->drupalPost("relation/$relation->rid/delete", array(), t('Delete'));
     $arg = array(':rid' => $relation->rid);
     $this->assertFalse(db_query('SELECT COUNT(*) FROM {relation} WHERE rid = :rid', $arg)->fetchField(), 'Nothing in relation table after delete.');
@@ -217,7 +331,7 @@ class RelationAPITestCase extends RelationTestCase {
     $this->assertIdentical($skeleton_relation->endpoints, array(), t('Field data not present after delete'));
 
     // Try deleting the content types.
-    $this->drupalGet("admin/structure/relation/manage/$relation_type_symmetric/delete");
+    $this->drupalGet("admin/structure/relation/manage/$this->relation_type_symmetric/delete");
     $num_relations = 1;
     // See relation_type_delete_confirm() in relation.admin.inc
     $this->assertRaw(format_plural($num_relations, 'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.', 'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.', array('%label' => $this->relation_types['symmetric']['label'], '@count' => $num_relations)), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
