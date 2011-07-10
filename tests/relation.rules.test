@@ -18,7 +18,7 @@ class RelationRulesTestCase extends RelationTestCase {
 
   function setUp() {
     parent::setUp('relation');
-    // While setUp fails for non-existing modules, module_enable doesn't.
+    // While setUp fails for non-existing modules, module_enable() doesn't.
     module_enable(array('views'));
   }
 
