@@ -17,7 +17,12 @@ class RelationRulesTestCase extends RelationTestCase {
   }
 
   function setUp() {
-    parent::setUp('relation', 'rules');
+    if (module_exists('rules')) {
+      parent::setUp('relation', 'rules');
+    }
+    else {
+      parent::setUp();
+    }
   }
 
   /**
