@@ -40,9 +40,6 @@ class RelationEntityCollectorTestCase extends RelationTestCase {
     $node2key = 'node:' . $node2->nid;
     $node3key = 'node:' . $node3->nid;
     $node4key = 'node:' . $node4->nid;
-
-    $this->createRelationTypes();
-
     $relation_type = $this->relation_types['symmetric']['relation_type'];
     $edit = array(
       "relation_type" => $relation_type,

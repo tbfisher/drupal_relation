@@ -48,9 +48,9 @@ function relation_field_validate($entity_type, $entity, $field, $instance, $lang
     $end_bundles = $endpoint . '_bundles';
     foreach ($relation_type->$end_bundles as $relation_bundle) {
       if (!isset($item['entity_bundle'])) {
-        $entities = entity_load($item['entity_type'], array($item['entity_id']));
-        $entity = reset($entities);
-        list (, , $item['entity_bundle']) = entity_extract_ids($item['entity_type'], $entity);
+        $endpoint_entities = entity_load($item['entity_type'], array($item['entity_id']));
+        $endpoint_entity = reset($endpoint_entities);
+        list (, , $item['entity_bundle']) = entity_extract_ids($item['entity_type'], $endpoint_entity);
       }
       $relation_bundle_array = explode(':', $relation_bundle, 2);
       if (($relation_bundle == $item['entity_type'] . ':' . $item['entity_bundle']) || (($item['entity_type'] == $relation_bundle_array[0]) && ($relation_bundle_array[1] == '*'))) {
