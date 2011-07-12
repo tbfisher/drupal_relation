@@ -760,6 +760,9 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   }
   $results = $query->execute();
   $result = reset($results);
+  if (empty($result)) {
+    return FALSE;
+  }
   $relation = relation_load($result->rid);
   $request_key = $entity_type . ':' . $entity_id;
   $entities = $relation->endpoints[LANGUAGE_NONE];
