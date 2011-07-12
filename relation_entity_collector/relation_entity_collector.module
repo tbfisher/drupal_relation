@@ -103,6 +103,7 @@ function relation_entity_collector($form, &$form_state) {
     '#default_value'  => '',
     '#empty_value'    => '',
     '#empty_option'   => t('Select an entity'),
+    '#description'     => t('Selector shows all entities loaded on this page.'),
   );
   $form['pick'] = array(
     '#type' => 'submit',
@@ -142,7 +143,7 @@ function relation_entity_collector($form, &$form_state) {
   }
   $form['explanation'] = array(
     '#prefix' => '<div id=\'relation-entity-collector-explanation\'>',
-    '#markup' => t('This block shows all loaded entities on the page. Entities picked stay in the Entity Collector until cleared or a relation is created so it is possible to collect the entities from several pages.'),
+    '#markup' => t('Picked entities stay in the Entity Collector until cleared or a relation is created so it is possible to collect the entities from several pages.'),
     '#suffix' => '</div>',
   );
   return $form;
