@@ -51,10 +51,10 @@ class RelationTestCase extends DrupalWebTestCase {
    * Creates nodes.
    */
   function createRelationNodes() {
-    $this->node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'title' => 'Grandfather'));
+    $this->node1 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 1, 'title' => 'Grandparent'));
     $this->node2 = $this->drupalCreateNode(array('type' => 'article', 'promote' => 0));
-    $this->node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1, 'title' => 'Father'));
-    $this->node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0, 'title' => 'Baby'));
+    $this->node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1, 'title' => 'Parent'));
+    $this->node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0, 'title' => 'Child'));
     $this->node5 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
   }
 
@@ -259,8 +259,12 @@ class RelationAPITestCase extends RelationTestCase {
     $this->assertEqual($this->node1->nid, $related->nid);
 
     // Directional.
-    $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type']);
+    // From Parent to Grandparent.
+    $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type'], 1);
     $this->assertEqual($this->node1->nid, $related->nid);
+    // From Parent to Child.
+    $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type'], 0);
+    $this->assertEqual($this->node4->nid, $related->nid);
   }
 
   /**

@@ -751,12 +751,9 @@ function relation_query($entity_type  = NULL, $entity_id = NULL, $index = NULL) 
  *   The entity object from the other endpoint.
  */
 function relation_get_related_entity($entity_type, $entity_id, $relation_type = NULL, $r_index = NULL) {
-  $query = relation_query($entity_type, $entity_id);
+  $query = relation_query($entity_type, $entity_id, $r_index);
   if ($relation_type) {
     $query->propertyCondition('relation_type', $relation_type);
-  }
-  if (isset($r_index)) {
-    $query->propertyCondition('r_index', $r_index);
   }
   $results = $query->execute();
   $result = reset($results);
