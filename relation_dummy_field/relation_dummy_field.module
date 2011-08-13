@@ -6,6 +6,21 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function relation_dummy_field_menu() {
+  $items['relation_dummy_field/autocomplete/%/%'] = array(
+    // Tricky question, this one is. But, EFQ + entity_load will take care a
+    // lot of problems.
+    'access callback' => TRUE,
+    'page callback' => 'relation_dummy_field_autocomplete',
+    'page arguments' => array(2, 3),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
  * Implements hook_field_info().
  */
 function relation_dummy_field_field_info() {
@@ -35,6 +50,9 @@ function relation_dummy_field_field_widget_info() {
     'relation_default' => array(
       'label' => t('Relation dummy widget'),
       'field types' => array('relation'),
+      'settings' => array(
+        'size' => 60,
+      ),
     ),
   );
 }
@@ -43,7 +61,87 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  // No edit. @TODO call the formatter.
+  if ($items) {
+    return $element;
+  }
+  $todo = 'node';
+  $entity_type = $todo;
+  $todo = 'test';
+  $bundle = $todo;
+  $entity_info = entity_get_info($entity_type);
+  if (isset($entity_info['entity keys']['label'])) {
+    $autocomplete_path = "relation_dummy_field/autocomplete/$entity_type/$bundle";
+  }
+  elseif ($entity_type == 'user') {
+    $autocomplete_path = 'user/autocomplete';
+  }
+  else {
+    // Sorry... can't continue.
+    return $element;
+  }
+
+  $element += array(
+    '#type' => 'textfield',
+    '#default_value' => '',
+    '#autocomplete_path' => $autocomplete_path,
+    '#maxlength' => 1024,
+  );
   return $element;
+}
+
+/**
+ * Autocomplete page callback.
+ */
+function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') {
+  $entity_info = entity_get_info($entity_type);
+  $matches = array();
+  if ($string && $entity_info && isset($entity_info['bundles'][$bundle])) {
+    $label_key = $entity_info['entity keys']['label'];
+    $id_key = $entity_info['entity keys']['id'];
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', $entity_type)
+      ->entityCondition('bundle', $bundle)
+      ->propertyCondition($label_key, $string, 'STARTS_WITH')
+      ->range(0, 10)
+      ->execute();
+    if (!empty($result[$entity_type])) {
+      $entities = entity_load($entity_type, array_keys($result[$entity_type]));
+      foreach ($entities as $entity_id => $entity) {
+        $label = check_plain($entity->$label_key);
+        $label .= " [$id_key:$entity_id]";
+        $matches[$label] = $label;
+      }
+    }
+  }
+  drupal_json_output($matches);
+}
+
+/**
+ * Implements hook_field_insert().
+ */
+function relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  list($entity_id) = entity_extract_ids($entity_type, $entity);
+  preg_match('/(\d+)\]$/', $items[0], $matches);
+  $todo = 'node';
+  $entity_keys = array(
+    array(
+      'entity_type' => $entity_type,
+      'entity_id'   => $entity_id,
+      'r_index'     => 0,
+    ),
+    array(
+      'entity_type' => $todo,
+      'entity_id'   => $matches[1],
+      'r_index'     => 1,
+    ),
+  );
+  $todo = 'test';
+  $relation = relation_create($todo, $entity_keys);
+  relation_save($relation);
+  // Empty out our items. Doesnt matter much because we do not have columns.
+  $items = array();
 }
 
 /**
