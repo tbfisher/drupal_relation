@@ -31,6 +31,7 @@ function relation_dummy_field_field_info() {
       'settings' => array(),
       'default_widget' => 'relation_default',
       'default_formatter' => 'relation_default',
+      'instance_settings' => array('relation_type' => ''),
     ),
   );
 }
@@ -40,6 +41,30 @@ function relation_dummy_field_field_info() {
  */
 function relation_dummy_field_field_is_empty($item, $field) {
   return FALSE;
+}
+
+/**
+ * Implements hook_field_instance_settings_form().
+ */
+function relation_dummy_field_field_instance_settings_form($field, $instance) {
+  $relation_types = relation_get_types();
+  $bundle_key = $instance['entity_type'] . ':' . $instance['bundle'];
+  $bundle_wildcard_key = $instance['entity_type'] . ':'. '*';
+  $options = array();
+  foreach ($relation_types as $relation_type => $relation_type_data) {
+    foreach ($relation_type_data->source_bundles as $relation_bundle_key) {
+      if ($bundle_key == $relation_bundle_key || $bundle_wildcard_key == $relation_bundle_key) {
+        $options[$relation_type] = $relation_type_data->label;
+      }
+    }
+  }
+  $form['relation_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Relation type'),
+    '#default_value' => $instance['settings']['relation_type'],
+    '#options' => $options,
+  );
+  return $form;
 }
 
 /**
@@ -62,13 +87,11 @@ function relation_dummy_field_field_widget_info() {
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   // No edit. @TODO call the formatter.
-  if ($items) {
+  if ($items && $items[0]) {
     return $element;
   }
-  $todo = 'node';
-  $entity_type = $todo;
-  $todo = 'test';
-  $bundle = $todo;
+  $relation_type = relation_type_load($instance['settings']['relation_type']);
+  list($entity_type, $bundle) = explode(':', $relation_type->source_bundles[0]);
   $entity_info = entity_get_info($entity_type);
   if (isset($entity_info['entity keys']['label'])) {
     $autocomplete_path = "relation_dummy_field/autocomplete/$entity_type/$bundle";
@@ -96,16 +119,18 @@ function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $i
 function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') {
   $entity_info = entity_get_info($entity_type);
   $matches = array();
-  if ($string && $entity_info && isset($entity_info['bundles'][$bundle])) {
+  if ($string && $entity_info && ($bundle == '*' || isset($entity_info['bundles'][$bundle]))) {
     $label_key = $entity_info['entity keys']['label'];
     $id_key = $entity_info['entity keys']['id'];
     $query = new EntityFieldQuery;
-    $result = $query
+    $query
       ->entityCondition('entity_type', $entity_type)
-      ->entityCondition('bundle', $bundle)
       ->propertyCondition($label_key, $string, 'STARTS_WITH')
-      ->range(0, 10)
-      ->execute();
+      ->range(0, 10);
+    if ($bundle != '*') {
+      $query->entityCondition('bundle', $bundle);
+    }
+    $result = $query->execute();
     if (!empty($result[$entity_type])) {
       $entities = entity_load($entity_type, array_keys($result[$entity_type]));
       foreach ($entities as $entity_id => $entity) {
@@ -124,7 +149,8 @@ function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') 
 function relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   preg_match('/(\d+)\]$/', $items[0], $matches);
-  $todo = 'node';
+  $relation_type = relation_type_load($instance['settings']['relation_type']);
+  list($relation_entity_type) = explode(':', $relation_type->source_bundles[0]);
   $entity_keys = array(
     array(
       'entity_type' => $entity_type,
@@ -132,13 +158,12 @@ function relation_dummy_field_field_insert($entity_type, $entity, $field, $insta
       'r_index'     => 0,
     ),
     array(
-      'entity_type' => $todo,
+      'entity_type' => $relation_entity_type,
       'entity_id'   => $matches[1],
       'r_index'     => 1,
     ),
   );
-  $todo = 'test';
-  $relation = relation_create($todo, $entity_keys);
+  $relation = relation_create($relation_type->relation_type, $entity_keys);
   relation_save($relation);
   // Empty out our items. Doesnt matter much because we do not have columns.
   $items = array();
