@@ -86,12 +86,20 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // No edit. @TODO call the formatter.
+  // No edit. @TODO call the formatter. Very ugly but I can't find any other
+  // way to get hold of the entity.
   $entity = drupal_static('relation_dummy_field_field_widget_properties_alter');
   if ($entity) {
     list($entity_id) = entity_extract_ids($instance['entity_type'], $entity);
     if ($entity_id) {
-      return $element;
+      $has_data = relation_query($instance['entity_type'], $entity_id)
+        ->fieldCondition($field)
+        ->range(0, 1)
+        ->count()
+       ->execute();
+      if ($has_data) {
+        return $element;
+      }
     }
   }
   $relation_type = relation_type_load($instance['settings']['relation_type']);
@@ -120,6 +128,9 @@ function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $i
   return $element;
 }
 
+/**
+ * Implementation of hook_field_widget_properties_alter().
+ */
 function relation_dummy_field_field_widget_properties_alter(&$widget, $context) {
   drupal_static_reset(__FUNCTION__);
   $static = &drupal_static(__FUNCTION__, new stdClass);
@@ -154,6 +165,14 @@ function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') 
     }
   }
   drupal_json_output($matches);
+}
+
+/**
+ * Implements hook_field_update().
+ */
+function relation_dummy_field_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  // This runs on entity update if at first the relation wasn't created.
+  relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, $items);
 }
 
 /**
