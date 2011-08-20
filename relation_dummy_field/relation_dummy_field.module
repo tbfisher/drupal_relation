@@ -87,10 +87,17 @@ function relation_dummy_field_field_widget_info() {
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   // No edit. @TODO call the formatter.
-  if ($items && $items[0]) {
-    return $element;
+  $entity = drupal_static('relation_dummy_field_field_widget_properties_alter');
+  if ($entity) {
+    list($entity_id) = entity_extract_ids($instance['entity_type'], $entity);
+    if ($entity_id) {
+      return $element;
+    }
   }
   $relation_type = relation_type_load($instance['settings']['relation_type']);
+  if (!$relation_type) {
+    return $element;
+  }
   list($entity_type, $bundle) = explode(':', $relation_type->source_bundles[0]);
   $entity_info = entity_get_info($entity_type);
   if (isset($entity_info['entity keys']['label'])) {
@@ -111,6 +118,12 @@ function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $i
     '#maxlength' => 1024,
   );
   return $element;
+}
+
+function relation_dummy_field_field_widget_properties_alter(&$widget, $context) {
+  drupal_static_reset(__FUNCTION__);
+  $static = &drupal_static(__FUNCTION__, new stdClass);
+  $static = $context['entity'];
 }
 
 /**
@@ -149,6 +162,11 @@ function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') 
 function relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   preg_match('/(\d+)\]$/', $items[0], $matches);
+  // Empty out our items. Doesnt matter much because we do not have columns.
+  $items = array();
+  if (!$matches) {
+    return;
+  }
   $relation_type = relation_type_load($instance['settings']['relation_type']);
   list($relation_entity_type) = explode(':', $relation_type->source_bundles[0]);
   $entity_keys = array(
@@ -165,8 +183,6 @@ function relation_dummy_field_field_insert($entity_type, $entity, $field, $insta
   );
   $relation = relation_create($relation_type->relation_type, $entity_keys);
   relation_save($relation);
-  // Empty out our items. Doesnt matter much because we do not have columns.
-  $items = array();
 }
 
 /**
