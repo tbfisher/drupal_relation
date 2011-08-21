@@ -179,6 +179,9 @@ function relation_dummy_field_field_update($entity_type, $entity, $field, $insta
  * Implements hook_field_insert().
  */
 function relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  if ($field['type'] != 'relation' || !$items) {
+    return;
+  }
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   preg_match('/(\d+)\]$/', $items[0], $matches);
   // Empty out our items. Doesnt matter much because we do not have columns.
