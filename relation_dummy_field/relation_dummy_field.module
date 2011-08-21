@@ -86,14 +86,18 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // No edit. @TODO call the formatter. Very ugly but I can't find any other
-  // way to get hold of the entity.
+  // No edit. @TODO call the formatter. 
+  $relation_type = relation_type_load($instance['settings']['relation_type']);
+  if (!$relation_type) {
+    return $element;
+  }
+  // Very ugly but I can't find any other way to get hold of the entity.
   $entity = drupal_static('relation_dummy_field_field_widget_properties_alter');
   if ($entity) {
     list($entity_id) = entity_extract_ids($instance['entity_type'], $entity);
     if ($entity_id) {
       $has_data = relation_query($instance['entity_type'], $entity_id)
-        ->fieldCondition($field)
+        ->propertyCondition('relation_type', $relation_type->relation_type)
         ->range(0, 1)
         ->count()
        ->execute();
@@ -101,10 +105,6 @@ function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $i
         return $element;
       }
     }
-  }
-  $relation_type = relation_type_load($instance['settings']['relation_type']);
-  if (!$relation_type) {
-    return $element;
   }
   list($entity_type, $bundle) = explode(':', $relation_type->source_bundles[0]);
   $entity_info = entity_get_info($entity_type);
