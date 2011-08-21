@@ -544,7 +544,14 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  * @param $relation_type
  *   The relation type (bundle) of the relation to be created.
  * @param $endpoints
- *   A list of endpoints. Each endpoint is an associate array
+ *   A list of endpoint entities. Each endpoint is defined by an associate
+ *   array, with an entity_type and entity_id key. For example:
+ *   @code
+ *   array(
+ *     array('entity_type' => 'node', 'entity_id' => 1),
+ *     array('entity_type' => 'user', 'entity_id' => 5),
+ *   array);
+ *   @endcode
  *
  * @return
  *   The new relation object.
