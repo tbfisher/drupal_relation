@@ -6,6 +6,23 @@
  */
 
 /**
+ * Implements hook_views_data().
+ */
+function relation_views_data() {
+  // Define the base group of this table.
+  $data['relation']['table']['group']  = t('Relation');
+
+  // Advertise this table as a possible base table
+  $data['relation']['table']['base'] = array(
+    'field' => 'rid',
+    'title' => t('Relation'),
+    'weight' => -10,
+  );
+  return $data;
+}
+
+
+/**
  * Implements hook_views_data_alter().
  */
 function relation_views_data_alter(&$data) {
@@ -33,6 +50,23 @@ function relation_views_data_alter(&$data) {
       $t_arguments = array(
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
+      );
+      $data[$base_table_left]['relation_base' . $type] = array(
+        'title' => t('Relation: @relation_type_label (@left <-> relation)', $t_arguments),
+        'help' => t('Provides a relationship from @left to the relation table via the relation @relation_type_label', $t_arguments),
+        'relationship' => array(
+          // relation_handler_relationship::options_form() relies on this check_plain().
+          'label' => check_plain($relation_type->label),
+          'base' => 'relation',
+          'base field' => 'rid',
+          'relationship field' => $relationship_field,
+          'handler' => 'views_handler_relationship',
+          'relation_type' => $type,
+          'entity_type_left' => $entity_type_left,
+          'entity_type_right' => 'relation',
+          'directional' => $relation_type->directional,
+          'join_handler' => 'relation_handler_base_join',
+        ),
       );
       foreach ($relation_type->$target_index as $target_bundle) {
         $target_bundle = explode(':', $target_bundle, 2);
