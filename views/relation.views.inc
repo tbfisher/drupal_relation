@@ -24,9 +24,6 @@ function relation_views_data_alter(&$data) {
   // Build the relations between the different tables.
   $types = relation_get_types();
   foreach ($types as $type => $relation_type) {
-    if ($relation_type->max_arity != 2) {
-      continue;
-    }
     $target_index = $relation_type->directional ? 'target_bundles' : 'source_bundles';
     foreach ($relation_type->source_bundles as $source_bundle) {
       $source_bundle = explode(':', $source_bundle, 2);
