@@ -269,18 +269,25 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
     case 'relation_natural':
       $sentences = array();
       foreach ($items as $delta => $item) {
-        $subject = entity_label($entity_type, $entity);
         list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
         $relation_type = relation_type_load($item->relation_type);
-        $count = 0;
-        $objects = '';
+
+        $subject = entity_label($entity_type, $entity) . ' '; // Subject of the sentence.
+        $count = 0; // For comma separation of objects.
+        $duplicate = FALSE; // To make sure duplicates of $entity get included in object list.
+        $objects = ''; // Comma separated list of entities that are the object of the sentence.
+        // Gramatical predicate of teh sentence.
+        $predicate = $relation_type->directional ? $relation_type->reverse_label: $relation_type->label ;
+
         foreach ($item->endpoints[LANGUAGE_NONE] as $endpoint) {
-          if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $id ) {
+          // Add all entities that aren't this entity to the sentence $objects.
+          // Check for duplicates of the $subject first.
+          if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $id && $duplicate == FALSE) {
+            $duplicate = TRUE;
+            // Use the forward label as sentence predicate if r_index == 0.
+            // (only makes a difference if relation is directional).
             if ($endpoint['r_index'] == 0) {
               $predicate = ' ' . $relation_type->label;
-            }
-            else {
-              $predicate = ' ' . $relation_type->reverse_label;
             }
           }
           else {
@@ -288,6 +295,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
             $object_entity = reset($object_entities);
             $object_label = entity_label($endpoint['entity_type'], $object_entity);
             $object_uri = entity_uri($endpoint['entity_type'], $object_entity);
+            // Just add a space before the first element, comma and space before further ones.
             $objects .= $count ? ', ' : ' ';
             $count += 1;
             $objects .= l($object_label, $object_uri['path']);
