@@ -265,7 +265,6 @@ function relation_type_create($info = array()) {
     return FALSE;
   };
   $info += array(
-    'reverse_label' => '',
     'min_arity' => 2,
     'max_arity' => 2,
     'directional' => FALSE,
@@ -276,6 +275,11 @@ function relation_type_create($info = array()) {
   );
   if (empty($info['label'])) {
     $info['label'] = $info['relation_type'];
+  }
+  if (empty($info['reverse_label'])) {
+    // Directional relations should have a reverse label, but if they don't,
+    // or if they are symmetric:
+    $info['reverse_label'] = $info['label'];
   }
 
   return (object) $info;
