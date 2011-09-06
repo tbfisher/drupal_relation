@@ -30,6 +30,7 @@ function relation_type_list() {
     '#theme' => 'table',
     '#header' => $headers,
     '#rows' => $rows,
+    '#empty' => t('No relationship types available. <a href="@link">Add relationship type</a>.', array('@link' => url('admin/structure/relation/add'))),
   );
   return $output;
 }
