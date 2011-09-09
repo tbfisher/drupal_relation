@@ -98,13 +98,22 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
       ),
     ),
   );
-  $form['transitive'] = array(
+  // More advanced options, hide by default.
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 50,
+    '#tree' => TRUE,
+  );
+  $form['advanced']['transitive'] = array(
     '#type'           => 'checkbox',
     '#title'          => 'Transitive',
     '#description'   => t('A transitive relation implies that the relation passes through intermediate entities (ie. A=>B and B=>C implies that A=>C). For example "Ancestor" is transitive: your ancestor\'s ancestor is also your ancestor. But a "Parent" relation is non-transitive: your parent\'s parent is not your parent, but your grand-parent.'),
     '#default_value'  => $relation_type->transitive,
   );
-  $form['r_unique'] = array(
+  $form['advanced']['r_unique'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Unique'),
     '#description'    => t('Whether relations of this type are unique (ie. they can not contain exactly the same end points as other relations of this type).'),
@@ -112,7 +121,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
   // these should probably be changed to numerical (validated) textfields.
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8');
-  $form['min_arity'] = array(
+  $form['advanced']['min_arity'] = array(
     '#type' => 'select',
     '#title' => t('Minimum Arity'),
     '#options' => $options,
@@ -126,7 +135,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
 
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8', '0' => t('Infinite'));
-  $form['max_arity'] = array(
+  $form['advanced']['max_arity'] = array(
     '#type' => 'select',
     '#title' => t('Maximum Arity'),
     '#options' => $options,
@@ -174,6 +183,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
   $form['submit'] = array(
     '#type' => 'submit',
+    '#weight' => 100,
     '#value' => t('Save')
   );
   return $form;
@@ -184,8 +194,8 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
  */
 function relation_type_form_submit($form, &$form_state) {
   $relation_type = $form_state['values']['relation_type'];
-  $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['min_arity'];
-  $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['max_arity'];
+  $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['advanced']['min_arity'];
+  $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['advanced']['max_arity'];
   $record = array(
     'relation_type'   => $relation_type,
     'min_arity'   => $min_arity,
@@ -193,8 +203,8 @@ function relation_type_form_submit($form, &$form_state) {
     'label' => $form_state['values']['name'],
     'reverse_label' => $form_state['values']['reverse_label'],
     'directional' => $form_state['values']['directional'],
-    'transitive' => $form_state['values']['transitive'],
-    'r_unique' => $form_state['values']['r_unique'],
+    'transitive' => $form_state['values']['advanced']['transitive'],
+    'r_unique' => $form_state['values']['advanced']['r_unique'],
     'source_bundles' => $form_state['values']['source_bundles'],
     'target_bundles' => $form_state['values']['target_bundles'],
   );
@@ -252,7 +262,7 @@ function relation_type_delete_confirm_submit($form, &$form_state) {
  */
 function relation_generate_form($form, &$form_state) {
   $types = relation_get_types();
-  foreach( $types as $id => $type) {
+  foreach ($types as $id => $type) {
     $types[$id] = $type->label;
   }
 
@@ -287,6 +297,6 @@ function relation_generate_form_submit($form, &$form_state) {
   if (is_numeric($number) && $number>0) {
     $types = array_keys(array_filter($types));
     $rids = relation_generate_relations($number, $types, $kill);
-    drupal_set_message(t("Generated %count relations (rids from %first to %last).", array('%count' => count($rids),'%first' => $rids[0],'%last' => end($rids))));
+    drupal_set_message(t("Generated %count relations (rids from %first to %last).", array('%count' => count($rids), '%first' => $rids[0], '%last' => end($rids))));
   }
 }
