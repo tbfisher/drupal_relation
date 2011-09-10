@@ -262,6 +262,11 @@ function relation_type_delete_confirm_submit($form, &$form_state) {
  */
 function relation_generate_form($form, &$form_state) {
   $types = relation_get_types();
+
+  if (empty($types)) {
+    $form['explanation']['#markup'] = t("Before you can generate relations, you need to define one or more !link.", array("!link" => l('relation types', 'admin/structure/relation')));
+    return $form;
+  }
   foreach ($types as $id => $type) {
     $types[$id] = $type->label;
   }
