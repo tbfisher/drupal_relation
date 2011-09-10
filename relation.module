@@ -1,6 +1,5 @@
 <?php
 
-require_once dirname(__FILE__) . '/relation.field.inc';
 require_once dirname(__FILE__) . '/relation.devel.inc';
 require_once dirname(__FILE__) . '/relation.rules.inc';
 
