@@ -44,6 +44,9 @@ function relation_type_list() {
  */
 function relation_type_form($form, &$form_state, $relation_type = array(), $op = 'edit') {
   $form['#write_record_keys'] = array();
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'relation') . '/relation.admin.css',
+  );
   if ($relation_type) {
     $relation_type = (object) $relation_type;
     if ($relation_type) {
@@ -158,7 +161,13 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
       }
     }
   }
-  $form['source_bundles'] = array(
+  $form['endpoints'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'id' => 'relation-type-form-endpoints'
+      ),
+    );
+  $form['endpoints']['source_bundles'] = array(
     '#type'          => 'select',
     '#title'         => 'Available source bundles',
     '#options'       => $bundles,
@@ -167,7 +176,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     '#multiple'      => TRUE,
     '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple. Note that selecting all bundles also include bundles not yet created for that entity type.',
   );
-  $form['target_bundles'] = array(
+  $form['endpoints']['target_bundles'] = array(
     '#type'          => 'select',
     '#title'         => 'Available target bundles',
     '#options'       => $bundles,

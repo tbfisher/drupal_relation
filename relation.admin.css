@@ -1,0 +1,13 @@
+/**
+ * @file relation types form css
+ */
+
+#relation-type-form-endpoints .form-item-source-bundles {
+  float: left;
+  margin-right: 20px;
+  width: 50%;
+}
+
+#relation-type-form #edit-advanced {
+  clear: both;
+}
