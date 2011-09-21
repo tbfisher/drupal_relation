@@ -20,10 +20,6 @@ class RelationEntityCollectorTestCase extends RelationTestCase {
 
   function setUp() {
     parent::setUp('relation', 'relation_entity_collector');
-    $admin_user = $this->drupalCreateUser(array('administer blocks'));
-    $this->drupalLogin($admin_user);
-    $edit = array('blocks[relation_entity_collector_block][region]' => 'sidebar_second');
-    $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
     $this->drupalLogin($this->web_user);
   }
 

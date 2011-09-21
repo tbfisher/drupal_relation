@@ -7,6 +7,8 @@ function relation_entity_collector_block_info() {
   return array(
     'block' => array(
       'info' => t('Relation Entity Collector'),
+      'status' => 1,
+      'region' => 'sidebar_first',
     ),
   );
 }
