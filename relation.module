@@ -47,7 +47,7 @@ function relation_entity_info() {
 }
 
 /**
- * Implementation of hook_entity_property_info().
+ * Implements hook_entity_property_info().
  */
 function relation_entity_property_info() {
   $info = array();
@@ -213,7 +213,7 @@ function relation_menu() {
 }
 
 /**
- * Implements hook_init()
+ * Implements hook_init().
  */
 function relation_init() {
   // Field info is cached enough not to be a performance problem. We can't do
@@ -229,7 +229,7 @@ function relation_init() {
 }
 
 /**
- * Create a relation bundle.
+ * Creates a relation bundle.
  *
  * @param $info
  *   Array of relation type settings. All but relation_type are optional,
@@ -519,10 +519,10 @@ function relation_edit_form_submit($form, &$form_state) {
 }
 
 /**
- * Check if a relation exists
+ * Checks if a relation exists.
  *
  * @param $relation_type
- *   The relation type (bundle) of the relation to be checked
+ *   The relation type (bundle) of the relation to be checked.
  * @param $entity_keys
  *   The entity keys of the relation to be created, to be compared to existing
  *   relations. Entity_keys are arrays keyed by 'entity_type' and 'entity_id'.
@@ -690,7 +690,7 @@ function relation_multiple_delete($rids) {
 }
 
 /**
- * Menu callback: ask for confirmation of relation deletion
+ * Menu callback: ask for confirmation of relation deletion.
  */
 function relation_delete_confirm($form, &$form_state, $relation) {
   $form['#relation'] = $relation;
@@ -706,7 +706,7 @@ function relation_delete_confirm($form, &$form_state, $relation) {
 }
 
 /**
- * Execute relation deletion
+ * Executes relation deletion.
  */
 function relation_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
@@ -720,7 +720,7 @@ function relation_delete_confirm_submit($form, &$form_state) {
 }
 
 /**
- * get a relation's URI.
+ * Gets a relation's URI.
  *
  * @see entity_uri()
  */
@@ -788,6 +788,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   $other_endpoints = entity_load($entities[0]['entity_type'], array($entities[0]['entity_id']));
   return reset($other_endpoints);
 }
+
 /**
  * Returns an array of the relation types that can have the given entity as
  * as an endpoint.
@@ -809,15 +810,15 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
   $relation_types = relation_get_types();
 
   foreach ($relation_types as $type => $relation_type) {
-    $available = false;
+    $available = FALSE;
     if ($endpoint == 'source' || $endpoint == 'both') {
       if (in_array($bundle_key, $relation_type->source_bundles) || in_array($all_bundle_key, $relation_type->source_bundles)) {
-        $available = true;
+        $available = FALSE;
       }
     }
     if ($endpoint == 'source' || $endpoint == 'both') {
       if (in_array($bundle_key, $relation_type->source_bundles) || in_array($all_bundle_key, $relation_type->source_bundles)) {
-        $available = true;
+        $available = FALSE;
       }
     }
     if (!$available) {
@@ -826,8 +827,9 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
   }
   return $relation_types;
 }
+
 /**
- * Implements hook_entity_delete.
+ * Implements hook_entity_delete().
  */
 function relation_entity_delete($entity, $entity_type) {
   list($id) = entity_extract_ids($entity_type, $entity);

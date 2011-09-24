@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Implements the Rules module API for Relation.
+ */
+
+/**
  * Callback for creating a relation, in the form Rules wants it.
  */
 function relation_rules_create($values = array()) {

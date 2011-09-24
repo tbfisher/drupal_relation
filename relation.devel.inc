@@ -6,7 +6,7 @@
  */
 
 /**
- * Export relation types, display them in a form. Used by ctools export.
+ * Exports relation types, display them in a form. Used by ctools export.
  */
 function relation_export_relation_type($form, &$form_state, $type) {
   $relation_type = relation_relation_type_load($type->relation_type);
@@ -25,8 +25,8 @@ function relation_export_relation_type($form, &$form_state, $type) {
 }
 
 /**
-* Load a single relation type for export.
-*/
+ * Loads a single relation type for export.
+ */
 function relation_relation_type_load($type) {
   ctools_include('export');
   $result = ctools_export_load_object('relation_type', 'names', array($type));
@@ -36,8 +36,8 @@ function relation_relation_type_load($type) {
 }
 
 /**
-* Export a relation type.
-*/
+ * Exports a relation type.
+ */
 function relation_relation_type_export($relation_type, $indent = '') {
   ctools_include('export');
   $additional2 = array(
@@ -49,7 +49,7 @@ function relation_relation_type_export($relation_type, $indent = '') {
 }
 
 /**
- * Generates random relations. Appropriate entities must already exist.
+ * Generates pseudorandom relations. Appropriate entities must already exist.
  *
  * @param $number
  *   Number of entities to generate of each entity_type.

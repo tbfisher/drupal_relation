@@ -12,7 +12,7 @@ class relation_handler_relationship extends views_handler_relationship {
   function option_definition() {
     $options = parent::option_definition();
     $options['r_index'] = array('default' => -1);
-    return $options;  
+    return $options;
   }
 
   /**
@@ -68,7 +68,7 @@ class relation_handler_join extends views_join {
 
     // Execute a self-join.
     $entity_type_right = $this->definition['entity_type_right'];
-    // entity_id here is the ID of the relation entity. 
+    // entity_id here is the ID of the relation entity.
     $relation_type = $this->definition['relation_type'];
     $conditions = "%alias.entity_id = $l.entity_id AND %alias.$r_index_field_name != $l.$r_index_field_name AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
     // Right join alias.
@@ -97,7 +97,7 @@ class relation_handler_base_join extends views_join {
     // Left join alias.
     $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
     // Execute a self-join.
-    // entity_id here is the ID of the relation entity. 
+    // entity_id here is the ID of the relation entity.
     $relation_type = $this->definition['relation_type'];
     $conditions = "%alias.rid = $l.entity_id AND %alias.relation_type = '$relation_type'";
     $select_query->addJoin($this->type, 'relation', $table['alias'], $conditions);

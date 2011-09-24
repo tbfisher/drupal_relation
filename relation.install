@@ -219,7 +219,7 @@ function relation_schema() {
       ),
     ),
   );
- return $schema;
+  return $schema;
 }
 
 /**
