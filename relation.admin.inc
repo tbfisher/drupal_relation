@@ -84,12 +84,6 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
       'exists' => 'relation_type_load',
     ),
   );
-  $form['directional'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => 'Directional',
-    '#description'   => t('A directional relation is one that does not imply the reverse relation. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
-    '#default_value'  => $relation_type->directional,
-  );
   $form['reverse_label'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Reverse label'),
@@ -100,6 +94,12 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
         ':input[name="directional"]' => array('checked' => TRUE),
       ),
     ),
+  );
+  $form['directional'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => 'Directional',
+    '#description'   => t('A directional relation is one that does not imply the reverse relation. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
+    '#default_value'  => $relation_type->directional,
   );
   // More advanced options, hide by default.
   $form['advanced'] = array(
