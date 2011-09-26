@@ -442,7 +442,7 @@ function relation_type_delete($relation_type) {
  */
 function relation_load($rid, $vid = NULL, $reset = FALSE) {
   $conditions = (isset($vid) ? array('vid' => $vid) : array());
-  $relations = relation_load_multiple(array($rid), $conditions);
+  $relations = relation_load_multiple(array($rid), $conditions, $reset);
   return reset($relations);
 }
 
@@ -459,7 +459,7 @@ function relation_load($rid, $vid = NULL, $reset = FALSE) {
  */
 function relation_load_multiple($rids, $conditions = array(), $reset = FALSE) {
   // Entity load handles field_attach_load for us.
-  return entity_load('relation', $rids, $conditions);
+  return entity_load('relation', $rids, $conditions, $reset);
 }
 
 /**
