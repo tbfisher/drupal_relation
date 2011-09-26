@@ -68,24 +68,34 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
       'target_bundles' => array(),
     );
   }
-  $form['name'] = array( // use 'name' for /misc/machine-name.js
+  $form['labels'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('relation-type-form-float'),
+    ),
+    '#suffix' => '<div class="clearfix"></div>',
+  );
+  $form['labels']['name'] = array( // use 'name' for /misc/machine-name.js
     '#type'          => 'textfield',
     '#title'         => t('Label'),
     '#description'   => t('Display name of the relation type. This is also used as the predicate in natural language formatters (ie. if A is related to B, you get "A [label] B")'),
     '#default_value' => $relation_type->label,
+    '#size'          => 40,
     '#required'      => TRUE,
   );
-  $form['relation_type'] = array(
+  $form['labels']['relation_type'] = array(
     '#type'          => 'machine_name',
     '#default_value' => $relation_type->relation_type,
     '#maxlength' => 32,
     '#disabled'      => $relation_type->relation_type,
     '#machine_name' => array(
+      'source' => array('labels', 'name'),
       'exists' => 'relation_type_load',
     ),
   );
-  $form['reverse_label'] = array(
+  $form['labels']['reverse_label'] = array(
     '#type'          => 'textfield',
+    '#size'          => 40,
     '#title'         => t('Reverse label'),
     '#description'   => t('Reverse label of the relation type. This is used as the predicate by formatters of directional relations, when you need to display the reverse direction (ie. from the target entity to the source entity). If this is not supplied, the forward label is used.'),
     '#default_value' => $relation_type->reverse_label,
@@ -162,11 +172,12 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     }
   }
   $form['endpoints'] = array(
-      '#type' => 'container',
-      '#attributes' => array(
-        'id' => 'relation-type-form-endpoints'
-      ),
-    );
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('relation-type-form-float'),
+    ),
+    '#suffix' => '<div class="clearfix"></div>',
+  );
   $form['endpoints']['source_bundles'] = array(
     '#type'          => 'select',
     '#title'         => 'Available source bundles',

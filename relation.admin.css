@@ -2,12 +2,8 @@
  * @file relation types form css
  */
 
-#relation-type-form-endpoints .form-item-source-bundles {
+.relation-type-form-float :first-child.form-item {
   float: left;
   margin-right: 20px;
   width: 50%;
-}
-
-#relation-type-form #edit-advanced {
-  clear: both;
 }
