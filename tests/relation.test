@@ -79,19 +79,19 @@ class RelationTestCase extends DrupalWebTestCase {
    */
   function createRelationTypes() {
     $this->relation_types['symmetric'] = array(
-      'relation_type'   => 'symmetric',
+      'relation_type' => 'symmetric',
       'label' => 'symmetric',
       'source_bundles' => array('node:article', 'node:page', 'taxonomy_term:*', 'user:*'),
     );
     $this->relation_types['directional'] = array(
-      'relation_type'   => 'directional',
+      'relation_type' => 'directional',
       'label' => 'directional',
       'directional' => TRUE,
       'source_bundles' => array('node:*'),
       'target_bundles' => array('node:page'),
     );
     $this->relation_types['octopus'] = array(
-      'relation_type'   => 'octopus',
+      'relation_type' => 'octopus',
       'label' => 'octopus',
       'min_arity' => 3,
       'max_arity' => 5,

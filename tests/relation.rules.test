@@ -39,11 +39,11 @@ class RelationRulesTestCase extends RelationTestCase {
       // primarily tests the endpoint property set callback.
       $rule = rule();
       $rule->action('entity_create', array(
-          'type' => 'relation',
-          'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
-          'param_author:select' => 'site:current-user',
-          'param_endpoints' => $endpoints,
-          'entity_created:var' => 'relation',
+        'type' => 'relation',
+        'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
+        'param_author:select' => 'site:current-user',
+        'param_endpoints' => $endpoints,
+        'entity_created:var' => 'relation',
       ));
       $rule->execute();
 
@@ -62,12 +62,12 @@ class RelationRulesTestCase extends RelationTestCase {
       // This will load a relation into the context of the rule.
       $rule->action('entity_fetch', array('type' => 'relation', 'id' => $rid));
       $rule->action('entity_create', array(
-          'type' => 'relation',
-          'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
-          'param_author:select' => 'site:current-user',
-          // Now, load the endpoints from the fetched relation, into a new relation.
-          'param_endpoints:select' => 'entity-fetched:endpoints',
-          'entity_created:var' => 'relation',
+        'type' => 'relation',
+        'param_relation_type' => $this->relation_types['symmetric']['relation_type'],
+        'param_author:select' => 'site:current-user',
+        // Now, load the endpoints from the fetched relation, into a new relation.
+        'param_endpoints:select' => 'entity-fetched:endpoints',
+        'entity_created:var' => 'relation',
       ));
       $rule->execute();
 

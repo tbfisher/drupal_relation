@@ -105,7 +105,7 @@ class RelationViewsTestCase extends RelationTestCase {
     }
 
     // Directional to source, to target and to both.
-    for ($r_index = -1 ; $r_index < 2; $r_index++) {
+    for ($r_index = -1; $r_index < 2; $r_index++) {
       $view = new view;
       $handler = $view->new_display('default');
       $handler->display->display_options['relationships']['relation_directional_node']['id'] = 'relation_directional_node';

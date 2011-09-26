@@ -204,7 +204,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   $form['submit'] = array(
     '#type' => 'submit',
     '#weight' => 100,
-    '#value' => t('Save')
+    '#value' => t('Save'),
   );
   return $form;
 }
@@ -319,7 +319,7 @@ function relation_generate_form_submit($form, &$form_state) {
   $number = $form_state['values']['relation_number'];
   $types = $form_state['values']['relation_types'];
   $kill = $form_state['values']['relation_kill'];
-  if (is_numeric($number) && $number>0) {
+  if (is_numeric($number) && $number > 0) {
     $types = array_keys(array_filter($types));
     $rids = relation_generate_relations($number, $types, $kill);
     drupal_set_message(t("Generated %count relations (rids from %first to %last).", array('%count' => count($rids), '%first' => $rids[0], '%last' => end($rids))));

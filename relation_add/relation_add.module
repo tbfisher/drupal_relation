@@ -60,7 +60,7 @@ function relation_add_block_form($form, &$form_state) {
   // Act as helper block if no relation types are defined.
   $relation_types = relation_get_types();
   if (empty($relation_types)) {
-    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page displays an entity, and use this block to add  a new relation from that entity.', array( '!link' => l('relation types', 'admin/structure/relation')));
+    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page displays an entity, and use this block to add  a new relation from that entity.', array('!link' => l('relation types', 'admin/structure/relation')));
     return $form;
   }
 
@@ -72,7 +72,7 @@ function relation_add_block_form($form, &$form_state) {
   elseif (isset($current_entity)) {
     $current_label = entity_label($entity_type, $current_entity);
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $current_entity);
-    $value = $current_label . ' [' .$entity_type . ':' . $id . ']';
+    $value = $current_label . ' [' . $entity_type . ':' . $id . ']';
   }
   else {
     $form['explanation']['#markup'] = t('No entity found, can\'t create a relation!');
@@ -122,9 +122,9 @@ function relation_add_block_form($form, &$form_state) {
 
     for ($i = 2; $i <= $relation_type->max_arity; $i++ ) {
       $form['relation_options']['targets']['target_' . $i] = array(
-	'#type' => 'textfield',
-	'#title' => t('Endpoint ' . $i),
-	'#autocomplete_path' => 'relation_add/autocomplete/' . $type,
+        '#type' => 'textfield',
+        '#title' => t('Endpoint ' . $i),
+        '#autocomplete_path' => 'relation_add/autocomplete/' . $type,
       );
     }
     field_attach_form('relation', $relation, $form['relation_options'], $form_state);
@@ -226,7 +226,7 @@ function relation_add_save($form, &$form_state) {
  *   The string for which the search through entity labels will be run.
  */
 function relation_add_autocomplete($type = '', $string = '') {
-// Would be nice to make a way for this to work for the source bundles of directional relations
+  // Would be nice to make a way for this to work for the source bundles of directional relations
   if (empty($type) || empty($string)) {
     exit();
   }
@@ -236,7 +236,7 @@ function relation_add_autocomplete($type = '', $string = '') {
   $direction = $relation_type->directional ? 'target_bundles' : 'source_bundles';
   foreach ($relation_type->$direction as $entity_bundle) {
     list($entity_type, $bundle) = explode(':', $entity_bundle, 2);
-    $entity_bundles[$entity_type][]= $bundle;
+    $entity_bundles[$entity_type][] = $bundle;
   }
   // Get about 12, rounded up.
   $limit = ceil(12 / count(array_keys($entity_bundles)));
@@ -260,12 +260,12 @@ function relation_add_autocomplete($type = '', $string = '') {
     if (!in_array('*', $bundles)) {
       $query->entityCondition('bundle', $bundles, 'IN');
     }
-    if($results = $query->execute()) {
+    if ($results = $query->execute()) {
       foreach (array_keys($results[$entity_type]) as $id) {
-	$entities = entity_load($entity_type, array($id));
-	$entity = reset($entities);
-	$label = entity_label($entity_type, $entity);
-	$suggestions[$label . ' [' . $entity_type . ':' . $id . ']'] = $label  . ' [' . $entity_type . ':' . $id . ']';
+        $entities = entity_load($entity_type, array($id));
+        $entity = reset($entities);
+        $label = entity_label($entity_type, $entity);
+        $suggestions[$label . ' [' . $entity_type . ':' . $id . ']'] = $label  . ' [' . $entity_type . ':' . $id . ']';
       }
     }
   }

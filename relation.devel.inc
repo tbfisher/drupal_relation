@@ -98,7 +98,7 @@ function relation_generate_relations($number = 10, $types = array(), $kill = FAL
         $query->entityCondition('entity_type', $entity_type, '=')
           // Would be nice to ->entityOrderBy('RAND()'); here, and set
           // range(0, 1). See http://drupal.org/node/1174806
-          ->range(0, 2*$number);
+          ->range(0, 2 * $number);
         if (!in_array('*', $available_types[$direction][$entity_type])) {
           $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
         }

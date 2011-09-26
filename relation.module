@@ -222,7 +222,7 @@ function relation_init() {
     $field = array(
       'field_name' => 'endpoints',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'type' => 'relation_endpoint'
+      'type' => 'relation_endpoint',
     );
     field_create_field($field);
   }
@@ -262,7 +262,7 @@ function relation_type_create($info = array()) {
   $info = (array) $info;
   if (empty($info['relation_type'])) {
     return FALSE;
-  };
+  }
   $info += array(
     'min_arity' => 2,
     'max_arity' => 2,
@@ -628,7 +628,7 @@ function relation_save($relation) {
         'changed'     => $current_time,
       ))
       ->execute();
-      $relation->vid = $vid;
+    $relation->vid = $vid;
 
     // These are the only fields that we allow updating.
     db_update('relation')
@@ -685,7 +685,7 @@ function relation_multiple_delete($rids) {
     db_delete('relation')->condition('rid', $rid)->execute();
     db_delete('relation_revision')->condition('rid', $rid)->execute();
     module_invoke_all('entity_delete', $relation, 'relation');
-    field_attach_delete('relation',  $relation);
+    field_attach_delete('relation', $relation);
   }
 }
 
@@ -736,11 +736,10 @@ function relation_uri($relation) {
  * @param $entity_id
  *   The entity id of one of the endpoints.
  *
- *
  * @return RelationQuery
  *   The query object itself.
  */
-function relation_query($entity_type  = NULL, $entity_id = NULL, $index = NULL) {
+function relation_query($entity_type = NULL, $entity_id = NULL, $index = NULL) {
   return new RelationQuery($entity_type, $entity_id, $index);
 }
 

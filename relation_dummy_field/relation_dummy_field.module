@@ -49,7 +49,7 @@ function relation_dummy_field_field_is_empty($item, $field) {
 function relation_dummy_field_field_instance_settings_form($field, $instance) {
   $relation_types = relation_get_types();
   $bundle_key = $instance['entity_type'] . ':' . $instance['bundle'];
-  $bundle_wildcard_key = $instance['entity_type'] . ':'. '*';
+  $bundle_wildcard_key = $instance['entity_type'] . ':' . '*';
   $options = array();
   foreach ($relation_types as $relation_type => $relation_type_data) {
     foreach ($relation_type_data->source_bundles as $relation_bundle_key) {
@@ -86,7 +86,7 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // No edit. @TODO call the formatter. 
+  // No edit. @TODO call the formatter.
   $relation_type = relation_type_load($instance['settings']['relation_type']);
   if (!$relation_type) {
     return $element;
@@ -277,7 +277,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
         $duplicate = FALSE; // To make sure duplicates of $entity get included in object list.
         $objects = ''; // Comma separated list of entities that are the object of the sentence.
         // Gramatical predicate of teh sentence.
-        $predicate = $relation_type->directional ? $relation_type->reverse_label: $relation_type->label ;
+        $predicate = $relation_type->directional ? $relation_type->reverse_label : $relation_type->label;
 
         foreach ($item->endpoints[LANGUAGE_NONE] as $endpoint) {
           // Add all entities that aren't this entity to the sentence $objects.

@@ -123,7 +123,7 @@ function relation_tokens($type, $tokens, array $data = array(), array $options =
           else {
             $user = user_load($relation->uid);
             $name = $user->name;
-          };
+          }
           $replacements[$original] = $sanitize ? filter_xss($name) : $name;
           break;
 
