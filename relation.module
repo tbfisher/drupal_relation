@@ -115,6 +115,10 @@ function relation_permission() {
       'title' => t('Delete Relations'),
       'description' => t('Delete existing relations.'),
     ),
+    'administer relations' => array(
+      'title' => t('Administer Relations'),
+      'description' => t('Administer existing relations.'),
+    ),
   );
 }
 
@@ -208,6 +212,15 @@ function relation_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_generate_form'),
     'file' => 'relation.admin.inc',
+  );
+  // Relations listing.
+  $items['admin/content/relation'] = array(
+    'title' => 'Relations',
+    'page callback' => 'relation_admin_content',
+    'access arguments' => array('administer relations'),
+    'description' => 'View, edit and delete all the available relations on your site.',
+    'file' => 'relation.admin.inc',
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
@@ -861,4 +874,18 @@ function relation_views_api() {
 function relation_get_type_label($relation) {
   $type = relation_type_load($relation->relation_type);
   return $type->label;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function relation_theme() {
+  $theme = array(
+    // relation.admin.inc.
+    'relation_admin_content' => array(
+      'variables' => array('relations' => NULL),
+      'file' => 'relation.admin.inc',
+    ),
+  );
+  return $theme;
 }

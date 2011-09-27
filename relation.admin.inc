@@ -325,3 +325,91 @@ function relation_generate_form_submit($form, &$form_state) {
     drupal_set_message(t("Generated %count relations (rids from %first to %last).", array('%count' => count($rids), '%first' => $rids[0], '%last' => end($rids))));
   }
 }
+
+/**
+ * Menu callback for admin/content/relation. Displays all relations on the site.
+ */
+function relation_admin_content() {
+  // Set up header row.
+  $header = array(
+    'label' => array('data' => t('Title'), 'field' => 'r.rid', 'sort' => 'asc'),
+    'type' => array('data' => t('Type'), 'field' => 'r.relation_type'),
+    t('Relation'),
+    'operations' => array('data' => t('Operations'), 'colspan' => '2'),
+  );
+
+  // Grab all relations.
+  $query = db_select('relation', 'r')->extend('PagerDefault')->extend('TableSort');
+  $query->join('relation_type', 'rt', 'r.relation_type = rt.relation_type');
+  $query->fields('r', array('rid', 'relation_type'))
+    ->fields('rt', array('directional'))
+    ->limit(50)
+    ->orderByHeader($header);
+  $relations = $query->execute();
+
+  return theme('relation_admin_content', array('relations' => $relations, 'header' => $header));
+}
+
+/**
+ * Generate a table of all relations on this site.
+ */
+function theme_relation_admin_content($variables) {
+  $relations = $variables['relations'];
+  $header = $variables['header'];
+
+  $rows = array();
+  if (empty($relations)) {
+    // Give a message if there are no relations returned.
+    $message = t('There are currently no relations on your site.');
+
+    $rows[] = array(
+      array('data' => $message, 'colspan' => 5),
+    );
+  }
+  else {
+    foreach ($relations as $relation) {
+      // Load the relation.
+      $r = relation_load($relation->rid);
+      // Get the endpoints for this relation.
+      $endpoints = field_get_items('relation', $r, 'endpoints');
+
+      if (!empty($endpoints)) {
+        $relation_entities = array();
+        foreach ($endpoints as $endpoint) {
+          $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
+          $entity = reset($entities);
+          $title = entity_label($endpoint['entity_type'], $entity);
+          $path = entity_uri($endpoint['entity_type'], $entity);
+
+          // Logic to process how the different entities return a uri.
+          // see this issue: http://drupal.org/node/1057242
+          if ($endpoint['entity_type'] == 'file') {
+            $path = array('path' => file_create_url($path));
+          }
+          if ($endpoint['entity_type'] == 'taxonomy_vocabulary') {
+            $path = array('path' => 'admin/structure/taxonomy/' . $entity->machine_name);
+          }
+          $relation_entities[] = array('title' => $title, 'path' => $path['path']);
+        }
+      }
+
+      // Build the column for the relation entities.
+      $relation_column = array();
+      foreach ($relation_entities as $entity) {
+        $relation_column[] = l($entity['title'], $entity['path']);
+      }
+
+      // Build the rows to pass to the table theme function.
+      // Directional is implemented, not sure how well it works.
+      $rows[] = array(
+        l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
+        $relation->relation_type,
+        implode(($relation->directional) ? " -> " : " -- ", $relation_column),
+        user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit') : '',
+        user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete') : '',
+      );
+    }
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
+}
