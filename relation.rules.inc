@@ -6,6 +6,47 @@
  */
 
 /**
+ * Implements hook_rules_action_info().
+ */
+function relation_rules_action_info() {
+  $items['relation_rules_load_related'] = array(
+    'label' => t('Loads related entities'),
+    'group' => t('Relation'),
+    'parameter' => array(
+      'left' => array(
+        'type' => 'entity',
+        'label' => t('Entity'),
+      ),
+      'relation_type' => array(
+        'type' => 'text',
+        'label' => t('Relation type'),
+        'options list' => 'relation_rules_get_type_options',
+      ),
+    ),
+    'provides' => array(
+      'endpoints' => array(
+        'type' => 'list<entity>',
+        'label' => t('List of related entities'),
+      ),
+    ),
+  );
+  return $items;
+}
+
+
+/**
+ * Options list callback for fetching relation types.
+ */
+function relation_rules_get_type_options() {
+  $options = array();
+  $types = relation_get_types();
+  foreach ($types as $type) {
+    $options[$type->relation_type] = $type->label;
+  }
+  return $options;
+}
+
+/**
  * Callback for creating a relation, in the form Rules wants it.
  */
 function relation_rules_create($values = array()) {
@@ -64,4 +105,32 @@ function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $entity_w
       );
     }
   }
+}
+
+/**
+ * Action callback loading all related entities.
+ */
+function relation_rules_load_related($source_entity, $relation_type) {
+  $source_entity_type = $source_entity->type();
+  $source_entity_id = $source_entity->getIdentifier();
+  $rids = array_keys(relation_query($source_entity_type, $source_entity_id)->entityCondition('bundle', $relation_type)->execute());
+  $return = array();
+  if (!$rids) {
+    return $return;
+  }
+  $relations = relation_load_multiple($rids);
+  $to_load = array();
+  foreach ($relations as $relation) {
+    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+      if ($endpoint['entity_type'] != $source_entity_type || $endpoint['entity_id'] != $source_entity_id) {
+        $to_load[$endpoint['entity_type']][] = $endpoint['entity_id'];
+      }
+    }
+  }
+  foreach ($to_load as $entity_type => $ids) {
+    foreach (entity_load($entity_type, $ids) as $entity) {
+      $return[] = entity_metadata_wrapper($entity_type, $entity);
+    }
+  }
+  return array('endpoints' => $return);
 }

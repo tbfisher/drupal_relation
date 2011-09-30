@@ -79,18 +79,6 @@ function relation_entity_property_info() {
 }
 
 /**
- * Options list callback for fetching relation types.
- */
-function relation_rules_get_type_options() {
-  $options = array();
-  $types = relation_get_types();
-  foreach ($types as $type) {
-    $options[$type->relation_type] = $type->label;
-  }
-  return $options;
-}
-
-/**
  * Implements hook_permission().
  */
 function relation_permission() {
@@ -778,7 +766,7 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $index = NULL) {
 function relation_get_related_entity($entity_type, $entity_id, $relation_type = NULL, $r_index = NULL) {
   $query = relation_query($entity_type, $entity_id, $r_index);
   if ($relation_type) {
-    $query->propertyCondition('relation_type', $relation_type);
+    $query->entityCondition('bundle', $relation_type);
   }
   $results = $query->execute();
   $result = reset($results);
