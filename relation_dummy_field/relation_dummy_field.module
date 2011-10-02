@@ -6,21 +6,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function relation_dummy_field_menu() {
-  $items['relation_dummy_field/autocomplete/%/%'] = array(
-    // Tricky question, this one is. But, EFQ + entity_load will take care a
-    // lot of problems.
-    'access callback' => TRUE,
-    'page callback' => 'relation_dummy_field_autocomplete',
-    'page arguments' => array(2, 3),
-    'type' => MENU_CALLBACK,
-  );
-  return $items;
-}
-
-/**
  * Implements hook_field_info().
  */
 function relation_dummy_field_field_info() {
@@ -60,9 +45,11 @@ function relation_dummy_field_field_instance_settings_form($field, $instance) {
   }
   $form['relation_type'] = array(
     '#type' => 'select',
-    '#title' => t('Relation type'),
+    '#title' => t('Relation types'),
+    '#description' => t('Select all the relation types you want to display in the dummy field. Only relation types applicable to this entity bundle are show here. If no relation_types are selected, relations of all types will be displayed.'),
     '#default_value' => $instance['settings']['relation_type'],
     '#options' => $options,
+    '#multiple' => TRUE,
   );
   return $form;
 }
@@ -73,11 +60,8 @@ function relation_dummy_field_field_instance_settings_form($field, $instance) {
 function relation_dummy_field_field_widget_info() {
   return array(
     'relation_default' => array(
-      'label' => t('Relation dummy widget'),
+      'label' => t('No edit widget'),
       'field types' => array('relation'),
-      'settings' => array(
-        'size' => 60,
-      ),
     ),
   );
 }
@@ -86,125 +70,7 @@ function relation_dummy_field_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function relation_dummy_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // No edit. @TODO call the formatter.
-  $relation_type = relation_type_load($instance['settings']['relation_type']);
-  if (!$relation_type) {
-    return $element;
-  }
-  // Very ugly but I can't find any other way to get hold of the entity.
-  $entity = drupal_static('relation_dummy_field_field_widget_properties_alter');
-  if ($entity) {
-    list($entity_id) = entity_extract_ids($instance['entity_type'], $entity);
-    if ($entity_id) {
-      $has_data = relation_query($instance['entity_type'], $entity_id)
-        ->propertyCondition('relation_type', $relation_type->relation_type)
-        ->range(0, 1)
-        ->count()
-       ->execute();
-      if ($has_data) {
-        return $element;
-      }
-    }
-  }
-  list($entity_type, $bundle) = explode(':', $relation_type->source_bundles[0]);
-  $entity_info = entity_get_info($entity_type);
-  if (isset($entity_info['entity keys']['label'])) {
-    $autocomplete_path = "relation_dummy_field/autocomplete/$entity_type/$bundle";
-  }
-  elseif ($entity_type == 'user') {
-    $autocomplete_path = 'user/autocomplete';
-  }
-  else {
-    // Sorry... can't continue.
-    return $element;
-  }
-
-  $element += array(
-    '#type' => 'textfield',
-    '#default_value' => '',
-    '#autocomplete_path' => $autocomplete_path,
-    '#maxlength' => 1024,
-  );
   return $element;
-}
-
-/**
- * Implementation of hook_field_widget_properties_alter().
- */
-function relation_dummy_field_field_widget_properties_alter(&$widget, $context) {
-  drupal_static_reset(__FUNCTION__);
-  $static = &drupal_static(__FUNCTION__, new stdClass);
-  $static = $context['entity'];
-}
-
-/**
- * Autocomplete page callback.
- */
-function relation_dummy_field_autocomplete($entity_type, $bundle, $string = '') {
-  $entity_info = entity_get_info($entity_type);
-  $matches = array();
-  if ($string && $entity_info && ($bundle == '*' || isset($entity_info['bundles'][$bundle]))) {
-    $label_key = $entity_info['entity keys']['label'];
-    $id_key = $entity_info['entity keys']['id'];
-    $query = new EntityFieldQuery;
-    $query
-      ->entityCondition('entity_type', $entity_type)
-      ->propertyCondition($label_key, $string, 'STARTS_WITH')
-      ->range(0, 10);
-    if ($bundle != '*') {
-      $query->entityCondition('bundle', $bundle);
-    }
-    $result = $query->execute();
-    if (!empty($result[$entity_type])) {
-      $entities = entity_load($entity_type, array_keys($result[$entity_type]));
-      foreach ($entities as $entity_id => $entity) {
-        $label = check_plain($entity->$label_key);
-        $label .= " [$id_key:$entity_id]";
-        $matches[$label] = $label;
-      }
-    }
-  }
-  drupal_json_output($matches);
-}
-
-/**
- * Implements hook_field_update().
- */
-function relation_dummy_field_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  // This runs on entity update if at first the relation wasn't created.
-  relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, $items);
-}
-
-/**
- * Implements hook_field_insert().
- */
-function relation_dummy_field_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  if ($field['type'] != 'relation' || !$items) {
-    return;
-  }
-  list($entity_id) = entity_extract_ids($entity_type, $entity);
-  preg_match('/(\d+)\]$/', $items[0], $matches);
-  // Empty out our items. Doesnt matter much because we do not have columns.
-  $items = array();
-  if (!$matches) {
-    return;
-  }
-  $relation_type = relation_type_load($instance['settings']['relation_type']);
-  list($relation_entity_type) = explode(':', $relation_type->source_bundles[0]);
-  $entity_keys = array(
-    array(
-      'entity_type' => $entity_type,
-      'entity_id'   => $entity_id,
-      'r_index'     => 0,
-    ),
-    array(
-      'entity_type' => $relation_entity_type,
-      'entity_id'   => $matches[1],
-      'r_index'     => 1,
-    ),
-  );
-  $relation = relation_create($relation_type->relation_type, $entity_keys);
-  relation_save($relation);
 }
 
 /**
@@ -317,7 +183,12 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
  */
 function relation_dummy_field_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
   foreach ($entities as $id => $entity) {
-    $relation_ids = array_keys(relation_query($entity_type, $id)->execute());
+    $relation_types = $instances[$id]['settings']['relation_type'];
+    $query = relation_query($entity_type, $id);
+    if ($relation_types) {
+      $query->entityCondition('bundle', $relation_types, 'IN');
+    }
+    $relation_ids = array_keys($query->execute());
     // Who knows why but field does not like if the delta does not start at 0...
     $items[$id] = $relation_ids ? array_values(entity_load('relation', $relation_ids)) : array();
   }
