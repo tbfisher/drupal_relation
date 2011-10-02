@@ -42,62 +42,71 @@ function relation_add_block_form($form, &$form_state) {
     drupal_get_path('module', 'relation_add') . '/relation_add.css',
   );
 
-  // Get the entity for the current page. This fails for taxonomy entities.
-  // Need a better way. Also, this will never really work for comments, or
-  // files, or other entities that don't have their own page.
-  $all_entities = array_keys(entity_get_info());
-  $path = menu_get_item();
+  if (!isset($form_state['triggering_element']['#ajax'])) {
+    // This stuff is only relevant if we're NOT in an AJAX call.
 
-  if (count($path['map']) >= 2 && in_array($path['map'][0], $all_entities) && is_object($path['map'][1])) {
-    $entity_type = $path['map'][0];
-    $current_entity = $path['map'][1];
-  }
-  elseif (count($path['map']) >= 3 && $path['map'][0] == 'taxonomy' && is_object($path['map'][2])) {
-    $entity_type = 'taxonomy_term';
-    $current_entity = $path['map'][2];
-  }
+    // Get the entity for the current page. This fails for taxonomy entities.
+    // Need a better way. Also, this will never really work for comments, or
+    // files, or other entities that don't have their own page.
+    $all_entities = array_keys(entity_get_info());
+    $path = menu_get_item();
 
-  // Act as helper block if no relation types are defined.
-  $relation_types = relation_get_types();
-  if (empty($relation_types)) {
-    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page displays an entity, and use this block to add  a new relation from that entity.', array('!link' => l('relation types', 'admin/structure/relation')));
-    return $form;
-  }
+    if (count($path['map']) >= 2 && in_array($path['map'][0], $all_entities) && is_object($path['map'][1])) {
+      $entity_type = $path['map'][0];
+      $entity = $path['map'][1];
+    }
+    elseif (count($path['map']) >= 3 && $path['map'][0] == 'taxonomy' && is_object($path['map'][2])) {
+      $entity_type = 'taxonomy_term';
+      $entity = $path['map'][2];
+    }
 
-  //if (!isset($form_state['triggering_element']['#ajax']) && !isset($current_entity)) {
+    if (!isset($entity)) {
+      $form['explanation']['#markup'] = t('No entity found, can\'t create a relation!');
+      return $form;
+    }
+    else {
+      // If we have an $entity, then we have an $entity_type.
+      $entity_label = entity_label($entity_type, $entity);
+      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+      $label = $entity_label . ' [' . $entity_type . ':' . $id . ']';
 
-  if (isset($form_state['values']['current_entity'])) {
-    $value = $form_state['values']['current_entity'];
-  }
-  elseif (isset($current_entity)) {
-    $current_label = entity_label($entity_type, $current_entity);
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $current_entity);
-    $value = $current_label . ' [' . $entity_type . ':' . $id . ']';
-  }
-  else {
-    $form['explanation']['#markup'] = t('No entity found, can\'t create a relation!');
-    return $form;
-  }
+      $relation_types = relation_get_available_types($entity_type, $bundle);
+    }
 
-  $form['current_entity'] = array(
-    '#type'           => 'textfield',
-    '#title'          => t('Create a relation from'),
-    '#value'          => $value,
-    '#disabled'       => TRUE,
-  );
+    if (empty($relation_types)) {
+      // Act as helper block if no relation types are defined.
+      $form['explanation']['#markup'] = t(
+        'Before you can create relations from entities of this bundle type (!bundle), you need to create one or more !link that include the bundle in the allowed bundles list.
+        Once you\'ve done that, visit any page displays an entity, and use this block to add  a new relation from that entity.',
+        array(
+          '!bundle' => $entity_type . ':' . $bundle,
+          '!link' => l('relation types', 'admin/structure/relation'),
+        )
+      );
+      return $form;
+    }
 
-  // Relation type selector. On change, rest of form is loaded via ajax.
-  $relation_types = relation_get_available_types();
-  $types = array();
-  foreach ($relation_types as $relation_type) {
-    $types[$relation_type->relation_type] = $relation_type->label;
-  }
+    $form['current_entity'] = array(
+      '#type'           => 'textfield',
+      '#title'          => t('Create a relation from'),
+      '#value'          => $label,
+      '#disabled'       => TRUE,
+    );
+
+    // Relation type selector. On change, rest of form is loaded via ajax.
+    $types = array();
+    foreach ($relation_types as $relation_type) {
+      $types[$relation_type->relation_type] = $relation_type->label;
+    }
+    $form_state['types'] = $types;
+  } // End non-AJAX part
+
   $default = !empty($form_state['values']['relation_type']) ? $form_state['values']['relation_type'] : '';
   $form['relation_type'] = array(
     '#type'          => 'select',
     '#title'         => t('Relation type'),
     '#default_value' => $default,
-    '#options'       => $types,
+    '#options'       => $form_state['types'],
     '#empty_value'   => '',
     '#empty_option'  => t('Select a relation type'),
     '#ajax' => array(
@@ -107,6 +116,7 @@ function relation_add_block_form($form, &$form_state) {
       'effect' => 'fade',
     ),
   );
+
   $form['relation_options'] = array(
 //    '#type'           => 'fieldset',
 //    '#title'          => t('Relation options'),

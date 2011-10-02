@@ -813,12 +813,12 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
     $available = FALSE;
     if ($endpoint == 'source' || $endpoint == 'both') {
       if (in_array($bundle_key, $relation_type->source_bundles) || in_array($all_bundle_key, $relation_type->source_bundles)) {
-        $available = FALSE;
+        $available = TRUE;
       }
     }
-    if ($endpoint == 'source' || $endpoint == 'both') {
-      if (in_array($bundle_key, $relation_type->source_bundles) || in_array($all_bundle_key, $relation_type->source_bundles)) {
-        $available = FALSE;
+    if ($endpoint == 'target' || $endpoint == 'both') {
+      if (in_array($bundle_key, $relation_type->target_bundles) || in_array($all_bundle_key, $relation_type->target_bundles)) {
+        $available = TRUE;
       }
     }
     if (!$available) {
