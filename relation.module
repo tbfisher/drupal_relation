@@ -655,6 +655,7 @@ function relation_save($relation) {
   if (!empty($relation->is_new)) {
     field_attach_insert('relation', $relation);
     module_invoke_all('entity_insert', $relation, 'relation');
+    module_invoke('rules', 'invoke_event', 'relation_insert', $relation);
   }
   else {
     field_attach_update('relation', $relation);

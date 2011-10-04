@@ -6,6 +6,21 @@
  */
 
 /**
+ * Implements hook_rules_event_info().
+ */
+function relation_rules_event_info() {
+  return array(
+    'relation_insert' => array(
+      'label' => t('After saving a new relation'),
+      'group' => t('Relation'),
+      'variables' => array(
+        'relation' => array('type' => 'relation', 'label' => t('relation')),
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_rules_action_info().
  */
 function relation_rules_action_info() {
