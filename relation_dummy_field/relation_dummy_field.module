@@ -104,7 +104,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
     case 'relation_otherendpoint':
       foreach ($items as $delta => $item) {
         $links = array();
-        foreach ($item->endpoints[LANGUAGE_NONE] as $endpoint) {
+        foreach (array_filter($item->endpoints[LANGUAGE_NONE]) as $endpoint) {
           $related_entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
           $related_entity = reset($related_entities);
           if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $entity_id) {
