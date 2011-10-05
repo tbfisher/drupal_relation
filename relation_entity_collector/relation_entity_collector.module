@@ -100,11 +100,9 @@ function relation_entity_collector($form, &$form_state) {
   );
   $form['entity_key'] = array(
     '#type'           => 'select',
-    '#title'          => t('Entity'),
+    '#title'          => t('Select an entity'),
     '#options'        => $form_state['relation_entities_options'],
     '#default_value'  => '',
-    '#empty_value'    => '',
-    '#empty_option'   => t('Select an entity'),
     '#description'     => t('Selector shows all entities loaded on this page.'),
   );
   $form['pick'] = array(
