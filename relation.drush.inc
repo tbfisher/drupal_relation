@@ -2,56 +2,53 @@
 
 /**
  * @file
- * Development related functions.
+ * Drush integration for the relation module.
  */
 
 /**
- * Exports relation types, display them in a form. Used by ctools export.
+ * Implements hook_drush_command().
  */
-function relation_export_relation_type($form, &$form_state, $type) {
-  $relation_type = relation_relation_type_load($type->relation_type);
-  drupal_set_title(check_plain($type->label));
-  $code = relation_relation_type_export($relation_type);
-  $lines = substr_count($code, "\n");
-
-  $form['export'] = array(
-    '#title' => t('Export data'),
-    '#type' => 'textarea',
-    '#value' => $code,
-    '#rows' => $lines,
-    '#description' => t('Copy the export text and paste it into another myobj using the import function.'),
+function relation_drush_command() {
+  $items['relation-generate'] = array(
+    'description' => dt('Generates relations.'),
+    'options' => array(
+      'number_relations' => dt('The number of relations to generate.'),
+    ),
+    'options' => array(
+      'kill' => 'Delete all content before generating new content.',
+      'types' => 'A comma delimited list of content types to create. Defaults to page,article.',
+    ),
+    'aliases' => array('genrel'),
   );
-  return $form;
+  return $items;
 }
 
 /**
- * Loads a single relation type for export.
+ * Drush callback to generate relations.
+ *
+ * @param $number_relations
+ *   Number of entities to generate of each entity_type.
  */
-function relation_relation_type_load($type) {
-  ctools_include('export');
-  $result = ctools_export_load_object('relation_type', 'names', array($type));
-  if (isset($result[$type])) {
-    return $result[$type];
+function drush_relation_generate($number_relations) {
+  $types = drush_get_option('types');
+  $types = $types ? explode(',', $types) : array();
+  $kill = drush_get_option('kill');
+  relation_generate_relations($number_relations, $types, $kill);
+}
+
+function relation_generate_message($message) {
+  if (function_exists('drush_log')) {
+    drush_log($message, 'ok');
   }
-}
-
-/**
- * Exports a relation type.
- */
-function relation_relation_type_export($relation_type, $indent = '') {
-  ctools_include('export');
-  $additional2 = array(
-    'source_bundles' => $relation_type->source_bundles,
-    'target_bundles' => $relation_type->target_bundles,
-  );
-  $output = ctools_export_object('relation_type', $relation_type, $indent, NULL, array(), $additional2);
-  return $output;
+  else {
+    drupal_set_message($message);
+  }
 }
 
 /**
  * Generates pseudorandom relations. Appropriate entities must already exist.
  *
- * @param $number
+ * @param $number_relations
  *   Number of entities to generate of each entity_type.
  * @param $types
  *   Array of relation_type to generate relations for.
@@ -61,7 +58,7 @@ function relation_relation_type_export($relation_type, $indent = '') {
  * @return
  *   Array of rids of the generated relations.
  */
-function relation_generate_relations($number = 10, $types = array(), $kill = FALSE) {
+function relation_generate_relations($number_relations = 10, $types = array(), $kill = FALSE) {
   if ($kill) {
     $query = new EntityFieldQuery();
     $results = $query->entityCondition('entity_type', 'relation')
@@ -84,7 +81,7 @@ function relation_generate_relations($number = 10, $types = array(), $kill = FAL
       $available_types['target'][$entity_type][] = $bundle;
     }
     $arity = rand($relation_type->min_arity, $relation_type->min_arity);
-    for ($i = $number; $i > 0; $i--) { // start new relation
+    for ($i = $number_relations; $i > 0; $i--) { // start new relation
       $entity_keys = array();
       for ($r_index = 0; $r_index < $arity; $r_index++) {
         if ($relation_type->directional && $r_index > 0) {
@@ -98,7 +95,7 @@ function relation_generate_relations($number = 10, $types = array(), $kill = FAL
         $query->entityCondition('entity_type', $entity_type, '=')
           // Would be nice to ->entityOrderBy('RAND()'); here, and set
           // range(0, 1). See http://drupal.org/node/1174806
-          ->range(0, 2 * $number);
+          ->range(0, 2 * $number_relations);
         if (!in_array('*', $available_types[$direction][$entity_type])) {
           $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
         }
@@ -115,5 +112,6 @@ function relation_generate_relations($number = 10, $types = array(), $kill = FAL
       $new_rids[] = relation_save($relation);
     }
   }
+  relation_generate_message(t('Generated @number_relations relations.', array('@number_relations' => $number_relations)), 'ok');
   return $new_rids;
 }

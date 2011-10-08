@@ -1,6 +1,5 @@
 <?php
 
-require_once dirname(__FILE__) . '/relation.devel.inc';
 require_once dirname(__FILE__) . '/relation.rules.inc';
 
 /**
@@ -190,7 +189,7 @@ function relation_menu() {
       'page arguments' => array('relation_export_relation_type', 4),
       'access arguments' => array('export relation types'),
       'type' => MENU_LOCAL_TASK,
-      'file' => 'relation.devel.inc',
+      'file' => 'relation.ctools.inc',
       'weight' => 10,
     );
   }
