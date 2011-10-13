@@ -17,6 +17,9 @@ function relation_entity_collector_block_info() {
  * Implements hook_block_view().
  */
 function relation_entity_collector_block_view() {
+  if(!(user_access('create relations') || user_access('create relations'))) {
+    return NULL;
+  };
   $block['subject'] = t('Entity Collector');
   $block['content']['#pre_render'] = array('relation_entity_collector_pre_render');
   return $block;

@@ -28,6 +28,9 @@ function relation_add_block_info() {
  * Implements hook_block_view().
  */
 function relation_add_block_view() {
+  if(!(user_access('create relations') || user_access('create relations'))) {
+    return NULL;
+  };
   $block['subject'] = t('Relation Add');
   $block['content'] = drupal_get_form('relation_add_block_form');
   return $block;
