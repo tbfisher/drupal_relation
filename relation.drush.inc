@@ -11,7 +11,7 @@
 function relation_drush_command() {
   $items['relation-generate'] = array(
     'description' => dt('Generates relations.'),
-    'options' => array(
+    'arguments' => array(
       'number_relations' => dt('The number of relations to generate.'),
     ),
     'options' => array(
