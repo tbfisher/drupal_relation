@@ -99,15 +99,25 @@ function relation_add_block_form($form, &$form_state) {
     $types = array();
     foreach ($relation_types as $relation_type) {
       $types[$relation_type->relation_type] = $relation_type->label;
+      if ($relation_type->directional  && $relation_type->max_arity==2) { // Directional n-ary relations are f@*#ing stupid.
+        // Machine name doesn't have colons, so we add a suffix for reverse relations, which we explode off later.
+        $types[$relation_type->relation_type . ':reverse'] = $relation_type->reverse_label ? $relation_type->reverse_label : 'reverse ' . $relation_type->reverse_label;
+      }
     }
     $form_state['types'] = $types;
   } // End non-AJAX part
 
-  $default = !empty($form_state['values']['relation_type']) ? $form_state['values']['relation_type'] : '';
+  $type = '';
+  if (!empty($form_state['values']['relation_type'])) {
+    // Remove ':reverse' suffix if it exists, and set reverse flag
+    $type_array = explode(':', $form_state['values']['relation_type']);
+    $type = $type_array[0];
+    $form_state['relation_reverse'] = (isset($type_array[1])  && $type_array[1] == 'reverse');
+  }
   $form['relation_type'] = array(
     '#type'          => 'select',
     '#title'         => t('Relation type'),
-    '#default_value' => $default,
+    '#default_value' => $type,
     '#options'       => $form_state['types'],
     '#empty_value'   => '',
     '#empty_option'  => t('Select a relation type'),
@@ -128,10 +138,10 @@ function relation_add_block_form($form, &$form_state) {
 
   // AJAXification.
   if (!empty($form_state['values']['relation_type'])) {
-    $type = $form_state['values']['relation_type'];
     $relation_type = relation_type_load($type);
     $relation = (object) relation_create($type, array());
 
+    // Create one autocomplete for each endpoint beyond the first
     for ($i = 2; $i <= $relation_type->max_arity; $i++ ) {
       $form['relation_options']['targets']['target_' . $i] = array(
         '#type' => 'textfield',
@@ -183,8 +193,12 @@ function relation_add_ajax($form, $form_state) {
  * Submit handler for the save button.
  */
 function relation_add_save($form, &$form_state) {
-  $type = $form_state['values']['relation_type'];
-  $entity_strings = array($form_state['relation_add']);
+  $type_array = explode(':', $form_state['values']['relation_type']);
+  $type = $type_array[0];
+  // entity_form_submit_build_entity() uses this later, so set it to the correct value
+  $form_state['values']['relation_type'] = $type;
+  // Gather all the endpoint entities into one array
+  $entity_strings = array();
   for ($i = 2; $i; $i++) {
     if (isset($form_state['values']['target_' . $i])) {
       $entity_strings[] = $form_state['values']['target_' . $i];
@@ -193,6 +207,16 @@ function relation_add_save($form, &$form_state) {
       $i = FALSE; // break loop.
     }
   }
+  // Add the current entity to the endpoints array.
+  if ($form_state['relation_reverse']) {
+     // For reverse relations, add the "current entity" to the end of the array, else to the start.
+     array_push($entity_strings, $form_state['relation_add']);
+  }
+  else {
+    array_unshift($entity_strings, $form_state['relation_add']);
+  }
+
+  // Convert all entity_strings to proper entity_keys.
   $entity_keys = array();
   foreach ($entity_strings as $r_index => $entity_string) {
     $matches = array();
@@ -207,7 +231,6 @@ function relation_add_save($form, &$form_state) {
     }
   }
   // TODO: IF count(entity_keys) != count (entity_strings), FAIL.
-
   $relation = relation_create($type, $entity_keys);
   entity_form_submit_build_entity('relation', $relation, $form['relation_options'], $form_state);
   $rid = relation_save($relation);
