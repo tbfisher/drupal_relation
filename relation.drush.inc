@@ -108,7 +108,7 @@ function relation_generate_relations($number_relations = 10, $types = array(), $
           'r_index'     => $r_index,
           );
       }
-      $relation = relation_create($type, $entity_keys);
+      $relation = relation_construct($type, $entity_keys);
       $new_rids[] = relation_save($relation);
     }
   }

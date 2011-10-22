@@ -143,7 +143,7 @@ function relation_add_block_form($form, &$form_state) {
   // AJAXification.
   if (!empty($form_state['values']['relation_type'])) {
     $relation_type = relation_type_load($type);
-    $relation = (object) relation_create($type, array());
+    $relation = (object) relation_construct($type, array());
 
     // Create one autocomplete for each endpoint beyond the first
     $direction = $form_state['relation_reverse'] ? '/source' : '/target';
@@ -190,7 +190,7 @@ function relation_add_ajax($form, $form_state) {
 //  TODO
 //  $type =
 //  $entity_keys =
-//  relation_create($type, $entity_keys);
+//  relation_construct($type, $entity_keys);
 //  field_attach_form_validate('relation', $relation, $form['relation_options'], $form_state);
 //}
 
@@ -236,7 +236,7 @@ function relation_add_save($form, &$form_state) {
     }
   }
   // TODO: IF count(entity_keys) != count (entity_strings), FAIL.
-  $relation = relation_create($type, $entity_keys);
+  $relation = relation_construct($type, $entity_keys);
   entity_form_submit_build_entity('relation', $relation, $form['relation_options'], $form_state);
   $rid = relation_save($relation);
 

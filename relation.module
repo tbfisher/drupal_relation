@@ -562,7 +562,7 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  * @return
  *   The new relation object.
  */
-function relation_create($type, $endpoints) {
+function relation_construct($type, $endpoints) {
   // Check for unique flag, if relation endpoints already exist, return FALSE
   $relation_type = relation_type_load($type);
   if ($relation_type->r_unique) {
@@ -584,7 +584,7 @@ function relation_create($type, $endpoints) {
  * Saves a relation.
  *
  * @param $relation
- *   The relation entity data object. See relation_create() for the appropriate
+ *   The relation entity data object. See relation_construct() for the appropriate
  *   format (or just use it).
  *
  * @return
