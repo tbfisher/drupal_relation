@@ -19,7 +19,7 @@ function relation_type_list() {
   $rows = array();
   foreach ($relation['relation']['bundles'] as $type => $relation_type) {
     $url = 'admin/structure/relation/manage/' . $type;
-    $row = array(l($type, $url));
+    $row = array(l($relation_type['label'], $url));
     $row[] = l(t('edit'), $url . '/edit');
     if ($field_ui) {
       $row[] =  l(t('manage fields'), $url . '/fields');
@@ -52,9 +52,10 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'relation') . '/relation.admin.css',
   );
+
   if ($relation_type) {
     $relation_type = (object) $relation_type;
-    if ($relation_type) {
+    if (empty($relation_type->in_code_only)) {
       $form['#write_record_keys'][] = 'relation_type';
     }
   }
