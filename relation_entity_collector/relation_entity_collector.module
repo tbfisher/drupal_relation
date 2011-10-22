@@ -17,12 +17,15 @@ function relation_entity_collector_block_info() {
  * Implements hook_block_view().
  */
 function relation_entity_collector_block_view() {
-  if(!(user_access('create relations') || user_access('create relations'))) {
-    return NULL;
-  };
-  $block['subject'] = t('Entity Collector');
-  $block['content']['#pre_render'] = array('relation_entity_collector_pre_render');
-  return $block;
+  if (relation_entity_collector_user_has_access()) {
+    $block['subject'] = t('Entity Collector');
+    $block['content']['#pre_render'] = array('relation_entity_collector_pre_render');
+    return $block;
+  }
+}
+
+function relation_entity_collector_user_has_access() {
+  return user_access('administer relations') || user_access('create relations');
 }
 
 /**
@@ -242,27 +245,40 @@ function relation_entity_collector_clear($form, &$form_state) {
  * Make sure entities are loaded even if only fields are used.
  */
 function relation_entity_collector_views_post_execute($view) {
-  foreach (entity_get_info() as $entity_type => $entity_info) {
-    $map[$entity_info['base table']] = array(
-      'id' => $entity_info['entity keys']['id'],
-      'entity_type' => $entity_type,
-    );
-  }
-  foreach ($view->query->fields as $alias => $field) {
-    if (isset($field['table'])) {
-      $table_name = $view->query->table_queue[$field['table']]['table'];
-      if (isset($map[$table_name]) && $map[$table_name]['id'] == $field['field']) {
-        $collect[$map[$table_name]['entity_type']] = $alias;
+  if (relation_entity_collector_user_has_access()) {
+    foreach (entity_get_info() as $entity_type => $entity_info) {
+      $map[$entity_info['base table']] = array(
+        'id' => $entity_info['entity keys']['id'],
+        'entity_type' => $entity_type,
+      );
+    }
+    foreach ($view->query->fields as $alias => $field) {
+      if (isset($field['table'])) {
+        $table_name = $view->query->table_queue[$field['table']]['table'];
+        if (isset($map[$table_name]) && $map[$table_name]['id'] == $field['field']) {
+          $collect[$map[$table_name]['entity_type']] = $alias;
+        }
       }
     }
-  }
-  $ids = array();
-  foreach ($view->result as $row) {
-    foreach ($collect as $entity_type => $alias) {
-      $ids[$entity_type][] = $row->$alias;
+    $ids = array();
+    foreach ($view->result as $row) {
+      foreach ($collect as $entity_type => $alias) {
+        $ids[$entity_type][] = $row->$alias;
+      }
+    }
+    foreach ($ids as $entity_type => $entity_ids) {
+      entity_load($entity_type, $entity_ids);
     }
   }
-  foreach ($ids as $entity_type => $entity_ids) {
-    entity_load($entity_type, $entity_ids);
+}
+
+/**
+ * Implements hook_preprocess_username().
+ *
+ * We capture every user printed this way.
+ */
+function relation_entity_collector_preprocess_username($variables) {
+  if (relation_entity_collector_user_has_access()) {
+    user_load($variables['account']->uid);
   }
 }
