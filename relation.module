@@ -213,22 +213,6 @@ function relation_menu() {
 }
 
 /**
- * Implements hook_init().
- */
-function relation_init() {
-  // Field info is cached enough not to be a performance problem. We can't do
-  // this in relation_type_save() because of http://drupal.org/node/1007830.
-  if (!field_info_field('endpoints')) {
-    $field = array(
-      'field_name' => 'endpoints',
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'type' => 'relation_endpoint',
-    );
-    field_create_field($field);
-  }
-}
-
-/**
  * Creates a relation bundle.
  *
  * @param $info

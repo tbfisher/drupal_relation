@@ -6,6 +6,20 @@
  */
 
 /**
+ * Create our field.
+ */
+function relation_install() {
+  module_list(TRUE);
+  field_info_cache_clear();
+  $field = array(
+    'field_name' => 'endpoints',
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'type' => 'relation_endpoint',
+  );
+  field_create_field($field);
+}
+
+/**
  * Implements hook_schema().
  */
 function relation_schema() {
