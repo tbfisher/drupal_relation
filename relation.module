@@ -460,7 +460,7 @@ function relation_page($relation) {
   field_attach_prepare_view($entity_type, $entities, $view_mode);
   entity_prepare_view($entity_type, $entities);
   $build = field_attach_view($entity_type, $entity, $view_mode);
-  module_invoke_all('entity_view', $entity, $entity_type, $view_mode);
+  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NONE);
   drupal_alter('entity_view', $build, $entity_type);
   return $build;
 }
