@@ -281,7 +281,8 @@ function relation_entity_collector_preprocess_username($variables) {
   if (relation_entity_collector_user_has_access() && isset($variables['account']->nid)) {
     // This looks like a node passed to theme('username') in
     // template_preprocess_node() and user_node_load() doesn't load the user
-    // so we do instead.
+    // so we do instead. It does not work with modules using render arrays
+    // because it is called too late but Views renders early.
     user_load($variables['account']->uid);
   }
 }
