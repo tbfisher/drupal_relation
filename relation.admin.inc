@@ -11,11 +11,9 @@
 function relation_type_list() {
   $relation = relation_entity_info();
   $field_ui = module_exists('field_ui');
-  $ctools = module_exists('ctools');
-  $ops_count = 2 + 2 * $field_ui + $ctools;
   $headers = array(
     array('data' => t('Name'), 'width' => '40%'),
-    array('data' => t('Operations'), 'colspan' => $ops_count));
+    array('data' => t('Operations'), 'colspan' => $field_ui ? 5 : 3));
   $rows = array();
   foreach ($relation['relation']['bundles'] as $type => $relation_type) {
     $url = 'admin/structure/relation/manage/' . $type;
@@ -25,9 +23,7 @@ function relation_type_list() {
       $row[] =  l(t('manage fields'), $url . '/fields');
       $row[] =  l(t('display fields'), $url . '/display');
     }
-    if ($ctools) {
-      $row[] =  l(t('export'), $url . '/export');
-    }
+    $row[] =  l(t('export'), $url . '/export');
     $row[] =  l(t('delete'), $url . '/delete');
     $rows[] = $row;
   }
