@@ -1,12 +1,13 @@
 <?php
 
 /**
- * Exports relation types, display them in a form. Used by ctools export.
+ * Page callback for ctools exports.
  */
 function relation_export_relation_type($form, &$form_state, $type) {
-  $relation_type = relation_relation_type_load($type->relation_type);
-  drupal_set_title(check_plain($type->label));
-  $code = relation_relation_type_export($relation_type);
+  drupal_set_title($type->label);
+  ctools_include('export');
+  $result = ctools_export_load_object('relation_type', 'names', array($type->relation_type));
+  $code = relation_relation_type_export($result[$type->relation_type]);
   $lines = substr_count($code, "\n");
 
   $form['export'] = array(
@@ -17,17 +18,6 @@ function relation_export_relation_type($form, &$form_state, $type) {
     '#description' => t('Copy the export text and paste it into another myobj using the import function.'),
   );
   return $form;
-}
-
-/**
- * Loads a single relation type for export.
- */
-function relation_relation_type_load($type) {
-  ctools_include('export');
-  $result = ctools_export_load_object('relation_type', 'names', array($type));
-  if (isset($result[$type])) {
-    return $result[$type];
-  }
 }
 
 /**

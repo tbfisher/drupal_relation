@@ -865,7 +865,7 @@ function relation_theme() {
 /**
  * Implements hook_ctools_plugin_api().
  */
-function relation_ctools_plugin_api() {
+function relation_ctools_plugin_api($owner, $api) {
   // I am fairly sure this is not the right place to do this, but I can't
   // find a better one.
   require_once dirname(__FILE__) . '/relation.ctools.inc';
