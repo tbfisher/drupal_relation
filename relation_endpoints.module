@@ -121,10 +121,12 @@ function _relation_endpoints_field_create_html_table($endpoints) {
     $uri = entity_uri($endpoint['entity_type'], $entity);
     $list_items[$delta] = array(l($label, $uri['path'], $uri['options']), $endpoint['entity_type']);
   }
-  $headers = array('Entity', 'Entity_type');
+  $headers = array(
+    'Entity',
+    array('width' => '22%', 'data' => 'Entity_type'),
+  );
   return array(
     '#theme' => 'table',
-    '#caption' => 'Related Entities',
     '#header' => $headers,
     '#rows' => $list_items,
   );
