@@ -305,7 +305,14 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
     }
   }
   $query->execute();
+  relation_type_ensure_instance($type);
+  menu_rebuild();
+}
 
+/**
+ * Make sure the instance exists for this type.
+ */
+function relation_type_ensure_instance($type) {
   if (!field_info_instance('relation', 'endpoints', $type)) {
     $instance = array(
       'field_name' => 'endpoints',
@@ -314,8 +321,6 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
     );
     field_create_instance($instance);
   }
-
-  menu_rebuild();
 }
 
 /**
@@ -346,7 +351,17 @@ function relation_type_load($relation_type) {
  */
 function relation_get_types($types = array()) {
   ctools_include('export');
-  return $types ? ctools_export_crud_load_multiple('relation_type', $types) : ctools_export_crud_load_all('relation_type');
+  $return = $types ? ctools_export_crud_load_multiple('relation_type', $types) : ctools_export_crud_load_all('relation_type');
+  static $recurse = FALSE;
+  if (!$recurse) {
+    $recurse = TRUE;
+    foreach ($return as $type => $data) {
+      if (!empty($data->in_code_only)) {
+        relation_type_ensure_instance($type);
+      }
+    }
+  }
+  return $return;
 }
 
 /**
