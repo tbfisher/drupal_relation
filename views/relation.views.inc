@@ -203,7 +203,7 @@ function relation_views_data_alter(&$data) {
           'entity_type_left' => $entity_type_left,
           'entity_type_right' => 'relation',
           'directional' => $relation_type->directional,
-          'join_handler' => 'relation_handler_base_join',
+          'join_handler' => 'relation_handler_base_left_join',
         ),
       );
       foreach ($relation_type->$target_index as $target_bundle) {
@@ -242,7 +242,7 @@ function relation_views_data_alter(&$data) {
             'entity_type_left' => 'relation',
             'entity_type_right' => $entity_type_right,
             'directional' => $relation_type->directional,
-            'join_handler' => 'relation_handler_base_join',
+            'join_handler' => 'relation_handler_base_right_join',
           ),
         );
       }

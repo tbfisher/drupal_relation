@@ -80,7 +80,7 @@ class relation_handler_join extends views_join {
   }
 }
 
-class relation_handler_base_join extends views_join {
+class relation_handler_base_left_join extends views_join {
   /**
    * Build the SQL for the join this object represents.
    */
@@ -99,6 +99,14 @@ class relation_handler_base_join extends views_join {
     // entity_id here is the ID of the relation entity.
     $relation_type = $this->definition['relation_type'];
     $conditions = "%alias.rid = $l.entity_id AND %alias.relation_type = '$relation_type'";
-    $select_query->addJoin($this->type, 'relation', $table['alias'], $conditions);
+    $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
+  }
+}
+
+class relation_handler_base_right_join extends views_join {
+  /**
+   * Build the SQL for the join this object represents.
+   */
+  function build_join($select_query, $table, $view_query) {
   }
 }
