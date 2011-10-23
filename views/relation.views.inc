@@ -189,7 +189,7 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
       );
-      $data[$base_table_left]['relation_base' . $type] = array(
+      $data[$base_table_left]['relation_base_left_' . $type] = array(
         'title' => t('Relation: @relation_type_label (@left -> relation)', $t_arguments),
         'help' => t('Provides a relationship from @left to the relation table via the relation @relation_type_label', $t_arguments),
         'relationship' => array(
@@ -228,7 +228,7 @@ function relation_views_data_alter(&$data) {
             'join_handler' => 'relation_handler_join',
           ),
         );
-        $data[$base_table_left]['relation_right_' . $type . '_' . $entity_type_right] = array(
+        $data['relation']['relation_base_right_' . $entity_type_right] = array(
           'title' => t('Relation: @relation_type_label (relation -> @right)', $t_arguments),
           'help' => t('Provides a relationship from the relation table to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
