@@ -17,8 +17,8 @@ function relation_views_data() {
     'field' => 'rid',
     'title' => t('Relation'),
     'weight' => -10,
-    'entity type' => 'relation',
   );
+  $data['relation']['table']['entity type'] = 'relation';
   $data['relation']['rid'] = array(
     'title' => t('Rid'),
     'help' => t('The relation ID.'),

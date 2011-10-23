@@ -152,7 +152,7 @@ function relation_endpoints_field_widget_info() {
 }
 
 function relation_endpoints_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-  return _relation_endpoints_field_create_html_table($items);
+  return array(_relation_endpoints_field_create_html_table($items));
 }
 
 function relation_endpoints_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
