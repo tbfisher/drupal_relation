@@ -96,7 +96,6 @@ class relation_handler_base_join extends views_join {
     $conditions = "$left[alias].$this->left_field = %alias.$entity_id_field_name AND %alias.$entity_type_field_name = '$entity_type_left'";
     // Left join alias.
     $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
-    // Execute a self-join.
     // entity_id here is the ID of the relation entity.
     $relation_type = $this->definition['relation_type'];
     $conditions = "%alias.rid = $l.entity_id AND %alias.relation_type = '$relation_type'";
