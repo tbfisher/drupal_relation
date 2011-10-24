@@ -533,7 +533,7 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
 }
 
 /**
- * Creates a relation from a relation_type machine name and a set of endpoints.
+ * Constructs a relation from a relation type machine name and a list of endpoints.
  *
  * @param $relation_type
  *   The relation type (bundle) of the relation to be created.
@@ -550,20 +550,14 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  * @return
  *   The new relation object.
  */
-function relation_construct($type, $endpoints) {
-  // Check for unique flag, if relation endpoints already exist, return FALSE
-  $relation_type = relation_type_load($type);
-  if ($relation_type->r_unique) {
-    if (relation_relation_exists($endpoints, $type)) {
-      return FALSE;
-    }
+function relation_construct($type, $endpoints, $account = NULL) {
+  if (!isset($account)) {
+    $account = $GLOBALS['user'];
   }
-
-  global $user;
   $relation = new stdClass();
   $relation->is_new = TRUE;
   $relation->relation_type = $type;
-  $relation->uid = $user->uid;
+  $relation->uid = $account->uid;
   $relation->endpoints[LANGUAGE_NONE] = $endpoints;
   return $relation;
 }
@@ -586,70 +580,40 @@ function relation_save($relation) {
     return FALSE;
   }
   $relation->arity = count($relation->endpoints[LANGUAGE_NONE]);
-  // use time() instead of REQUEST_TIME, because otherwise tests
-  // RelationQuery::order() are impossible
-  $current_time = time();
-  field_attach_presave('relation', $relation);
-  module_invoke_all('entity_presave', $relation, 'relation');
-
-  if (!empty($relation->is_new)) {
-    $relation->rid = db_insert('relation')
-      ->useDefaults(array('rid'))
-      ->fields(array(
-        'relation_type' => $relation->relation_type,
-        'arity'     => $relation->arity,
-        'uid'       => $relation->uid,
-        'created'   => $current_time,
-        'changed'   => $current_time,
-      ))
-      ->execute();
-    $relation->revision = TRUE;
-  }
-  if (!empty($relation->revision)) {
-    $vid = db_insert('relation_revision')
-      ->useDefaults(array('vid'))
-      ->fields(array(
-        'rid' => $relation->rid,
-        'relation_type'   => $relation->relation_type,
-        'arity'       => $relation->arity,
-        'uid'         => $relation->uid,
-        'changed'     => $current_time,
-      ))
-      ->execute();
-    $relation->vid = $vid;
-
-    // These are the only fields that we allow updating.
-    db_update('relation')
-      ->condition('rid', $relation->rid)
-      ->fields(array(
-        'vid'     => $relation->vid,
-        'uid'     => $relation->uid,
-        'changed' => $current_time,
-        ))
-      ->execute();
-  }
-  if (empty($relation->is_new) && empty($relation->revision)) {
-    // These are the only updatable columns.
-    db_update('relation')
-      ->condition('rid', $relation->rid)
-      ->fields(array(
-        'uid'       => $relation->uid,
-        'changed'   => $current_time,
-        ))
-      ->execute();
-  }
-
-  if (!empty($relation->is_new)) {
-    field_attach_insert('relation', $relation);
-    module_invoke_all('entity_insert', $relation, 'relation');
-    module_invoke('rules', 'invoke_event', 'relation_insert', $relation);
+  if (empty($relation->is_new) && !empty($relation->rid)) {
+    // use time() instead of REQUEST_TIME, because otherwise tests
+    // RelationQuery::order() are impossible.
+    $relation->changed = time();
+    $keys = array('rid');
+    $op = 'update';
   }
   else {
-    field_attach_update('relation', $relation);
-    module_invoke_all('entity_update', $relation, 'relation');
+    $keys = array();
+    $op = 'insert';
   }
-
+  field_attach_presave('relation', $relation);
+  module_invoke_all('entity_presave', $relation, 'relation');
+  drupal_write_record('relation', $relation, $keys);
+  drupal_write_record('relation_revision', $relation);
+  call_user_func("field_attach_$op", 'relation', $relation);
+  module_invoke_all('entity_' . $op, $relation, 'relation');
+  module_invoke('rules', 'invoke_event', 'relation_' . $op, $relation);
   return $relation->rid;
+}
+
+/**
+ * Creates a new relation in the database.
+ */
+function relation_create($type, $endpoints) {
+  $relation = relation_construct($type, $endpoints);
+  relation_save($relation);
+}
+
+/**
+ * Updates a relation.
+ */
+function relation_update($relation) {
+  relation_save($relation);
 }
 
 /**
