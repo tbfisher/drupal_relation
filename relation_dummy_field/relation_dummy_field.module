@@ -62,6 +62,9 @@ function relation_dummy_field_field_widget_info() {
     'relation_default' => array(
       'label' => t('No edit widget'),
       'field types' => array('relation'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      ),
     ),
   );
 }
