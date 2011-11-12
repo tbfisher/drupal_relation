@@ -204,7 +204,7 @@ function relation_entity_collector_validate($form, &$form_state) {
     );
     $endpoints = $_SESSION['relation_entity_keys'];
     $endpoints[] = $form_state['pick'];
-    $relation = relation_construct($form_state['values']['relation_type'], $endpoints);
+    $relation = relation_create($form_state['values']['relation_type'], $endpoints);
     $relation->in_progress = TRUE;
     field_attach_form_validate('relation', $relation, $form, $form_state);
   }
@@ -215,7 +215,7 @@ function relation_entity_collector_validate($form, &$form_state) {
  */
 function relation_entity_collector_save($form, $form_state) {
   if (isset($_SESSION['relation_type'])) {
-    $relation = relation_construct($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
+    $relation = relation_create($_SESSION['relation_type'], $_SESSION['relation_entity_keys']);
     $rid = relation_save($relation);
     if ($rid) {
       $link = l($_SESSION['relation_type'], "relation/$rid");

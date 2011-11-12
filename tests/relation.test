@@ -138,7 +138,7 @@ class RelationTestCase extends DrupalWebTestCase {
    * Saves a relation.
    */
   function saveRelation($relation_type, $endpoints) {
-    $relation = relation_construct($relation_type, $endpoints);
+    $relation = relation_create($relation_type, $endpoints);
     $rid = relation_save($relation);
     if ($this->sleep) {
       sleep(1);
@@ -274,7 +274,7 @@ class RelationAPITestCase extends RelationTestCase {
     foreach ($this->relation_types as $value) {
       $relation_type = $value['relation_type'];
       $endpoints = isset($value['min_arity']) ? $this->endpoints_4 : $this->endpoints;
-      $relation = relation_construct($relation_type, $endpoints);
+      $relation = relation_create($relation_type, $endpoints);
       $rid = relation_save($relation);
 
       $this->assertTrue($rid, 'Relation created.');

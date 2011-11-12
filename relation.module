@@ -550,7 +550,7 @@ function relation_relation_exists($entity_keys, $relation_type = NULL ) {
  * @return
  *   The new relation object.
  */
-function relation_construct($type, $endpoints, $account = NULL) {
+function relation_create($type, $endpoints, $account = NULL) {
   if (!isset($account)) {
     $account = $GLOBALS['user'];
   }
@@ -566,7 +566,7 @@ function relation_construct($type, $endpoints, $account = NULL) {
  * Saves a relation.
  *
  * @param $relation
- *   The relation entity data object. See relation_construct() for the appropriate
+ *   The relation entity data object. See relation_create() for the appropriate
  *   format (or just use it).
  *
  * @return

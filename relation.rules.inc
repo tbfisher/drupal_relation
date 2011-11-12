@@ -65,7 +65,7 @@ function relation_rules_get_type_options() {
  * Callback for creating a relation, in the form Rules wants it.
  */
 function relation_rules_create($values = array()) {
-  return relation_construct($values['relation_type'], array());
+  return relation_create($values['relation_type'], array());
 }
 
 /**
