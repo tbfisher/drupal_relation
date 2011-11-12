@@ -593,8 +593,8 @@ function relation_save($relation) {
   }
   field_attach_presave('relation', $relation);
   module_invoke_all('entity_presave', $relation, 'relation');
-  drupal_write_record('relation', $relation, $keys);
   drupal_write_record('relation_revision', $relation);
+  drupal_write_record('relation', $relation, $keys);
   call_user_func("field_attach_$op", 'relation', $relation);
   module_invoke_all('entity_' . $op, $relation, 'relation');
   module_invoke('rules', 'invoke_event', 'relation_' . $op, $relation);
@@ -602,10 +602,10 @@ function relation_save($relation) {
 }
 
 /**
- * Creates a new relation in the database.
+ * Insert a new relation in the database.
  */
-function relation_create($type, $endpoints) {
-  $relation = relation_construct($type, $endpoints);
+function relation_insert($type, $endpoints) {
+  $relation = relation_create($type, $endpoints);
   relation_save($relation);
 }
 
