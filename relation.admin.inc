@@ -415,3 +415,55 @@ function theme_relation_admin_content($variables) {
 
   return theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 }
+
+/**
+ * Page callback to import a relation.
+ */
+function relation_type_import($form) {
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Relation type name'),
+    '#description' => t('Enter the machine name to use for this relation type if it is different from the relation type to be imported. Leave blank to use the name of the relaiton type below.'),
+  );
+  $form['relation_type'] = array(
+    '#type' => 'textarea',
+    '#rows' => 10,
+  );
+  $form['import'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import'),
+  );
+  return $form;
+}
+
+function relation_type_import_validate($form, &$form_state) {
+  if (substr($form_state['values']['relation_type'], 0, 5) == '<?php') {
+    $form_state['values']['relation_type'] = substr($form_state['values']['relation_type'], 5);
+  }
+  ob_start();
+  eval($form_state['values']['relation_type']);
+  ob_end_clean();
+  if (!is_object($relation_type)) {
+    return form_error($form['relation_type'], t('Unable to interpret relation type code.'));
+  }
+  // relation_type name must be alphanumeric or underscores, no other punctuation.
+  if (!empty($form_state['values']['name']) && preg_match('/[^a-zA-Z0-9_]/', $form_state['values']['name'])) {
+    form_error($form['name'], t('Relation type name must be alphanumeric or underscores only.'));
+  }
+
+  if ($form_state['values']['name']) {
+    $relation_type->relation_type = $form_state['values']['name'];
+  }
+
+  if (relation_type_load($relation_type->relation_type)) {
+    form_set_error('name', t('A relation type by that name already exists; please choose a different name'));
+  }
+  $form_state['relation_type'] = $relation_type;
+}
+
+function relation_type_import_submit($form, &$form_state) {
+  relation_type_save($form_state['relation_type']);
+  $relation_type = $form_state['relation_type']->relation_type;
+  drupal_set_message(t('Successfully imported @relation_type', array('@relation_type' => $relation_type)));
+  $form_state['redirect'] = 'admin/structure/relation/manage/' . $relation_type;
+}
