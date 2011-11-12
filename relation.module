@@ -526,16 +526,14 @@ function relation_edit_form_submit($form, &$form_state) {
  *   Return FALSE if no relation exists, or an array of matching relations.
  */
 function relation_relation_exists($entity_keys, $relation_type = NULL ) {
-  $entity_keys_count = count($entity_keys);
-  $first_key = array_shift($entity_keys);
-  $query = relation_query($first_key['entity_type'], $first_key['entity_id']);
+  $query = relation_query();
   foreach ($entity_keys as $entity_key) {
     $query->related($entity_key['entity_type'], $entity_key['entity_id']);
   }
   if ($relation_type) {
     $query->propertyCondition('relation_type', $relation_type);
   }
-  $query->propertyCondition('arity', $entity_keys_count);
+  $query->propertyCondition('arity', count($entity_keys));
   $relation_ids = $query->execute();
   return $relation_ids ? $relation_ids : FALSE;
 }

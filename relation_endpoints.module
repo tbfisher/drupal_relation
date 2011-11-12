@@ -29,7 +29,7 @@ function relation_endpoints_field_validate($entity_type, $entity, $field, $insta
   }
   // Check for unique flag.
   if ($relation_type->r_unique) {
-    if (relation_relation_exists($endpoints, $type)) {
+    if (relation_relation_exists($items, $relation_type->relation_type)) {
       $errors[] = array(
         'error' => 'relation_already_exists',
         'message' => t("The !relation_type is unique but the relation already exists.", array('!relation_type' => $entity->relation_type)),
