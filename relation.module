@@ -54,6 +54,12 @@ function relation_entity_property_info() {
   $properties = &$info['relation']['properties'];
 
   $properties = array(
+    'rid' => array(
+      'label' => t('Relation ID'),
+      'description' => t('The internal numeric ID of the relation.'),
+      'type' => 'integer',
+      'schema field' => 'rid',
+    ),
     'relation_type' => array(
       'label' => t('Relation type'),
       'type' => 'token',
@@ -74,6 +80,34 @@ function relation_entity_property_info() {
       'required' => TRUE,
     ),
   );
+
+  // Add relation type-specific information, so that it is easily available
+  // for modules that need to introspect the relation structure (ie. Search API).
+  foreach (relation_get_types() as $bundle => $relation_info) {
+    $bundle_properties = &$info['relation']['bundles'][$bundle]['properties'];
+
+    foreach ($relation_info->source_bundles as $key => $bundles) {
+      list($entity_type, $bundle) = explode(':', $bundles, 2);
+      $bundle_properties['endpoints_source_' . $entity_type] = array(
+        'label' => t('@type (source endpoint)', array('@type' => $entity_type)),
+        'type' => 'list<' . $entity_type . '>',
+        'getter callback' => 'relation_rules_get_specific_endpoints',
+        'endpoint_type' => 'source',
+        'relation_directional' => $relation_info->directional,
+      );
+    }
+
+    foreach ($relation_info->target_bundles as $key => $bundles) {
+      list($entity_type, $bundle) = explode(':', $bundles, 2);
+      $bundle_properties['endpoints_target_' . $entity_type] = array(
+        'label' => t('@type (target endpoint)', array('@type' => $entity_type)),
+        'type' => 'list<' . $entity_type . '>',
+        'getter callback' => 'relation_rules_get_specific_endpoints',
+        'endpoint_type' => 'target',
+        'relation_directional' => $relation_info->directional,
+      );
+    }
+  }
 
   return $info;
 }

@@ -89,6 +89,31 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
 }
 
 /**
+ * Entity-type specific property getter callback.
+ */
+function relation_rules_get_specific_endpoints($relation, array $options, $property_name, $entity_type, $info) {
+  if ($info['endpoint_type'] == 'source') {
+    if ($info['relation_directional']) {
+      $endpoints = array($relation->endpoints[LANGUAGE_NONE][0]);
+    }
+    else {
+      $endpoints = $relation->endpoints[LANGUAGE_NONE];
+    }
+  }
+  else {
+    $endpoints = array_slice($relation->endpoints[LANGUAGE_NONE], 1);
+  }
+
+  $array = array();
+  foreach ($endpoints as $endpoint) {
+    $entity = reset(entity_load($endpoint['entity_type'], array($endpoint['entity_id'])));
+    $entity_id = entity_extract_ids($endpoint['entity_type'], $entity);
+    $array[] = $entity_id[0];
+  }
+  return $array;
+}
+
+/**
  * Endpoint property setter callback.
  *
  * @param $data
