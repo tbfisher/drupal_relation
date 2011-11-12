@@ -588,6 +588,7 @@ function relation_save($relation) {
     $op = 'update';
   }
   else {
+    $relation->created = time();
     $keys = array();
     $op = 'insert';
   }
