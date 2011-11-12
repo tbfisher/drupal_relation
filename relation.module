@@ -588,10 +588,10 @@ function relation_save($relation) {
     return FALSE;
   }
   $relation->arity = count($relation->endpoints[LANGUAGE_NONE]);
+  // use time() instead of REQUEST_TIME, because otherwise tests
+  // RelationQuery::order() are impossible.
+  $relation->changed = time();
   if (empty($relation->is_new) && !empty($relation->rid)) {
-    // use time() instead of REQUEST_TIME, because otherwise tests
-    // RelationQuery::order() are impossible.
-    $relation->changed = time();
     $keys = array('rid');
     $op = 'update';
   }
@@ -602,6 +602,7 @@ function relation_save($relation) {
   }
   field_attach_presave('relation', $relation);
   module_invoke_all('entity_presave', $relation, 'relation');
+  unset($relation->vid);
   drupal_write_record('relation_revision', $relation);
   drupal_write_record('relation', $relation, $keys);
   call_user_func("field_attach_$op", 'relation', $relation);
