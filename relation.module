@@ -20,6 +20,7 @@ function relation_entity_info() {
     'controller class' => 'DrupalDefaultEntityController',
     'save callback' => 'relation_save',
     'creation callback' => 'relation_rules_create',
+    'deletion callback' => 'relation_delete',
     'access callback' => 'relation_rules_access',
     'uri callback' => 'relation_uri',
     'entity keys' => array(
