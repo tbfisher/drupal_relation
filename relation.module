@@ -64,7 +64,7 @@ function relation_entity_property_info() {
     'relation_type' => array(
       'label' => t('Relation type'),
       'type' => 'token',
-      'description' => t("The type of the relation."),
+      'description' => t('The type of the relation.'),
       'setter callback' => 'entity_property_verbatim_set',
       'setter permission' => 'administer nodes',
       'options list' => 'relation_rules_get_type_options',
@@ -74,7 +74,7 @@ function relation_entity_property_info() {
     'endpoints' => array(
       'label' => t('Endpoints'),
       'type' => 'list<entity>',
-      'description' => t("The endpoints of the relation."),
+      'description' => t('The endpoints of the relation.'),
       'setter callback' => 'relation_rules_set_endpoints',
       'getter callback' => 'relation_rules_get_endpoints',
       'setter permission' => 'administer nodes',
