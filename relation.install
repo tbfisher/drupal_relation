@@ -250,8 +250,9 @@ function relation_uninstall() {
 }
 
 /**
- * Implements hook_update_N().
+ * Enable the new endpoint module and ctools.
  */
-function hook_update_7001() {
-  module_enable(array('relation_endpoints'));
+function relation_update_7001() {
+  module_enable(array('relation_endpoint', 'ctools'));
+  db_update('field_config')->fields(array('module' => 'relation_endpoint'))->execute();
 }

@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Installation functions for Relation Endpoints helper module.
+ * Installation functions for Relation Endpoint field type module.
  */
 
 /**
  * Implements hook_field_schema().
  */
-function relation_endpoints_field_schema() {
+function relation_endpoint_field_schema() {
   $columns = array(
     'entity_type' => array(
       'type' => 'varchar',

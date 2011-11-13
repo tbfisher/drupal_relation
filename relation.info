@@ -8,5 +8,5 @@ files[] = tests/relation.rules.test
 files[] = tests/relation.views.test
 files[] = views/relation_handler_relationship.inc
 configure = admin/structure/relation
-dependencies[] = relation_endpoints
+dependencies[] = relation_endpoint
 dependencies[] = ctools
