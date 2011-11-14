@@ -73,7 +73,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   $form['labels'] = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('relation-type-form-float'),
+      'class' => array('relation-type-form-table'),
     ),
     '#suffix' => '<div class="clearfix"></div>',
   );
@@ -176,7 +176,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   $form['endpoints'] = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('relation-type-form-float'),
+      'class' => array('relation-type-form-table'),
     ),
     '#suffix' => '<div class="clearfix"></div>',
   );
