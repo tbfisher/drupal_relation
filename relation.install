@@ -254,5 +254,8 @@ function relation_uninstall() {
  */
 function relation_update_7001() {
   module_enable(array('relation_endpoint', 'ctools'));
-  db_update('field_config')->fields(array('module' => 'relation_endpoint'))->execute();
+  db_update('field_config')
+    ->fields(array('module' => 'relation_endpoint'))
+    ->condition('field_name', 'endpoints')
+    ->execute();
 }
