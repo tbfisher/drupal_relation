@@ -850,13 +850,20 @@ function relation_views_api() {
  *
  * @param $relation
  *   A relation object.
+ * @param $reverse
+ *   optional: whether to get the reverse label (boolean).
  *
  * @return
  *   The label of the relation type.
  */
-function relation_get_type_label($relation) {
+function relation_get_type_label($relation, $reverse = FALSE) {
   $type = relation_type_load($relation->relation_type);
-  return $type->label;
+  if ($type->directional && $reverse) {
+    return $type->reverse_label;
+  }
+  else {
+    return $type->label;
+  }
 }
 
 /**
