@@ -25,7 +25,6 @@ class RelationRulesTestCase extends RelationTestCase {
   /**
    * Test to create a relation in different ways by executing a rule.
    */
-/*   
   function testRelationCreateRelation() {
     // We don't want test failures if the Rules module isn't used.
     if (module_exists('rules')) {
@@ -82,7 +81,7 @@ class RelationRulesTestCase extends RelationTestCase {
       $this->assertTrue($correct, 'Relation was created by fetching endpoints from another relation and saving it.');
     }
   }
-*/  
+
   function testRelationLoadRelatedRules() {
     if (module_exists('rules')) {
       $nid = $this->node1->nid;
@@ -96,10 +95,11 @@ class RelationRulesTestCase extends RelationTestCase {
           $this->assertFalse(db_query('SELECT COUNT(*) FROM {node} WHERE nid = :nid', array(':nid' => $nid))->fetchField(), t('The right node is deleted'));
         }
         else {
-          $nids = $node->nid;
+          $nids[] = $node->nid;
         }
       }
-      $this->assertEqual(count($nids), db_query('SELECT COUNT(*) FROM {node} WHERE nid IN (:nids)', array(':nids' => $nids))->fetchField(), t('All other nodes are found'));
+      $count = count($nids);
+      $this->assertEqual($count, db_query('SELECT COUNT(*) FROM {node} WHERE nid IN (:nids)', array(':nids' => $nids))->fetchField(), t('@count other nodes are found', array('@count' => $count)));
     }
   }
 }
