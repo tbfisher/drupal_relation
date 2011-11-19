@@ -126,6 +126,10 @@ function relation_permission() {
       'title' => t('Export Relation types'),
       'description' => t('Export relation types.'),
     ),
+    'access relations' => array(
+      'title' => t('View Relations'),
+      'description' => t('Grant access to view the endpoints of Relations.'),
+    ),
     'create relations' => array(
       'title' => t('Create Relations'),
       'description' => t('Create Relations between entities.'),
@@ -152,7 +156,7 @@ function relation_menu() {
   $items['relation/%relation'] = array(
     'title callback' => 'relation_page_title',
     'title arguments' => array(1),
-    'access arguments' => array('access content'),
+    'access arguments' => array('access relations'),
     'page callback' => 'relation_page',
     'page arguments' => array(1),
   );
@@ -850,13 +854,20 @@ function relation_views_api() {
  *
  * @param $relation
  *   A relation object.
+ * @param $reverse
+ *   optional: whether to get the reverse label (boolean).
  *
  * @return
  *   The label of the relation type.
  */
-function relation_get_type_label($relation) {
+function relation_get_type_label($relation, $reverse = FALSE) {
   $type = relation_type_load($relation->relation_type);
-  return $type->label;
+  if ($type->directional && $reverse) {
+    return $type->reverse_label;
+  }
+  else {
+    return $type->label;
+  }
 }
 
 /**

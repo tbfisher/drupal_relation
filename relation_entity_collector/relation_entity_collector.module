@@ -87,7 +87,7 @@ function relation_entity_collector($form, &$form_state) {
     '#title'          => t('Select an entity'),
     '#options'        => $form_state['relation_entities_options'],
     '#default_value'  => '',
-    '#description'     => t('Selector shows all entities loaded on this page.'),
+    '#description'     => t('Selector shows all !entities loaded on this page.', array('!entities' => l(t('entities'), 'http://drupal.org/glossary#entity', array('absolute' => TRUE, 'external' => TRUE)))),
   );
   $form['pick'] = array(
     '#type' => 'submit',

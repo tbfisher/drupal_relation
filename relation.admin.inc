@@ -135,7 +135,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     '#default_value'  => $relation_type->r_unique,
   );
   // these should probably be changed to numerical (validated) textfields.
-  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8');
+  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8');
   $form['advanced']['min_arity'] = array(
     '#type' => 'select',
     '#title' => t('Minimum Arity'),
@@ -149,7 +149,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
     ),
   );
 
-  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '8' => '8', '0' => t('Infinite'));
+  $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '0' => t('Infinite'));
   $form['advanced']['max_arity'] = array(
     '#type' => 'select',
     '#title' => t('Maximum Arity'),
