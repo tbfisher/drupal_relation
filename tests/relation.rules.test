@@ -85,18 +85,21 @@ class RelationRulesTestCase extends RelationTestCase {
 */  
   function testRelationLoadRelatedRules() {
     if (module_exists('rules')) {
-      $nodes = array(
-        $this->drupalCreateNode(array('type' => 'article')),
-        $this->drupalCreateNode(array('type' => 'article')),
-        $this->drupalCreateNode(array('type' => 'article')),
-      );
-      $nid = $nodes[1]->nid;
+      $nid = $this->node1->nid;
       variable_set('relation_rules_test_nid', $nid);
       module_enable(array('relation_rules_test'));
-      $nodes[] = $this->drupalCreateNode(array('type' => 'article'));
-      foreach ($nodes as $node) {
-        $this->assertTrue(entity_load_unchanged($node->nid) || $node->nid == $nid, t('All nodes but the one specified exist'));
+      $this->node6 = $this->drupalCreateNode(array('type' => 'article'));
+      for ($i = 1; $i <= 6; $i++) {
+        $property = "node$i";
+        $node = $this->$property;
+        if ($node->nid == $nid) {
+          $this->assertFalse(db_query('SELECT COUNT(*) FROM {node} WHERE nid = :nid', array(':nid' => $nid))->fetchField(), t('The right node is deleted'));
+        }
+        else {
+          $nids = $node->nid;
+        }
       }
+      $this->assertEqual(count($nids), db_query('SELECT COUNT(*) FROM {node} WHERE nid IN (:nids)', array(':nids' => $nids))->fetchField(), t('All other nodes are found'));
     }
   }
 }

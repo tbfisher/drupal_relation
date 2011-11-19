@@ -4,7 +4,7 @@
  * Implementation of hook_default_rules_configuration().
  */
 function relation_rules_test_default_rules_configuration() {
-  $nid = variable_get('relation_rules_test_nid');
+  $nid = variable_get('relation_rules_test_nid', 0);
   $items = array();
   $items['rules_test'] = entity_import('rules_config', '{ "rules_test" : {
     "LABEL" : "test",
@@ -27,7 +27,7 @@ function relation_rules_test_default_rules_configuration() {
       { "entity_create" : {
           "USING" : {
             "type" : "relation",
-            "param_relation_type" : "test",
+            "param_relation_type" : "symmetric",
             "param_endpoints" : [ "new-relation" ]
           },
           "PROVIDE" : { "entity_created" : { "entity_created" : "Created entity" } }
@@ -35,7 +35,7 @@ function relation_rules_test_default_rules_configuration() {
       },
       { "entity_save" : { "data" : [ "entity-created" ], "immediate" : 1 } },
       { "relation_rules_load_related" : {
-          "USING" : { "left" : [ "node" ], "relation_type" : "test" },
+          "USING" : { "left" : [ "node" ], "relation_type" : "symmetric" },
           "PROVIDE" : { "endpoints" : { "endpoints" : "List of related entities" } }
         }
       },
