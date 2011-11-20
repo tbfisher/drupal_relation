@@ -9,4 +9,4 @@ files[] = tests/relation.views.test
 files[] = views/relation_handler_relationship.inc
 configure = admin/structure/relation
 dependencies[] = relation_endpoint
-dependencies[] = ctools
+dependencies[] = ctools (!=7.x-1.0-rc1)
