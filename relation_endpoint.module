@@ -5,6 +5,9 @@
  * Relation endpoints field.
  */
 
+/**
+ * Implements hook_field_info().
+ */
 function relation_endpoint_field_info() {
   return array(
     'relation_endpoint' => array(
@@ -18,6 +21,9 @@ function relation_endpoint_field_info() {
   );
 }
 
+/**
+ * Implements hook_field_validate().
+ */
 function relation_endpoint_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   $relation_type = relation_type_load($entity->relation_type);
   // Check that relation_type exists.
@@ -142,6 +148,9 @@ function _relation_endpoint_field_create_html_table($endpoints) {
   );
 }
 
+/**
+ * Implements hook_field_formatter_info().
+ */
 function relation_endpoint_field_formatter_info() {
   return array(
     'relation_endpoint' => array(
@@ -151,6 +160,9 @@ function relation_endpoint_field_formatter_info() {
   );
 }
 
+/**
+ * Implements hook_field_widget_info().
+ */
 function relation_endpoint_field_widget_info() {
   return array(
     'relation_endpoint' => array(
@@ -163,10 +175,16 @@ function relation_endpoint_field_widget_info() {
   );
 }
 
+/**
+ * Implements hook_field_formatter_view().
+ */
 function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   return array(_relation_endpoint_field_create_html_table($items));
 }
 
+/**
+ * Implements hook_field_widget_form().
+ */
 function relation_endpoint_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   foreach ($items as $delta => $item) {
     foreach (array('entity_type', 'entity_id') as $column) {
