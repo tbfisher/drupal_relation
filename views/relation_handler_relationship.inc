@@ -46,78 +46,52 @@ class relation_handler_relationship extends views_handler_relationship {
   }
 }
 
-class relation_handler_join extends views_join {
+class relation_handler_endpoint_endpoint_join extends views_join {
   /**
    * Build the SQL for the join this object represents.
+   *
+   * This does an endpoint to endpoint join relative to a relation.
    */
   function build_join($select_query, $table, $view_query) {
-    $field = field_info_field('endpoints');
-    $relation_data_table_name = _field_sql_storage_tablename($field);
-    $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
     $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
     $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
-    // Join the left table with the entity type to the endpoints field data table.
-    $left = $view_query->get_table_info($this->left_table);
-    $entity_type_left = $this->definition['entity_type_left'];
-    $conditions = "$left[alias].$this->left_field = %alias.$entity_id_field_name AND %alias.$entity_type_field_name = '$entity_type_left'";
-    if ($this->definition['directional'] && $this->options['r_index'] > -1) {
-      $conditions .= " AND %alias.$r_index_field_name = " . $this->options['r_index'];
+
+    $entity_type_right = $this->definition['entity_type_right'];
+    $relation_type = $this->definition['relation_type'];
+
+    // Note: the Views naming convention on left versus right is opposite the
+    // actual order in the join clause.
+
+    // The aliased name of the existing endpoint table we are joining to.
+    $l = $this->left_table;
+    // The aliased name of the current endpoint table.
+    $r = $table['alias'];
+
+    // Self-join the endpoints table but grab a different endpoint (r_index).
+    $conditions = "$r.entity_id = $l.entity_id AND $r.$r_index_field_name != $l.$r_index_field_name";
+    if ($this->options['r_index'] > -1) {
+      // Grab a specific index.
+      $conditions .= " AND $l.$r_index_field_name = " . $this->options['r_index'];
     }
-    // Left join alias.
-    $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
+    // Restrict the join to the proper entity type and bundle.
+    $conditions .= " AND $r.$entity_type_field_name = '$entity_type_right' AND $r.bundle = '$relation_type'";
 
-    // Execute a self-join.
-    $entity_type_right = $this->definition['entity_type_right'];
-    // entity_id here is the ID of the relation entity.
-    $relation_type = $this->definition['relation_type'];
-    $conditions = "%alias.entity_id = $l.entity_id AND %alias.$r_index_field_name != $l.$r_index_field_name AND %alias.$entity_type_field_name = '$entity_type_right' AND %alias.bundle = '$relation_type'";
-    // Right join alias.
-    $r = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
-
-    // Join the right table to the relation_data table.
-    $conditions = "%alias.$this->field = $r.$entity_id_field_name";
+    // Add a self-join.
     $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
   }
 }
 
-class relation_handler_base_left_join extends views_join {
+class relation_handler_relation_endpoint_join extends views_join {
   /**
-   * Build the SQL for the join this object represents.
+   * Construct the views_join object.
+   *
+   * This does a relation to endpoint join.
    */
-  function build_join($select_query, $table, $view_query) {
-    $field = field_info_field('endpoints');
-    $relation_data_table_name = _field_sql_storage_tablename($field);
-    $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
-    $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
+  function construct($table = NULL, $left_table = NULL, $left_field = NULL, $field = NULL, $extra = array(), $type = 'LEFT') {
+    parent::construct($table, $left_table, $left_field, $field, $extra, $type);
     $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
-    // Join the left table with the entity type to the relation table.
-    $left = $view_query->get_table_info($this->left_table);
-    $entity_type_left = $this->definition['entity_type_left'];
-    $conditions = "$left[alias].$this->left_field = %alias.$entity_id_field_name AND %alias.$entity_type_field_name = '$entity_type_left' AND %alias.$r_index_field_name = 0";
-    // Left join alias.
-    $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
-    // entity_id here is the ID of the relation entity.
-    $relation_type = $this->definition['relation_type'];
-    $conditions = "%alias.rid = $l.entity_id AND %alias.relation_type = '$relation_type'";
-    $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
-  }
-}
-
-class relation_handler_base_right_join extends views_join {
-  /**
-   * Build the SQL for the join this object represents.
-   */
-  function build_join($select_query, $table, $view_query) {
-    $field = field_info_field('endpoints');
-    $relation_table = $view_query->get_table_info($this->left_table);
-    $relation_data_table_name = _field_sql_storage_tablename($field);
-    $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
-    $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
-    $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
-    $conditions = "$relation_table[alias].rid = %alias.entity_id AND %alias.$r_index_field_name = 1";
-    $l = $select_query->addJoin($this->type, $relation_data_table_name, NULL, $conditions);
-    $entity_type_right = $this->definition['entity_type_right'];
-    $conditions = "$l.$entity_type_field_name = '$entity_type_right' AND %alias.$this->field = $l.$entity_id_field_name";
-    $select_query->addJoin($this->type, $table['table'], $table['alias'], $conditions);
+    if ($this->options['r_index'] > -1) {
+      $this->extra = array(array('field' => $r_index_field_name, 'value' => $this->options['r_index']));
+    }
   }
 }
