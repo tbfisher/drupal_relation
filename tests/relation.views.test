@@ -30,7 +30,7 @@ class RelationViewsTestCase extends RelationTestCase {
     if (!module_exists('views')) {
       return;
     }
-/*
+
     // Relations as a base table.
     foreach (array('symmetric', 'directional', 'octopus') as $relation_type) {
       $view = new view;
@@ -75,7 +75,7 @@ class RelationViewsTestCase extends RelationTestCase {
           break;
       }
     }
-*/
+
     // Symmetric.
     foreach (array(3, 1) as $required => $count) {
       $view = new view;
@@ -84,7 +84,6 @@ class RelationViewsTestCase extends RelationTestCase {
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_endpoints_node']['table'] = 'field_data_endpoints';
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_endpoints_node']['field'] = 'endpoints_base_symmetric_right_endpoints_node';
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_endpoints_node']['required'] = $required;
-      /* Relationship: Endpoints: symmetric (relation[symmetric] -> node) */
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_node']['id'] = 'endpoints_base_symmetric_right_node';
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_node']['table'] = 'field_data_endpoints';
       $handler->display->display_options['relationships']['endpoints_base_symmetric_right_node']['field'] = 'endpoints_base_symmetric_right_node';
