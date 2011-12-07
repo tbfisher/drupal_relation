@@ -158,7 +158,8 @@ function relation_views_data() {
   );
 
   // Define the base group of this table.
-  $data['field_data_endpoints']['table']['group']  = t('Endpoints');
+  $data['field_data_endpoints']['table']['group'] = t('Endpoints');
+  $data['field_data_endpoints']['table']['join'] = array();
 
   // Find out which entity type has which base table.
   $entity_infos = entity_get_info();
@@ -209,7 +210,7 @@ function relation_views_data() {
         );
 
         // Define join and relationship from endpoints to entity.
-        $data['field_data_endpoints']['table']['join'] = array(
+        $data['field_data_endpoints']['table']['join'] += array(
           // Directly links to the $entity_type_right table.
           $entity_type_right => array(
             'left_field' => $entity_infos[$entity_type_right]['entity keys']['id'],
