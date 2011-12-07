@@ -443,7 +443,7 @@ function relation_get_types($types = array()) {
   ctools_include('export');
   $return = $types ? ctools_export_crud_load_multiple('relation_type', $types) : ctools_export_crud_load_all('relation_type');
   static $recurse = FALSE;
-  if (!$recurse) {
+  if (!$recurse && variable_get('relation_endpoints_exists')) {
     $recurse = TRUE;
     foreach ($return as $type => $data) {
       if (!empty($data->in_code_only)) {

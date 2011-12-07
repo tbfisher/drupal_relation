@@ -17,6 +17,7 @@ function relation_install() {
     'type' => 'relation_endpoint',
   );
   field_create_field($field);
+  variable_set('relation_endpoints_exists', TRUE);
 }
 
 /**
@@ -247,6 +248,7 @@ function relation_uninstall() {
     field_attach_delete_bundle('relation', $type);
   }
   field_delete_field('endpoints');
+  variable_del('relation_endpoints_exists');
 }
 
 /**
