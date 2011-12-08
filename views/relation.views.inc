@@ -201,6 +201,7 @@ function relation_views_data() {
             'label' => check_plain('Endpoints::' . $relation_type->label),
             'base' => 'field_data_endpoints',
             'base field' => 'entity_id',
+            'real field' => 'rid',
             'handler' => 'relation_handler_relationship', // To choose the r_index option.
             'relation_type' => $type, // USE THIS as bundle
             'entity_type_right' => $entity_type_right, // Use this as endpoint_entity_type.

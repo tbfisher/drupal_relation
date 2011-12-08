@@ -81,6 +81,9 @@ class relation_handler_endpoint_endpoint_join extends views_join {
   }
 }
 
+/**
+ * Join handler which is used to join from relation table to the field_data_endpoints table.
+ */
 class relation_handler_relation_endpoint_join extends views_join {
   /**
    * Construct the views_join object.
