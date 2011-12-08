@@ -50,7 +50,8 @@ function relation_views_data() {
       'numeric' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'views_handler_filter_in_operator',
+      'options callback' => 'relation_get_types_options',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',

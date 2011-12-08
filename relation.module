@@ -455,6 +455,20 @@ function relation_get_types($types = array()) {
 }
 
 /**
+ * Returns all relation types in a way which can be used
+ * on form options.
+ */
+function relation_get_types_options() {
+  $types = relation_get_types();
+  $options = array();
+  foreach ($types as $type => $relation_type) {
+    $options[$type] = $relation_type->label;
+  }
+
+  return $options;
+}
+
+/**
  * Helper function. Attaches bundles to relation type objects in an array.
  */
 function _relation_get_types_bundles(&$relation_types) {
