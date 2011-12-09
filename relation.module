@@ -561,6 +561,10 @@ function relation_load_multiple($rids, $conditions = array(), $reset = FALSE) {
  */
 function relation_page($relation) {
   $view_mode = 'full';
+  return relation_view($relation);
+}
+
+function relation_view($relation, $view_mode = 'full') {
   $entity_type = 'relation';
   $entity = $relation;
   $entities = array($relation->rid => $relation);

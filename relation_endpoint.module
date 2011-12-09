@@ -157,6 +157,10 @@ function relation_endpoint_field_formatter_info() {
       'label' => t('Endpoints table'),
       'field types' => array('relation_endpoint'),
     ),
+    'relation_endpoint_full' => array(
+      'label' => t('Full entities list'),
+      'field types' => array('relation_endpoint'),
+    ),
   );
 }
 
@@ -179,7 +183,46 @@ function relation_endpoint_field_widget_info() {
  * Implements hook_field_formatter_view().
  */
 function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-  return array(_relation_endpoint_field_create_html_table($items));
+  switch ($display['type']) {
+    case 'relation_endpoint':
+      return array(_relation_endpoint_field_create_html_table($items));
+    case 'relation_endpoint_full':
+      $list_items = array();
+      $endpoint_entity_type = '';
+      $multiple = TRUE;
+      foreach ($items as $delta => $endpoint) {
+        if (!$endpoint_entity_type) {
+          $endpoint_entity_type = $endpoint['entity_type'];
+        }
+        if ($endpoint_entity_type == $endpoint['entity_type']) {
+          $entity_ids[] = $endpoint['entity_id'];
+        }
+        else {
+          $multiple = FALSE;
+          break;
+        }
+      }
+      $function = $endpoint_entity_type . '_view_multiple';
+      if ($multiple) {
+        $entities = entity_load($endpoint_entity_type, $entity_ids);
+        if (function_exists($function)) {
+          return array($function($entities));
+        }
+      }
+      $build = array();
+      $function = $endpoint_entity_type . '_view';
+      foreach ($endpoints as $delta => $endpoint) {
+        if ($multiple) {
+          $entity = $entities[$endpoint['entity_id']];
+        }
+        else {
+          $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
+          $entity = reset($entities);
+        }
+        $build[$delta] = $function($entity);
+      }
+      return $build;
+  }
 }
 
 /**
