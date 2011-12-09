@@ -89,31 +89,6 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
 }
 
 /**
- * Entity-type specific property getter callback.
- */
-function relation_rules_get_specific_endpoints($relation, array $options, $property_name, $entity_type, $info) {
-  if ($info['endpoint_type'] == 'source') {
-    if ($info['relation_directional']) {
-      $endpoints = array($relation->endpoints[LANGUAGE_NONE][0]);
-    }
-    else {
-      $endpoints = $relation->endpoints[LANGUAGE_NONE];
-    }
-  }
-  else {
-    $endpoints = array_slice($relation->endpoints[LANGUAGE_NONE], 1);
-  }
-
-  $array = array();
-  foreach ($endpoints as $endpoint) {
-    $entity = reset(entity_load($endpoint['entity_type'], array($endpoint['entity_id'])));
-    $entity_id = entity_extract_ids($endpoint['entity_type'], $entity);
-    $array[] = $entity_id[0];
-  }
-  return $array;
-}
-
-/**
  * Endpoint property setter callback.
  *
  * @param $data
@@ -148,46 +123,29 @@ function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $entity_w
 }
 
 /**
- * Related entities getter callback.
+ * Action callback loading all related entities.
  */
-function relation_rules_get_related_entities($entity, array $options, $name, $type, $info) {
-  $source_entity = entity_metadata_wrapper($type, $entity);
-  $source_entity_type = $source_entity->type();
-  $source_entity_id = $source_entity->getIdentifier();
-  $rids = array_keys(relation_query($source_entity_type, $source_entity_id)->entityCondition('bundle', $info['relation_type'])->execute());
-  $entities_ids = array();
-  if (!$rids) {
-    return $entities_ids;
-  }
-  foreach (relation_load_multiple($rids) as $relation) {
-    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
-      if ($endpoint['entity_type'] == $info['target_type']) {
-        $entities_ids[] = $endpoint['entity_id'];
-      }
-    }
-  }
-  return $entities_ids;
-}
-
-/**
-* Action callback loading all related entities.
-*/
 function relation_rules_load_related($source_entity, $relation_type) {
-  $endpoints = array();
   $source_entity_type = $source_entity->type();
   $source_entity_id = $source_entity->getIdentifier();
-  foreach ($source_entity->getPropertyInfo() as $property_name => $property) {
-    if (isset($property['relation_type']) && $property['relation_type'] == $relation_type && isset($property['target_type'])) {
-      $related_entities = $source_entity->$property_name->value();
-      if (!empty($related_entities)) {
-        foreach ($related_entities as $related_entity) {
-          $endpoint_wrapper = entity_metadata_wrapper($property['target_type'], $related_entity);
-          if ($endpoint_wrapper->type() != $source_entity_type || $endpoint_wrapper->getIdentifier() != $source_entity_id) {
-            $endpoints[] = $endpoint_wrapper;
-          }
-        }
+  $rids = array_keys(relation_query($source_entity_type, $source_entity_id)->entityCondition('bundle', $relation_type)->execute());
+  $return = array();
+  if (!$rids) {
+    return $return;
+  }
+  $relations = relation_load_multiple($rids);
+  $to_load = array();
+  foreach ($relations as $relation) {
+    foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+      if ($endpoint['entity_type'] != $source_entity_type || $endpoint['entity_id'] != $source_entity_id) {
+        $to_load[$endpoint['entity_type']][] = $endpoint['entity_id'];
       }
     }
   }
-  return array('endpoints' => $endpoints);
+  foreach ($to_load as $entity_type => $ids) {
+    foreach (entity_load($entity_type, $ids) as $entity) {
+      $return[] = entity_metadata_wrapper($entity_type, $entity);
+    }
+  }
+  return array('endpoints' => $return);
 }
