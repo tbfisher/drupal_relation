@@ -373,6 +373,7 @@ function relation_get_types($types = array()) {
         relation_type_ensure_instance($type);
       }
     }
+    $recurse = FALSE;
   }
   return $return;
 }
