@@ -194,7 +194,7 @@ function relation_views_data() {
         $t_arguments['@right'] = $entity_type_right;
         // Define [join and] relationship from relation to endpoints.
         $data['relation']['relation_base_' . $type . '_right_endpoints'] = array(
-          'title' => t('@relation_type_label -> field_data_endpoints', $t_arguments),
+          'title' => t('@relation_type_label -> endpoints[@relation_type_label]', $t_arguments),
           'help' => t('Relation table to endpoints table using "@relation_type_label" relation', $t_arguments),
           'relationship' => array(
             // relation_handler_relationship::options_form() relies on this check_plain().
@@ -234,7 +234,7 @@ function relation_views_data() {
         // Define [join and] relationship from endpoints to endpoints.
         $data['field_data_endpoints']['endpoints_base_' . $type . '_right_endpoints_' . $entity_type_right] = array(
           'title' => t('@left -> endpoints[@relation_type_label])', $t_arguments),
-          'help' => t('@left to the other endpoints using the "@relation_type_label" relation', $t_arguments),
+          'help' => t('@left to the sibling endpoints using the "@relation_type_label" relation', $t_arguments),
           'relationship' => array(
             // relation_handler_relationship::options_form() relies on this check_plain().
             'label' => check_plain('Endpoints::' . $relation_type->label),
