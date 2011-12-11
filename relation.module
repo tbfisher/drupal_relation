@@ -23,6 +23,7 @@ function relation_entity_info() {
     'deletion callback' => 'relation_delete',
     'access callback' => 'relation_rules_access',
     'uri callback' => 'relation_uri',
+    'view callback' => 'relation_multiple_view',
     'entity keys' => array(
       'id' => 'rid',
       'revision' => 'vid',
@@ -503,6 +504,14 @@ function relation_view($relation, $view_mode = 'full') {
   );
   module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NONE);
   drupal_alter('entity_view', $build, $entity_type);
+  return $build;
+}
+
+function relation_multiple_view($relations, $view_mode) {
+  $build = array();
+  foreach ($relations as $relation) {
+    $build['relation'][$relation->rid] = relation_view($relation, $view_mode);
+  }
   return $build;
 }
 
