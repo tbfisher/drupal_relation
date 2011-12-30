@@ -194,7 +194,8 @@ function relation_endpoint_field_formatter_settings_form($field, $instance, $vie
     foreach ($entity_info['view modes'] as $entity_view_mode => $data) {
       $options[$entity_view_mode] = $data['label'];
     }
-    $element[$endpoint_entity_type] = array(
+    $element['#tree'] = TRUE;
+    $element['view_modes'][$endpoint_entity_type] = array(
       '#title' => t('@endpoint_entity_type view mode', array('@endpoint_entity_type' => $endpoint_entity_type)),
       '#type' => 'select',
       '#default_value' => $view_modes_settings[$endpoint_entity_type],
