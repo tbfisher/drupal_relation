@@ -149,22 +149,6 @@ function _relation_endpoint_field_create_html_table($endpoints) {
 }
 
 /**
- * Implements hook_field_formatter_info().
- */
-function relation_endpoint_field_formatter_info() {
-  return array(
-    'relation_endpoint' => array(
-      'label' => t('Endpoints table'),
-      'field types' => array('relation_endpoint'),
-    ),
-    'relation_endpoint_full' => array(
-      'label' => t('Full entities list'),
-      'field types' => array('relation_endpoint'),
-    ),
-  );
-}
-
-/**
  * Implements hook_field_widget_info().
  */
 function relation_endpoint_field_widget_info() {
@@ -180,6 +164,71 @@ function relation_endpoint_field_widget_info() {
 }
 
 /**
+ * Implements hook_field_formatter_info().
+ */
+function relation_endpoint_field_formatter_info() {
+  $info = array(
+    'relation_endpoint' => array(
+      'label' => t('Endpoints table'),
+      'field types' => array('relation_endpoint'),
+    ),
+    'relation_endpoint_full' => array(
+      'label' => t('Full entities list'),
+      'field types' => array('relation_endpoint'),
+    ),
+  );
+  foreach (entity_get_info() as $entity_type => $data) {
+    $info['relation_endpoint_full']['settings']['view_modes'][$entity_type] = 'default';
+  }
+  return $info;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function relation_endpoint_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $view_modes_settings = $instance['display'][$view_mode]['settings']['view_modes'];
+  foreach (_relation_endpoint_get_endpoint_entity_types($instance) as $endpoint_entity_type => $v) {
+    $entity_info = entity_get_info($endpoint_entity_type);
+    $options = array();
+    foreach ($entity_info['view modes'] as $entity_view_mode => $data) {
+      $options[$entity_view_mode] = $data['label'];
+    }
+    $element[$endpoint_entity_type] = array(
+      '#title' => t('@endpoint_entity_type view mode', array('@endpoint_entity_type' => $endpoint_entity_type)),
+      '#type' => 'select',
+      '#default_value' => $view_modes_settings[$endpoint_entity_type],
+      '#options' => $options,
+    );
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function relation_endpoint_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $view_modes_settings = $instance['display'][$view_mode]['settings']['view_modes'];
+  foreach (_relation_endpoint_get_endpoint_entity_types($instance) as $endpoint_entity_type => $v) {
+    $items[] = "$endpoint_entity_type: " . $view_modes_settings[$endpoint_entity_type];
+  }
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Helper getting endpoint entity types for the bundle specified in $instance.
+ */
+function _relation_endpoint_get_endpoint_entity_types($instance) {
+  $relation_type = relation_type_load($instance['bundle']);
+  $bundles = $relation_type->source_bundles + $relation_type->target_bundles;
+  foreach ($bundles as $bundle_key) {
+    list($endpoint_entity_type) = explode(':', $bundle_key);
+    $endpoint_entity_types[$endpoint_entity_type] = TRUE;
+  }
+  return $endpoint_entity_types;
+}
+
+/**
  * Implements hook_field_formatter_view().
  */
 function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
@@ -187,6 +236,7 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
     case 'relation_endpoint':
       return array(_relation_endpoint_field_create_html_table($items));
     case 'relation_endpoint_full':
+      $view_modes_settings = $display['settings']['view_modes'];
       $list_items = array();
       $endpoint_entity_type = '';
       $multiple = TRUE;
@@ -202,11 +252,14 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
           break;
         }
       }
-      $function = $endpoint_entity_type . '_view_multiple';
       if ($multiple) {
         $entities = entity_load($endpoint_entity_type, $entity_ids);
+        if (function_exists('entity_view')) {
+          return entity_view($endpoint_entity_type, $entities, $view_modes_settings[$endpoint_entity_type]);
+        }
+        $function = $endpoint_entity_type . '_view_multiple';
         if (function_exists($function)) {
-          return array($function($entities));
+          return array($function($entities, $view_modes_settings[$endpoint_entity_type]));
         }
       }
       $build = array();
@@ -219,7 +272,7 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
           $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
           $entity = reset($entities);
         }
-        $build[$delta] = $function($entity);
+        $build[$delta] = $function($entity, $view_modes_settings[$endpoint_entity_type]);
       }
       return $build;
   }
