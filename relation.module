@@ -398,9 +398,19 @@ function relation_get_types_options() {
  */
 function _relation_get_types_bundles(&$relation_types) {
   foreach ($relation_types as &$relation_type) {
-    foreach (db_query('SELECT relation_type, entity_type, bundle, r_index FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
-      $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
-      $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+    if (empty($relation_type->in_code_only) && empty($relation_type->bundles_loaded)) {
+      // If overridden or not exported at all, reset the bundles before
+      // loading from the database to avoid duplication.
+      $relation_type->source_bundles = array();
+      $relation_type->target_bundles = array();
+      foreach (db_query('SELECT relation_type, entity_type, bundle, r_index FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $relation_type->relation_type)) as $record) {
+        $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
+        $relation_type->{$endpoint}[] = "$record->entity_type:$record->bundle";
+      }
+      // Do not run this twice. ctools static caches the types but runs the
+      // subrecord callback on the whole cache, every already loaded relation
+      // type.
+      $relation_type->bundles_loaded = TRUE;
     }
   }
 }
