@@ -256,7 +256,7 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
       if ($multiple) {
         $entities = entity_load($endpoint_entity_type, $entity_ids);
         if (function_exists('entity_view')) {
-          return entity_view($endpoint_entity_type, $entities, $view_modes_settings[$endpoint_entity_type]);
+          return array(entity_view($endpoint_entity_type, $entities, $view_modes_settings[$endpoint_entity_type]));
         }
         $function = $endpoint_entity_type . '_view_multiple';
         if (function_exists($function)) {
