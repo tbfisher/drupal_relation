@@ -56,6 +56,12 @@ function relation_entity_property_info() {
   $properties = &$info['relation']['properties'];
 
   $properties = array(
+    'rid' => array(
+      'label' => t('Relation ID'),
+      'description' => t('The internal numeric ID of the relation.'),
+      'type' => 'integer',
+      'schema field' => 'rid',
+    ),
     'relation_type' => array(
       'label' => t('Relation type'),
       'type' => 'token',
@@ -76,8 +82,71 @@ function relation_entity_property_info() {
       'required' => TRUE,
     ),
   );
-
   return $info;
+}
+
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function relation_entity_property_info_alter(&$info) {
+  // Add relation type-specific information, so that it is easily available
+  // for modules that need to introspect the
+  // relation structure (ie. Search API).
+  foreach (relation_get_types() as $relation_type => $relation) {
+    foreach ($relation->source_bundles as $key => $bundles) {
+      list($entity_type, $bundle) = explode(':', $bundles, 2);
+      $info['relation']['bundles'][$bundle]['properties']['endpoints_source_' . $entity_type] = array(
+        'label' => t('@type (source endpoint)', array('@type' => $entity_type)),
+        'type' => 'list<' . $entity_type . '>',
+        'getter callback' => 'relation_rules_get_specific_endpoints',
+        'endpoint_type' => 'source',
+        'relation_directional' => $relation->directional,
+      );
+    }
+
+    foreach ($relation->target_bundles as $key => $bundles) {
+      list($entity_type, $bundle) = explode(':', $bundles, 2);
+      $info['relation']['bundles'][$bundle]['properties']['endpoints_target_' . $entity_type] = array(
+        'label' => t('@type (target endpoint)', array('@type' => $entity_type)),
+        'type' => 'list<' . $entity_type . '>',
+        'getter callback' => 'relation_rules_get_specific_endpoints',
+        'endpoint_type' => 'target',
+        'relation_directional' => $relation->directional,
+      );
+    }
+
+    $source_bundles = $relation->source_bundles;
+    $original_sb = array_values($source_bundles);
+    $directional = FALSE;
+    // If its a directional relation, merge the source and target bundles.
+    if (count($relation->target_bundles) >= 1) {
+      $original_tb = array_values($relation->target_bundles);
+      $target_bundles = array_merge($source_bundles, $relation->target_bundles);
+      $source_bundles = $target_bundles;
+      $directional = TRUE;
+    }
+    else {
+      $target_bundles = $source_bundles;
+    }
+    foreach ($target_bundles as $target_key => $target_bundle) {
+      list($entity_target) = explode(':', $target_bundle, 2);
+      foreach ($source_bundles as $source_key => $source_bundle) {
+        $property_reverse = ($directional && !in_array($source_bundle, $original_sb) && !in_array($target_bundle, $original_tb));
+        $property = ($property_reverse) ? 'relation_' . $relation_type . '_' . $entity_target . '_reverse' : 'relation_' . $relation_type . '_' . $entity_target;
+        list($entity_source) = explode(':', $source_bundle, 2);
+        if (!$directional || ($property_reverse) || (in_array($target_bundle, $original_tb) && in_array($source_bundle, $original_sb))) {
+          $info[$entity_source]['properties'][$property] = array(
+            'label' => t('Relation @relation_type (to @entity' . (($property_reverse) ? ' reverse)' : ')'), array('@relation_type' => $relation_type, '@entity' => $entity_target)),
+            'type' => 'list<' . $entity_target . '>',
+            'relation_type' => $relation_type,
+            'target_type' => $entity_target,
+            'description' => t("A list of entities related."),
+            'getter callback' => 'relation_rules_get_related_entities',
+          );
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -505,11 +574,6 @@ function relation_view($relation, $view_mode = 'full') {
   field_attach_prepare_view($entity_type, $entities, $view_mode);
   entity_prepare_view($entity_type, $entities);
   $build = field_attach_view($entity_type, $entity, $view_mode);
-  $build += array(
-    '#relation' => $relation,
-    '#view_mode' => $view_mode,
-    '#language' => LANGUAGE_NONE,
-  );
   module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NONE);
   drupal_alter('entity_view', $build, $entity_type);
   return $build;
