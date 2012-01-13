@@ -236,7 +236,7 @@ function _relation_endpoint_get_endpoint_entity_types($instance) {
 function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   switch ($display['type']) {
     case 'relation_endpoint':
-      return array(_relation_endpoint_field_create_html_table($items));
+      $build['table'] = _relation_endpoint_field_create_html_table($items);
     case 'relation_endpoint_full':
       $view_modes_settings = $display['settings']['view_modes'];
       $list_items = array();
@@ -276,8 +276,8 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
         }
         $build[$delta] = $function($entity, $view_modes_settings[$endpoint_entity_type]);
       }
-      return $build;
   }
+  return $build;
 }
 
 /**
