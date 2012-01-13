@@ -78,8 +78,9 @@ function relation_entity_collector_store($relation) {
  */
 function relation_entity_collector_entity_view_alter(&$build, $entity_type) {
   if ($entity_type == 'relation' && _relation_entity_collector_user_has_access()) {
-    $rid = $build['#entity']->rid;
-    $build['link']['#markup'] = l('Edit', "relation_entity_collector/$rid", drupal_get_destination());
+    $relation = $build['#entity'];
+    $text = t('Edit @relation_type', array('@relation_type' => $relation->relation_type));
+    $build['link']['#markup'] = l($text, "relation_entity_collector/$relation->rid", drupal_get_destination());
   }
 }
 
