@@ -100,13 +100,15 @@ function relation_generate_relations($number_relations = 10, $types = array(), $
           $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
         }
         $results = $query->execute();
-        $entity_ids = array_keys(reset($results));
-        $key = array_rand($entity_ids); //pseudorandomise until EFQ does random.
-        $entity_keys[] = array(
-          'entity_type' => $entity_type,
-          'entity_id'   => $entity_ids[$key],
-          'r_index'     => $r_index,
+        if ($results) {
+          $entity_ids = array_keys(reset($results));
+          $key = array_rand($entity_ids); //pseudorandomise until EFQ does random.
+          $entity_keys[] = array(
+            'entity_type' => $entity_type,
+            'entity_id'   => $entity_ids[$key],
+            'r_index'     => $r_index,
           );
+        }
       }
       $relation = relation_create($type, $entity_keys);
       $new_rids[] = relation_save($relation);
