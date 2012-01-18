@@ -156,19 +156,15 @@ function relation_entity_collector($form, &$form_state) {
   foreach ($types as $type) {
     $relation_types[$type->relation_type] = $type->label;
   }
-  if (isset($_SESSION['relation_edit'])) {
-    $form['relation_edited']['#markuo'] = t('You are editing a relation');
-  }
-  else {
-    $form['relation_type'] = array(
-      '#type'          => 'select',
-      '#title'         => t('Relation type'),
-      '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
-      '#options'       => $relation_types,
-      '#empty_value'   => '',
-      '#empty_option'  => t('Select a relation type'),
-    );
-  }
+  $form['relation_type'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Relation type'),
+    '#default_value' => $relation_type,
+    '#options'       => $relation_types,
+    '#empty_value'   => '',
+    '#empty_option'  => t('Select a relation type'),
+    '#access'        => empty($_SESSION['relation_edit']),
+  );
   $form['entity_key'] = array(
     '#type'           => 'select',
     '#title'          => t('Select an entity'),
@@ -192,6 +188,10 @@ function relation_entity_collector($form, &$form_state) {
   $form['reload']['#prefix'] = '<span id="relation_entity_collector_reload">';
   $form['reload']['#suffix'] = '</span>';
   if (!empty($_SESSION['relation_entity_keys'])) {
+    $form['reload']['table']['#entity_collector_columns'] = array(
+      'weight',
+      'remove',
+    );
     foreach ($_SESSION['relation_entity_keys'] as $delta => $entity_key) {
       // The structure is (entity_type, entity_id, entity label).
       $form['reload']['table']['weight'][] = array(
@@ -436,12 +436,12 @@ function theme_relation_entity_collector_table($variables) {
   drupal_add_tabledrag($table['attributes']['id'], 'order', 'sibling', 'relation-entity-collector-weight');
   foreach (element_children($form['weight']) as $key) {
     $form['weight'][$key]['#attributes']['class'] = array('relation-entity-collector-weight');
+    $data = array($form['remove'][$key]['#entity_key']['entity_label']);
+    foreach ($form['#entity_collector_columns'] as $column) {
+      $data[] = drupal_render($form[$column][$key]);
+    }
     $table['rows'][] = array(
-      'data' => array(
-        $form['remove'][$key]['#entity_key']['entity_label'],
-        drupal_render($form['remove'][$key]),
-        drupal_render($form['weight'][$key]),
-      ),
+      'data' => $data,
       'class' => array('draggable'),
     );
   }
