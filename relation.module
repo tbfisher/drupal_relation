@@ -700,7 +700,7 @@ function relation_save($relation) {
   catch (FieldValidationException $e) {
     return FALSE;
   }
-
+  $transaction = db_transaction();
   $relation->arity = count($relation->endpoints[LANGUAGE_NONE]);
   // use time() instead of REQUEST_TIME, because otherwise tests
   // RelationQuery::order() are impossible.
