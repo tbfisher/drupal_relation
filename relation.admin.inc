@@ -423,7 +423,7 @@ function relation_type_import($form) {
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Relation type name'),
-    '#description' => t('Enter the machine name to use for this relation type if it is different from the relation type to be imported. Leave blank to use the name of the relaiton type below.'),
+    '#description' => t('Enter the machine name to use for this relation type if it is different from the relation type to be imported. Leave blank to use the name of the relation type below.'),
   );
   $form['relation_type'] = array(
     '#type' => 'textarea',
