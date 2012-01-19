@@ -730,7 +730,7 @@ function relation_save($relation) {
  */
 function relation_insert($type, $endpoints) {
   $relation = relation_create($type, $endpoints);
-  relation_save($relation);
+  return relation_save($relation);
 }
 
 /**
