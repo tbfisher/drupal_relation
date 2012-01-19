@@ -632,15 +632,28 @@ function relation_edit_form_submit($form, &$form_state) {
 /**
  * Checks if a relation exists.
  *
- * @param $relation_type
- *   The relation type (bundle) of the relation to be checked.
+ * The following example demonstrates how to check if a relation of type
+ * 'likes' exists between two entities, user 17 and node 253.
+ *
+ * @code
+ *   $entity_keys = array(
+ *     array('entity_type' => 'user', 'entity_id' => 17),
+ *     array('entity_type' => 'node', 'entity_id' => 253),
+ *   );
+ *   $relation_type = 'likes';
+ *   $results = relation_relation_exists($entity_keys, $relation_type);
+ * @endcode
+ *
  * @param $entity_keys
- *   The entity keys of the relation to be created, to be compared to existing
- *   relations. Entity_keys are arrays keyed by 'entity_type' and 'entity_id'.
+ *   The entity keys of the relation to found. Entity_keys are arrays keyed by
+ *   'entity_type' and 'entity_id'.
+ * @param $relation_type
+ *   (Optional) The relation type (bundle) of the relation to be checked.
+ *
  * @return
  *   Return FALSE if no relation exists, or an array of matching relations.
  */
-function relation_relation_exists($entity_keys, $relation_type = NULL ) {
+function relation_relation_exists($entity_keys, $relation_type = NULL) {
   $query = relation_query();
   foreach ($entity_keys as $entity_key) {
     $query->related($entity_key['entity_type'], $entity_key['entity_id']);
