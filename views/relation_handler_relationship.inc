@@ -5,17 +5,7 @@
  * Views relationship support.
  */
 
-abstract class relation_handler_relationship_base extends views_handler_relationship {
-  function init(&$view, &$options) {
-    parent::init($view, $options);
-    $field = field_info_field('endpoints');
-    $this->relation_data_table_name = _field_sql_storage_tablename($field);
-    $this->entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
-    $this->entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
-    $this->r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
-    $this->join_type = empty($this->options['required']) ? 'LEFT' : 'INNER';
-  }
-
+class relation_handler_relationship extends views_handler_relationship {
   /**
    * Define r_index option.
    */
@@ -55,92 +45,101 @@ abstract class relation_handler_relationship_base extends views_handler_relation
     ) : array();
   }
 
-  function add_endpoints_to_left() {
+  function query() {
+    $field = field_info_field('endpoints');
+    $relation_data_table_name = _field_sql_storage_tablename($field);
+    $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
+    $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
+    $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
+    $join_type = empty($this->options['required']) ? 'LEFT' : 'INNER';
+    $endpoints_twice = isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']);
+
+    $this->ensure_my_table();
     // Join the left table with the entity type to the endpoints field data table.
     $join = new views_join();
     $join->definition = array(
       'left_table' => $this->table_alias,
       'left_field' => $this->real_field,
-      'table'      => $this->relation_data_table_name,
-      'field'      => $this->entity_id_field_name,
-      'type'       => $this->join_type,
+      'table'      => $relation_data_table_name,
+      'field'      => isset($this->definition['entity_type_left']) ? $entity_id_field_name : 'entity_id',
+      'type'       => $join_type,
       'extra'      => array(
         array(
           'field' => 'bundle',
           'value' => $this->definition['relation_type'],
         ),
-        array(
-          'field' => $this->entity_type_field_name,
-          'value' => $this->definition['entity_type_left'],
-        ),
       ),
     );
+    if (isset($this->definition['entity_type_left'])) {
+      $join->definition['extra'][] = array(
+        'field' => $entity_type_field_name,
+        'value' => $this->definition['entity_type_left'],
+      );
+    }
     if ($this->definition['directional'] && $this->options['r_index'] > -1) {
       $join->definition['extra'][] = array(
-        'field' => $this->r_index_field_name,
+        'field' => $r_index_field_name,
         'value' => $this->options['r_index'],
       );
     }
     $join->construct();
     $join->adjusted = TRUE;
-    $this->l = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
-  }
+    $l = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
 
-  function add_right_to_endpoints() {
-    $join = new views_join();
-    $join->definition = array(
-      'left_table' => $this->r,
-      'left_field' => $this->entity_id_field_name,
-      'table'      => $this->definition['base'],
-      'field'      => $this->definition['base field'],
-      'type'       => $this->join_type,
-    );
-    // This technically should be on an earlier extra but this works just
-    // fine.
-    if (isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']) && $this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
-      $join->definition['extra'] = "$this->l.$this->r_index_field_name != $this->r.$this->r_index_field_name";
-    }
-    $join->construct();
-    $join->adjusted = TRUE;
-    // use a short alias for this:
-    $alias = $this->definition['base'] . '_' . $this->table;
-    $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
-  }
-}
-
-class relation_handler_relationship extends relation_handler_relationship_base {
-  function query() {
-    $this->ensure_my_table();
-    $this->add_endpoints_to_left();
-
-    if (isset($this->definition['entity_type_right'])) {
+    if ($endpoints_twice) {
       // Execute a self-join.
       $join = new views_join();
       $join->definition = array(
-        'left_table' => $this->l,
+        'left_table' => $l,
         'left_field' => 'entity_id',
-        'table'      => $this->relation_data_table_name,
+        'table'      => $relation_data_table_name,
         'field'      => 'entity_id',
-        'type'       => $this->join_type,
+        'type'       => $join_type,
         'extra'      => array(
           array(
-            'field' => $this->entity_type_field_name,
+            'field' => $entity_type_field_name,
             'value' => $this->definition['entity_type_right'],
           ),
         ),
       );
       $join->construct();
       $join->adjusted = TRUE;
-      $this->r = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
+      $r = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
     }
     else {
-      $this->r = $this->l;
+      $r = $l;
     }
-    $this->add_right_to_endpoints();
-  }
-}
+    $join = new views_join();
+    $join->definition = array(
+      'left_table' => $r,
+      'left_field' => isset($this->definition['entity_type_right']) ? $entity_id_field_name : 'entity_id',
+      'table'      => $this->definition['base'],
+      'field'      => $this->definition['base field'],
+      'type'       => $join_type,
+    );
+    // There is no query where these conditions could be added earlier:
+    // $r might be just $l.
+    if ($endpoints_twice && $this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
+      $join->definition['extra'][] = array(
+        // This definition is a bit funny but there's no other way to tell
+        // Views to use this as it is.
+        'table' => NULL,
+        'field' => "$r.$r_index_field_name != $l.$r_index_field_name AND 1",
+        'value' => 1,
+      );
+    }
+    if (isset($this->definition['entity_type_right'])) {
+      $join->definition['extra'][] = array(
+        'table' => $r,
+        'field' => $entity_type_field_name,
+        'value' => $this->definition['entity_type_right'],
+      );
+    }
 
-class relation_handler_relationship_right extends relation_handler_relationship_base {
-  function query() {
+    $join->construct();
+    $join->adjusted = TRUE;
+    // use a short alias for this:
+    $alias = $this->definition['base'] . '_' . $this->table;
+    $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
   }
 }
