@@ -78,8 +78,9 @@ function relation_entity_collector_store($relation) {
  */
 function relation_entity_collector_entity_view_alter(&$build, $entity_type) {
   if ($entity_type == 'relation' && _relation_entity_collector_user_has_access()) {
-    $rid = $build['#entity']->rid;
-    $build['link']['#markup'] = l('Edit', "relation_entity_collector/$rid", drupal_get_destination());
+    $relation = $build['#entity'];
+    $text = t('Edit @relation_type', array('@relation_type' => $relation->relation_type));
+    $build['link']['#markup'] = l($text, "relation_entity_collector/$relation->rid", drupal_get_destination());
   }
 }
 
@@ -119,13 +120,32 @@ function relation_entity_collector($form, &$form_state) {
     $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array('!link' => l('relation types', 'admin/structure/relation')));
     return $form;
   }
+  $relation_type = isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '';
   if ($relation_entities = drupal_static('relation_entities', array())) {
     foreach ($relation_entities as $entity_type => $entities) {
       foreach ($entities as $entity_id => $entity) {
         list( , , $entity_bundle) = entity_extract_ids($entity_type, $entity);
-        $options["$entity_type:$entity_id"] = "$entity_bundle: " . entity_label($entity_type, $entity);
+        if ($relation_type) {
+          $relation_type_object = relation_type_load($relation_type);
+          $valid = FALSE;
+          foreach (array('source_bundles', 'target_bundles') as $property) {
+            foreach ($relation_type_object->$property as $allowed_bundle) {
+              if ($allowed_bundle == "$entity_type:$entity_bundle" || $allowed_bundle == "$entity_type:*") {
+                $valid = TRUE;
+                break;
+              }
+            }
+          }
+        }
+        else {
+          $valid = TRUE;
+        }
+        if ($valid) {
+          $options["$entity_type:$entity_id"] = "$entity_bundle: " . entity_label($entity_type, $entity);
+        }
       }
     }
+    asort($options);
     $form_state['relation_entities_options'] = $options;
   }
   if (empty($form_state['relation_entities_options'])) {
@@ -136,19 +156,15 @@ function relation_entity_collector($form, &$form_state) {
   foreach ($types as $type) {
     $relation_types[$type->relation_type] = $type->label;
   }
-  if (isset($_SESSION['relation_edit'])) {
-    $form['relation_edited']['#markuo'] = t('You are editing a relation');
-  }
-  else {
-    $form['relation_type'] = array(
-      '#type'          => 'select',
-      '#title'         => t('Relation type'),
-      '#default_value' => isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '',
-      '#options'       => $relation_types,
-      '#empty_value'   => '',
-      '#empty_option'  => t('Select a relation type'),
-    );
-  }
+  $form['relation_type'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Relation type'),
+    '#default_value' => $relation_type,
+    '#options'       => $relation_types,
+    '#empty_value'   => '',
+    '#empty_option'  => t('Select a relation type'),
+    '#access'        => empty($_SESSION['relation_edit']),
+  );
   $form['entity_key'] = array(
     '#type'           => 'select',
     '#title'          => t('Select an entity'),
@@ -172,6 +188,10 @@ function relation_entity_collector($form, &$form_state) {
   $form['reload']['#prefix'] = '<span id="relation_entity_collector_reload">';
   $form['reload']['#suffix'] = '</span>';
   if (!empty($_SESSION['relation_entity_keys'])) {
+    $form['reload']['table']['#entity_collector_columns'] = array(
+      'weight',
+      'remove',
+    );
     foreach ($_SESSION['relation_entity_keys'] as $delta => $entity_key) {
       // The structure is (entity_type, entity_id, entity label).
       $form['reload']['table']['weight'][] = array(
@@ -416,12 +436,12 @@ function theme_relation_entity_collector_table($variables) {
   drupal_add_tabledrag($table['attributes']['id'], 'order', 'sibling', 'relation-entity-collector-weight');
   foreach (element_children($form['weight']) as $key) {
     $form['weight'][$key]['#attributes']['class'] = array('relation-entity-collector-weight');
+    $data = array($form['remove'][$key]['#entity_key']['entity_label']);
+    foreach ($form['#entity_collector_columns'] as $column) {
+      $data[] = drupal_render($form[$column][$key]);
+    }
     $table['rows'][] = array(
-      'data' => array(
-        $form['remove'][$key]['#entity_key']['entity_label'],
-        drupal_render($form['remove'][$key]),
-        drupal_render($form['weight'][$key]),
-      ),
+      'data' => $data,
       'class' => array('draggable'),
     );
   }
