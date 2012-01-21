@@ -13,6 +13,7 @@ abstract class relation_handler_relationship_base extends views_handler_relation
     $this->entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
     $this->entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
     $this->r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
+    $this->join_type = empty($this->options['required']) ? 'LEFT' : 'INNER';
   }
 
   /**
@@ -53,13 +54,8 @@ abstract class relation_handler_relationship_base extends views_handler_relation
       1 => t('Target'),
     ) : array();
   }
-}
 
-class relation_handler_relationship extends relation_handler_relationship_base {
-  function query() {
-    $this->ensure_my_table();
-    $type = empty($this->options['required']) ? 'LEFT' : 'INNER';
-
+  function add_endpoints_to_left() {
     // Join the left table with the entity type to the endpoints field data table.
     $join = new views_join();
     $join->definition = array(
@@ -67,7 +63,7 @@ class relation_handler_relationship extends relation_handler_relationship_base {
       'left_field' => $this->real_field,
       'table'      => $this->relation_data_table_name,
       'field'      => $this->entity_id_field_name,
-      'type'       => $type,
+      'type'       => $this->join_type,
       'extra'      => array(
         array(
           'field' => 'bundle',
@@ -87,39 +83,22 @@ class relation_handler_relationship extends relation_handler_relationship_base {
     }
     $join->construct();
     $join->adjusted = TRUE;
-    $l = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
+    $this->l = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
+  }
 
-    // Execute a self-join.
+  function add_right_to_endpoints() {
     $join = new views_join();
     $join->definition = array(
-      'left_table' => $l,
-      'left_field' => 'entity_id',
-      'table'      => $this->relation_data_table_name,
-      'field'      => 'entity_id',
-      'type'       => $type,
-      'extra'      => array(
-        array(
-          'field' => $this->entity_type_field_name,
-          'value' => $this->definition['entity_type_right'],
-        ),
-      ),
-    );
-    $join->construct();
-    $join->adjusted = TRUE;
-    $r = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
-
-    $join = new views_join();
-    $join->definition = array(
-      'left_table' => $r,
+      'left_table' => $this->r,
       'left_field' => $this->entity_id_field_name,
       'table'      => $this->definition['base'],
       'field'      => $this->definition['base field'],
-      'type'       => $type,
+      'type'       => $this->join_type,
     );
     // This technically should be on an earlier extra but this works just
     // fine.
-    if ($this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
-      $join->definition['extra'] = "$l.$this->r_index_field_name != $r.$this->r_index_field_name";
+    if (isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']) && $this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
+      $join->definition['extra'] = "$this->l.$this->r_index_field_name != $this->r.$this->r_index_field_name";
     }
     $join->construct();
     $join->adjusted = TRUE;
@@ -129,8 +108,39 @@ class relation_handler_relationship extends relation_handler_relationship_base {
   }
 }
 
-class relation_handler_relationship_left extends relation_handler_relationship_base {
+class relation_handler_relationship extends relation_handler_relationship_base {
+  function query() {
+    $this->ensure_my_table();
+    $this->add_endpoints_to_left();
+
+    if (isset($this->definition['entity_type_right'])) {
+      // Execute a self-join.
+      $join = new views_join();
+      $join->definition = array(
+        'left_table' => $this->l,
+        'left_field' => 'entity_id',
+        'table'      => $this->relation_data_table_name,
+        'field'      => 'entity_id',
+        'type'       => $this->join_type,
+        'extra'      => array(
+          array(
+            'field' => $this->entity_type_field_name,
+            'value' => $this->definition['entity_type_right'],
+          ),
+        ),
+      );
+      $join->construct();
+      $join->adjusted = TRUE;
+      $this->r = $this->query->add_table($this->relation_data_table_name, $this->relationship, $join);
+    }
+    else {
+      $this->r = $this->l;
+    }
+    $this->add_right_to_endpoints();
+  }
 }
 
 class relation_handler_relationship_right extends relation_handler_relationship_base {
+  function query() {
+  }
 }
