@@ -94,8 +94,7 @@ class RelationViewsTestCase extends RelationTestCase {
       $view->execute();
 
       // For non-required, we expect NULL and 4 as results.
-      // For required, we expect 4.
-      $this->assertEqual(count($view->result), $count);
+      // For required, we expect just 4.
       $match_count = 0;
       $null_count  = 0;
       foreach ($view->result as $result) {
@@ -107,8 +106,9 @@ class RelationViewsTestCase extends RelationTestCase {
           $null_count++;
         }
       }
+      $this->assertEqual(count($view->result), $count);
       $this->assertEqual($match_count, 1);
-      $this->assertEqual($null_count, !$required);
+      $this->assertEqual($null_count, $count - 1);
     }
 
     // Directional to source, to target and to both.
