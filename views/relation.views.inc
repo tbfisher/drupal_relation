@@ -200,12 +200,10 @@ function relation_views_data_alter(&$data) {
           'base' => 'relation',
           'base field' => 'rid',
           'relationship field' => $relationship_field,
-          'handler' => 'views_handler_relationship',
+          'handler' => 'relation_handler_relationship_left',
           'relation_type' => $type,
           'entity_type_left' => $entity_type_left,
-          'entity_type_right' => 'relation',
           'directional' => $relation_type->directional,
-          'join_handler' => 'relation_handler_base_left_join',
         ),
       );
       foreach ($relation_type->$target_index as $target_bundle) {
@@ -238,12 +236,10 @@ function relation_views_data_alter(&$data) {
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
             'relationship field' => $relationship_field,
-            'handler' => 'views_handler_relationship',
+            'handler' => 'views_handler_relationship_right',
             'relation_type' => $type,
-            'entity_type_left' => 'relation',
             'entity_type_right' => $entity_type_right,
             'directional' => $relation_type->directional,
-            'join_handler' => 'relation_handler_base_right_join',
           ),
         );
       }
