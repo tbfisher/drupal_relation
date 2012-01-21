@@ -58,6 +58,7 @@ function relation_views_data() {
     ),
   );
 
+
   $data['relation']['vid'] = array(
     'title' => t('Vid'),
     'help' => t('The relation revision ID.'),
@@ -157,11 +158,14 @@ function relation_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
+  return $data;
+}
 
-  // Define the base group of this table.
-  $data['field_data_endpoints']['table']['group'] = t('Relation');
-  $data['field_data_endpoints']['table']['join'] = array();
 
+/**
+ * Implements hook_views_data_alter().
+ */
+function relation_views_data_alter(&$data) {
   // Find out which entity type has which base table.
   $entity_infos = entity_get_info();
   $entity_tables = array();
@@ -187,68 +191,62 @@ function relation_views_data() {
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
       );
+      $data[$base_table_left]['relation_base_left_' . $type] = array(
+        'title' => t('Relation: @relation_type_label (@left -> relation)', $t_arguments),
+        'help' => t('Provides a relationship from @left to the relation table via the relation @relation_type_label', $t_arguments),
+        'relationship' => array(
+          // relation_handler_relationship::options_form() relies on this check_plain().
+          'label' => check_plain($relation_type->label),
+          'base' => 'relation',
+          'base field' => 'rid',
+          'relationship field' => $relationship_field,
+          'handler' => 'views_handler_relationship',
+          'relation_type' => $type,
+          'entity_type_left' => $entity_type_left,
+          'entity_type_right' => 'relation',
+          'directional' => $relation_type->directional,
+          'join_handler' => 'relation_handler_base_left_join',
+        ),
+      );
       foreach ($relation_type->$target_index as $target_bundle) {
         $target_bundle = explode(':', $target_bundle, 2);
         $entity_type_right = $target_bundle[0];
         $base_table_right = $entity_tables[$entity_type_right];
         $t_arguments['@right'] = $entity_type_right;
-        // Define [join and] relationship from relation to endpoints.
-        $data['relation']['relation_base_' . $type . '_right_endpoints'] = array(
-          'title' => t('@relation_type_label -> endpoints[@relation_type_label]', $t_arguments),
-          'help' => t('Relation table to endpoints table using "@relation_type_label" relation', $t_arguments),
+        $data[$base_table_left]['relation_' . $type . '_' . $entity_type_right] = array(
+          'title' => t('Relation: @relation_type_label (@left <-> @right)', $t_arguments),
+          'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
             // relation_handler_relationship::options_form() relies on this check_plain().
-            'label' => check_plain('Endpoints::' . $relation_type->label),
-            'base' => 'field_data_endpoints',
-            'base field' => 'entity_id',
-            'real field' => 'rid',
-            'handler' => 'relation_handler_relationship', // To choose the r_index option.
-            'relation_type' => $type, // USE THIS as bundle
-            'entity_type_right' => $entity_type_right, // Use this as endpoint_entity_type.
-            'directional' => $relation_type->directional,
-            'max_arity' => $relation_type->max_arity,
-            'join_handler' => 'relation_handler_relation_endpoint_join', // To add the r_index condition to join.
-          ),
-        );
-        if ($entity_type_right != 'relation') {
-          // Define join and relationship from endpoints to entity.
-          $data['field_data_endpoints']['table']['join'] += array(
-            // Directly links to the $entity_type_right table.
-            $entity_type_right => array(
-              'left_field' => $entity_infos[$entity_type_right]['entity keys']['id'],
-              'field' => 'endpoints_entity_id',
-            ),
-          );
-        }
-        $data['field_data_endpoints']['endpoints_base_' . $type . '_right_' . $entity_type_right] = array(
-          'title' => t('endpoints[@relation_type_label] -> @right)', $t_arguments),
-          'help' => t('Endpoints table to @right using "@relation_type_label" relation', $t_arguments),
-          'relationship' => array(
-            'label' => check_plain('Endpoints::' . $relation_type->label),
+            'label' => check_plain($relation_type->label),
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
-            'relationship field' => 'endpoints_entity_id',
+            'relationship field' => $relationship_field,
+            'handler' => 'relation_handler_relationship',
+            'relation_type' => $type,
+            'entity_type_left' => $entity_type_left,
+            'entity_type_right' => $entity_type_right,
+            'directional' => $relation_type->directional,
           ),
         );
-
-        // Define [join and] relationship from endpoints to endpoints.
-        $data['field_data_endpoints']['endpoints_base_' . $type . '_right_endpoints_' . $entity_type_right] = array(
-          'title' => t('@left -> endpoints[@relation_type_label])', $t_arguments),
-          'help' => t('@left to the sibling endpoints using the "@relation_type_label" relation', $t_arguments),
+        $data['relation']['relation_base_' . $type . '_' . $entity_type_right] = array(
+          'title' => t('Relation: @relation_type_label (relation -> @right)', $t_arguments),
+          'help' => t('Provides a relationship from the relation table to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
             // relation_handler_relationship::options_form() relies on this check_plain().
-            'label' => check_plain('Endpoints::' . $relation_type->label),
-            'base' => 'field_data_endpoints',
-            'base field' => 'entity_id',
-            'handler' => 'relation_handler_relationship',
-            'relation_type' => $type, // USE THIS as bundle
-            'entity_type_right' => $entity_type_right, // Use this as endpoint_entity_type.
+            'label' => check_plain($relation_type->label),
+            'base' => $base_table_right,
+            'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
+            'relationship field' => $relationship_field,
+            'handler' => 'views_handler_relationship',
+            'relation_type' => $type,
+            'entity_type_left' => 'relation',
+            'entity_type_right' => $entity_type_right,
             'directional' => $relation_type->directional,
-            'join_handler' => 'relation_handler_endpoint_endpoint_join',
+            'join_handler' => 'relation_handler_base_right_join',
           ),
         );
       }
     }
   }
-  return $data;
 }
