@@ -347,7 +347,6 @@ function relation_entity_collector_pick($form, &$form_state) {
 function relation_entity_collector_remove($form, &$form_state) {
   $entity_key = $form_state['triggering_element']['#entity_key']['entity_key'];
   foreach ($_SESSION['relation_entity_keys'] as $key => $entity) {
-    debug ("entity key: $entity_key now:" . $entity['entity_key']);
     if ($entity['entity_key'] == $entity_key) {
       unset($_SESSION['relation_entity_keys'][$key]);
       $form_state['rebuild'] = TRUE;

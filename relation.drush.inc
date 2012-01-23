@@ -65,7 +65,7 @@ function relation_generate_relations($number_relations = 10, $types = array(), $
       ->execute();
     if ($results) {
       $rids = array_keys($results['relation']);
-      relation_multiple_delete($rids);
+      relation_delete_multiple($rids);
     }
   }
   $relation_types = relation_get_types($types);
