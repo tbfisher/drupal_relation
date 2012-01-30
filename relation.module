@@ -396,7 +396,7 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
  * Make sure the instance exists for this type.
  */
 function relation_type_ensure_instance($type) {
-  if (!field_info_instance('relation', 'endpoints', $type)) {
+  if (!drupal_static('relation_install') && !field_info_instance('relation', 'endpoints', $type)) {
     $instance = array(
       'field_name' => 'endpoints',
       'entity_type' => 'relation',
