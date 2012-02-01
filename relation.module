@@ -358,8 +358,12 @@ function relation_type_create($info = array()) {
  * @param $write_record_keys
  *   Array containing the primary key of the relation ('relation_type'), if we are
  *   updating a relation, or an empty array if we are creating a new relation.
+ * @param $rebuild_menu
+ *   Boolean indicating whether the the database tables used by various menu
+ *   functions should be rebuilt. Setting this to FALSE is useful if multiple
+ *   relation types are being created programmatically.
  */
-function relation_type_save($relation_type, $write_record_keys = array()) {
+function relation_type_save($relation_type, $write_record_keys = array(), $rebuild_menu = TRUE) {
   // Make sure all keys are populated.
   $relation_type = relation_type_create($relation_type);
 
@@ -389,7 +393,9 @@ function relation_type_save($relation_type, $write_record_keys = array()) {
   }
   $query->execute();
   relation_type_ensure_instance($type);
-  menu_rebuild();
+  if ($rebuild_menu) {
+    menu_rebuild();
+  }
 }
 
 /**
