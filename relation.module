@@ -827,12 +827,15 @@ function relation_uri($relation) {
  * @param $entity_id
  *   The entity id of one of the endpoints. Can also be an array of entity
  *   IDs.
+ * @param $r_index
+ *   (optional) The index of the search entity in the relation to be found
+ *   (0 = source, 1 = target).
  *
  * @return RelationQuery
  *   The query object itself.
  */
-function relation_query($entity_type = NULL, $entity_id = NULL, $index = NULL) {
-  return new RelationQuery($entity_type, $entity_id, $index);
+function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
+  return new RelationQuery($entity_type, $entity_id, $r_index);
 }
 
 /**
