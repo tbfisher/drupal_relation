@@ -655,14 +655,16 @@ function relation_edit_form_submit($form, &$form_state) {
  *   'entity_type' and 'entity_id'.
  * @param $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
+ * @param $enforce_direction
+ *   (Optional) Whether to enforce direction as specified in $entity_keys.
  *
  * @return
  *   Return FALSE if no relation exists, or an array of matching relations.
  */
-function relation_relation_exists($entity_keys, $relation_type = NULL) {
+function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_direction = FALSE) {
   $query = relation_query();
-  foreach ($entity_keys as $entity_key) {
-    $query->related($entity_key['entity_type'], $entity_key['entity_id']);
+  foreach ($entity_keys as $r_index => $entity_key) {
+    $query->related($entity_key['entity_type'], $entity_key['entity_id'], $enforce_direction ? $r_index : NULL);
   }
   if ($relation_type) {
     $query->propertyCondition('relation_type', $relation_type);
