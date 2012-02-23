@@ -259,6 +259,10 @@ class RelationAPITestCase extends RelationTestCase {
     $related = relation_get_related_entity('node', $this->node4->nid);
     $this->assertEqual($this->node1->nid, $related->nid);
 
+    // Confirm this works once the related entity has been cached.
+    $related = relation_get_related_entity('node', $this->node4->nid);
+    $this->assertEqual($this->node1->nid, $related->nid);
+
     // Directional.
     // From Parent to Grandparent.
     $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type'], 1);

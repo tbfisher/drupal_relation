@@ -895,7 +895,8 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     $entities = $items[$cache_key];
   }
   else if ($cached = cache_get('relation:' . $cache_key)) {
-    $entities = $items[$cache_key];
+    $entities = $cached->data;
+    $items[$cache_key] = $entities;
   }
   else {
     $query = relation_query($entity_type, $entity_id, $r_index);
