@@ -266,6 +266,14 @@ class RelationAPITestCase extends RelationTestCase {
     // From Parent to Child.
     $related = relation_get_related_entity('node', $this->node3->nid, $this->relation_types['directional']['relation_type'], 0);
     $this->assertEqual($this->node4->nid, $related->nid);
+
+    // Delete all relations related to node 4, then confirm that these can
+    // no longer be found as related entities.
+    $relations = relation_query('node', $this->node4->nid)->execute();
+    foreach ($relations as $relation) {
+      relation_delete($relation->rid);
+    }
+    $this->assertFalse(relation_get_related_entity('node', $this->node4->nid), 'The entity was not loaded after the relation was deleted.');
   }
 
   /**

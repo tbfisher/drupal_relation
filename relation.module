@@ -722,7 +722,8 @@ function relation_save($relation) {
     return FALSE;
   }
   $transaction = db_transaction();
-  $relation->arity = count($relation->endpoints[LANGUAGE_NONE]);
+  $endpoints = field_get_items('relation', $relation, 'endpoints');
+  $relation->arity = count($endpoints);
   // use time() instead of REQUEST_TIME, because otherwise tests
   // RelationQuery::order() are impossible.
   $relation->changed = time();
@@ -743,8 +744,22 @@ function relation_save($relation) {
   call_user_func("field_attach_$op", 'relation', $relation);
   module_invoke_all('entity_' . $op, $relation, 'relation');
   module_invoke('rules', 'invoke_event', 'relation_' . $op, $relation);
-  drupal_static_reset('relation_get_related_entity');
+  relation_clear_related_entities_cache($endpoints);
+
   return $relation->rid;
+}
+
+/**
+ * Clear the cache for a set of endpoints.
+ *
+ * @param $endpoints
+ *   An array of endpoints, with entity_type and entity_id as keys.
+ */
+function relation_clear_related_entities_cache($endpoints) {
+  drupal_static_reset('relation_get_related_entity');
+  foreach ($endpoints as $endpoint) {
+    cache_clear_all('relation:' . $endpoint['entity_type'] . ':' .  $endpoint['entity_id'], 'cache', TRUE);
+  }
 }
 
 /**
@@ -785,6 +800,8 @@ function relation_delete_multiple($rids) {
     db_delete('relation_revision')->condition('rid', $rid)->execute();
     module_invoke_all('entity_delete', $relation, 'relation');
     field_attach_delete('relation', $relation);
+    $endpoints = field_get_items('relation', $relation, 'endpoints');
+    relation_clear_related_entities_cache($endpoints);
   }
 }
 
@@ -877,6 +894,9 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   if (isset($items[$cache_key])) {
     $entities = $items[$cache_key];
   }
+  else if ($cached = cache_get('relation:' . $cache_key)) {
+    $entities = $items[$cache_key];
+  }
   else {
     $query = relation_query($entity_type, $entity_id, $r_index);
     if ($relation_type) {
@@ -891,6 +911,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     else {
       $entities = FALSE;
     }
+    cache_set('relation:' . $cache_key, $entities);
     $items[$cache_key] = $entities;
   }
 
