@@ -122,6 +122,7 @@ function relation_entity_collector($form, &$form_state) {
   }
   $relation_type = isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '';
   if ($relation_entities = drupal_static('relation_entities', array())) {
+    $options = array();
     foreach ($relation_entities as $entity_type => $entities) {
       foreach ($entities as $entity_id => $entity) {
         list( , , $entity_bundle) = entity_extract_ids($entity_type, $entity);
