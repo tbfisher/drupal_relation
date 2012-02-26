@@ -474,8 +474,7 @@ function relation_get_types($types = array()) {
 }
 
 /**
- * Returns all relation types in a way which can be used
- * on form options.
+ * Returns all relation types in a way which can be used on form options.
  */
 function relation_get_types_options() {
   $types = relation_get_types();
@@ -883,6 +882,8 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL)
 }
 
 /**
+ * Returns a related entity.
+ *
  * Returns the entity object of the first other entity in the first relation
  * that matches the given conditions. Do not expect to get exactly what you
  * want, especially if you have multiple relations of the same type on the
@@ -913,7 +914,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   if (isset($items[$cache_key])) {
     $entities = $items[$cache_key];
   }
-  else if ($cached = cache_get('relation:' . $cache_key)) {
+  elseif ($cached = cache_get('relation:' . $cache_key)) {
     $entities = $cached->data;
     $items[$cache_key] = $entities;
   }
@@ -952,8 +953,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
 }
 
 /**
- * Returns an array of the relation types that can have the given entity as
- * as an endpoint.
+ * Returns the relation types that can have the given entity as an endpoint.
  *
  * @param $entity_type
  *   The entity type of the endpoint.

@@ -277,7 +277,7 @@ function relation_type_delete_confirm_submit($form, &$form_state) {
   drupal_set_message(t('The %label relation type has been deleted.', $t_args));
   watchdog('relation', 'Deleted the %label relation type.', $t_args, WATCHDOG_NOTICE);
 
-  // TODO: relation_types_rebuild() ?;
+  // @TODO: relation_types_rebuild() ?;
   menu_rebuild();
 
   $form_state['redirect'] = 'admin/structure/relation';
@@ -418,7 +418,7 @@ function theme_relation_admin_content($variables) {
     }
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
+  return theme('table', array('header' => $header, 'rows' => $rows)) . theme('pager');
 }
 
 /**

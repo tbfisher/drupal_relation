@@ -214,8 +214,8 @@ function relation_add_save($form, &$form_state) {
   }
   // Add the current entity to the endpoints array.
   if ($form_state['relation_reverse']) {
-     // For reverse relations, add the "current entity" to the end of the array, else to the start.
-     array_push($entity_strings, $form_state['relation_add']);
+    // For reverse relations, add the "current entity" to the end of the array, else to the start.
+    array_push($entity_strings, $form_state['relation_add']);
   }
   else {
     array_unshift($entity_strings, $form_state['relation_add']);
