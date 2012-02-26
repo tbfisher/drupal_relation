@@ -130,7 +130,7 @@ function relation_schema() {
   );
   $schema['relation_type'] = array(
     'description' => 'Relation settings.',
-    // Add exportability using ctools.
+    // Add exportability when using ctools.
     'export' => array(
       'key' => 'relation_type',
       'identifier' => 'relation_type',
@@ -256,7 +256,7 @@ function relation_uninstall() {
  * Enable the new endpoint module and ctools.
  */
 function relation_update_7001() {
-  module_enable(array('relation_endpoint', 'ctools'));
+  module_enable(array('relation_endpoint'));
   db_update('field_config')
     ->fields(array('module' => 'relation_endpoint'))
     ->condition('field_name', 'endpoints')
