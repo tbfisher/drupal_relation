@@ -57,7 +57,7 @@ function relation_endpoint_field_validate($entity_type, $entity, $field, $instan
       'message' => t("Relation has too many end points (:relation_type max arity :max_arity)", array(':relation_type' => $entity->relation_type, ':max_arity' => $relation_type->max_arity)),
     );
   }
-  //Check that each entity is has acceptable bundle type and index.
+  // Check that each entity is has acceptable bundle type and index.
   foreach ($items as $delta => $item) {
     $acceptable = FALSE;
     $directional = $relation_type->directional;

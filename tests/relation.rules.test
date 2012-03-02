@@ -92,14 +92,14 @@ class RelationRulesTestCase extends RelationTestCase {
         $property = "node$i";
         $node = $this->$property;
         if ($node->nid == $nid) {
-          $this->assertFalse(db_query('SELECT COUNT(*) FROM {node} WHERE nid = :nid', array(':nid' => $nid))->fetchField(), t('The right node is deleted'));
+          $this->assertFalse((bool) db_query_range('SELECT 1 FROM {node} WHERE nid = :nid', array(':nid' => $nid))->fetchField(), t('The correct node was deleted'));
         }
         else {
           $nids[] = $node->nid;
         }
       }
       $count = count($nids);
-      $this->assertEqual($count, db_query('SELECT COUNT(*) FROM {node} WHERE nid IN (:nids)', array(':nids' => $nids))->fetchField(), t('@count other nodes are found', array('@count' => $count)));
+      $this->assertEqual($count, db_query('SELECT COUNT(*) FROM {node} WHERE nid IN (:nids)', array(':nids' => $nids))->fetchField(), t('@count other nodes were found', array('@count' => $count)));
     }
   }
 }

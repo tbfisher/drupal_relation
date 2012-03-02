@@ -36,7 +36,7 @@ function relation_type_list() {
     '#theme' => 'table',
     '#header' => $headers,
     '#rows' => $rows,
-    '#empty' => t('No relationship types available. <a href="@link">Add relationship type</a>.', array('@link' => url('admin/structure/relation/add'))),
+    '#empty' => t('No relationship types available.', array('@link' => l(t('Add relationship type'), url('admin/structure/relation/add')))),
   );
   return $output;
 }
@@ -129,7 +129,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
   $form['advanced']['transitive'] = array(
     '#type'           => 'checkbox',
-    '#title'          => 'Transitive',
+    '#title'          => t('Transitive'),
     '#description'   => t('A transitive relation implies that the relation passes through intermediate entities (ie. A=>B and B=>C implies that A=>C). For example "Ancestor" is transitive: your ancestor\'s ancestor is also your ancestor. But a "Parent" relation is non-transitive: your parent\'s parent is not your parent, but your grand-parent.'),
     '#default_value'  => $relation_type->transitive,
   );
@@ -187,7 +187,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
   $form['endpoints']['source_bundles'] = array(
     '#type'          => 'select',
-    '#title'         => 'Available source bundles',
+    '#title'         => t('Available source bundles'),
     '#options'       => $bundles,
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->source_bundles,
@@ -196,7 +196,7 @@ function relation_type_form($form, &$form_state, $relation_type = array(), $op =
   );
   $form['endpoints']['target_bundles'] = array(
     '#type'          => 'select',
-    '#title'         => 'Available target bundles',
+    '#title'         => t('Available target bundles'),
     '#options'       => $bundles,
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->target_bundles,
@@ -442,8 +442,8 @@ function relation_type_import($form) {
 }
 
 function relation_type_import_validate($form, &$form_state) {
-  if (substr($form_state['values']['relation_type'], 0, 5) == '<?php') {
-    $form_state['values']['relation_type'] = substr($form_state['values']['relation_type'], 5);
+  if (drupal_substr($form_state['values']['relation_type'], 0, 5) == '<?php') {
+    $form_state['values']['relation_type'] = drupal_substr($form_state['values']['relation_type'], 5);
   }
   ob_start();
   eval($form_state['values']['relation_type']);

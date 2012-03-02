@@ -69,8 +69,9 @@ function relation_rules_create($values = array()) {
 }
 
 /**
- * Access callback for creating a relation. For now, everyone has permission to
- * trigger the creation of a relation.
+ * Access callback for creating a relation.
+ *
+ * For now, everyone has permission to trigger the creation of a relation.
  */
 function relation_rules_access($op, $entity = NULL, $account = NULL) {
   return TRUE;
@@ -170,8 +171,8 @@ function relation_rules_get_related_entities($entity, array $options, $name, $ty
 }
 
 /**
-* Action callback loading all related entities.
-*/
+ * Action callback loading all related entities.
+ */
 function relation_rules_load_related($source_entity, $relation_type) {
   $endpoints = array();
   $source_entity_type = $source_entity->type();

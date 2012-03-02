@@ -150,6 +150,7 @@ class RelationTestCase extends DrupalWebTestCase {
 
 /**
  * Tests Relation API.
+ *
  * Create nodes, add relations and verify that they are related.
  * This test suite also checks all methods available in RelationQuery.
  */
@@ -318,8 +319,8 @@ class RelationAPITestCase extends RelationTestCase {
 
     $this->drupalPost("relation/$relation->rid/delete", array(), t('Delete'));
     $arg = array(':rid' => $relation->rid);
-    $this->assertFalse(db_query('SELECT COUNT(*) FROM {relation} WHERE rid = :rid', $arg)->fetchField(), 'Nothing in relation table after delete.');
-    $this->assertFalse(db_query('SELECT COUNT(*) FROM {relation_revision} WHERE rid = :rid', $arg)->fetchField(), 'Nothing in relation revision table after delete.');
+    $this->assertFalse((bool) db_query_range('SELECT 1 FROM {relation} WHERE rid = :rid', $arg)->fetchField(), 'Nothing in relation table after delete.');
+    $this->assertFalse((bool) db_query_range('SELECT 1 FROM {relation_revision} WHERE rid = :rid', $arg)->fetchField(), 'Nothing in relation revision table after delete.');
     $skeleton_relation = entity_create_stub_entity('relation', array($relation->rid, $relation->vid, $relation->relation_type));
     field_attach_load('relation', array($relation->rid => $skeleton_relation));
     $this->assertIdentical($skeleton_relation->endpoints, array(), t('Field data not present after delete'));

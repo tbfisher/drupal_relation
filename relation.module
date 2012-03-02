@@ -237,6 +237,7 @@ function relation_menu() {
     'page arguments' => array('relation_type_form'),
     'type' => MENU_LOCAL_ACTION,
     'file' => 'relation.admin.inc',
+    'description' => 'Add new relation types.',
   );
   $items['admin/structure/relation/import'] = array(
     'title' => 'Import  relation type',
@@ -245,6 +246,7 @@ function relation_menu() {
     'page arguments' => array('relation_type_import'),
     'type' => MENU_LOCAL_ACTION,
     'file' => 'relation.admin.inc',
+    'description' => 'Import existing relation types.',
   );
   $items['admin/structure/relation/manage/%relation_type'] = array(
     'title' => 'Edit relation type',
@@ -254,6 +256,7 @@ function relation_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_type_form', 4),
     'file' => 'relation.admin.inc',
+    'description' => 'Edit an existing relation type, including relation properties (directionality, transitivity etc), available bundles, and fields.',
   );
   $items['admin/structure/relation/manage/%relation_type/edit'] = array(
     'title' => 'Edit',
@@ -267,6 +270,7 @@ function relation_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'relation.admin.inc',
     'weight' => 20,
+    'description' => 'Delete an existing relation type.',
   );
   if (module_exists('ctools')) {
     $items['admin/structure/relation/manage/%relation_type/export'] = array(
@@ -285,6 +289,7 @@ function relation_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('relation_generate_form'),
     'file' => 'relation.admin.inc',
+    'description' => 'Generate relations for testing.',
   );
   // Relations listing.
   $items['admin/content/relation'] = array(
@@ -360,8 +365,8 @@ function relation_type_create($info = array()) {
  * @param $relation_type
  *   stdClass object with relation type properties. See relation_type_create().
  * @param $write_record_keys
- *   Array containing the primary key of the relation ('relation_type'), if we are
- *   updating a relation, or an empty array if we are creating a new relation.
+ *   Array containing the primary key of the relation ('relation_type'), if
+ *   updating a relation, or an empty array if creating a new relation.
  * @param $rebuild_menu
  *   Boolean indicating whether the the database tables used by various menu
  *   functions should be rebuilt. Setting this to FALSE is useful if multiple
@@ -693,7 +698,7 @@ function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_
 }
 
 /**
- * Constructs a relation from a relation type machine name and a list of endpoints.
+ * Constructs a relation from a machine name and a list of endpoints.
  *
  * @param $relation_type
  *   The relation type (bundle) of the relation to be created.
@@ -776,7 +781,7 @@ function relation_save($relation) {
 function relation_clear_related_entities_cache($endpoints) {
   drupal_static_reset('relation_get_related_entity');
   foreach ($endpoints as $endpoint) {
-    cache_clear_all('relation:' . $endpoint['entity_type'] . ':' .  $endpoint['entity_id'], 'cache', TRUE);
+    cache_clear_all('relation:' . $endpoint['entity_type'] . ':' . $endpoint['entity_id'], 'cache', TRUE);
   }
 }
 
