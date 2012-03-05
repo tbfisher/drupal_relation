@@ -211,6 +211,7 @@ function relation_views_data_alter(&$data) {
         $entity_type_right = $target_bundle[0];
         $base_table_right = $entity_tables[$entity_type_right];
         $t_arguments['@right'] = $entity_type_right;
+        // Provide forward relationships
         $data[$base_table_left]['relation_' . $type . '_' . $entity_type_right] = array(
           'title' => t('Relation: @relation_type_label (@left <-> @right)', $t_arguments),
           'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $t_arguments),
@@ -242,6 +243,25 @@ function relation_views_data_alter(&$data) {
             'directional' => $relation_type->directional,
           ),
         );
+        // Provide reverse relationships
+        if ($entity_type_right != $entity_type_left) {
+          $data[$base_table_right]['relation_' . $type . '_' . $entity_type_left] = array(
+            'title' => t('Relation: @relation_type_label (@right <-> @left)', $t_arguments),
+            'help' => t('Provides a reverse relationship from @right to @left via the relation @relation_type_label', $t_arguments),
+            'relationship' => array(
+              // relation_handler_relationship::options_form() relies on this check_plain().
+              'label' => check_plain($relation_type->reverse_label),
+              'base' => $base_table_left,
+              'base field' => $relationship_field,
+              'relationship field' => $entity_infos[$entity_type_right]['entity keys']['id'],
+              'handler' => 'relation_handler_relationship',
+              'relation_type' => $type,
+              'entity_type_left' => $entity_type_right,
+              'entity_type_right' => $entity_type_left,
+              'directional' => $relation_type->directional,
+            ),
+          );
+        }
       }
     }
   }
