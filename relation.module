@@ -454,7 +454,7 @@ function relation_get_types($types = array()) {
     static $recurse = FALSE;
     if (!$recurse) {
       $recurse = TRUE;
-      foreach ($return as $type => $data) {
+      foreach ($relation_types as $type => $data) {
         if (!empty($data->in_code_only)) {
           relation_type_ensure_instance($type);
         }
