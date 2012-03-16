@@ -380,8 +380,8 @@ function theme_relation_admin_content($variables) {
       // Get the endpoints for this relation.
       $endpoints = field_get_items('relation', $r, 'endpoints');
 
+      $relation_entities = array();
       if (!empty($endpoints)) {
-        $relation_entities = array();
         foreach ($endpoints as $endpoint) {
           $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
           $entity = reset($entities);
