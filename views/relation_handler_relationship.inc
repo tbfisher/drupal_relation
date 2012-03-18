@@ -40,8 +40,7 @@ class relation_handler_relationship extends views_handler_relationship {
           '#type' => 'checkbox',
           '#title' => t('Avoid @type duplication', array('@type' => $this->definition['entity_type_' . $key])),
           '#default_value' => $this->options['entity_deduplication_' . $key],
-          // check_plain()'d in the definition.
-          '#description' => t('For example, if node1 related to node2 (relation1) and node1 related to node3 (relation) then two Views relationships from node to relation and from relation to node will display A on both end of the chain. Check this option if this is undesired.'),
+          '#description' => t('When creating a chain of Views relationships for example from node to relation and then from relation to node (both via the same relation type) then each node will display on both ends. Check this option to avoid this kind of duplication.'),
         );
       }
     }
