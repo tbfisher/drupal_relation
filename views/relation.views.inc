@@ -190,6 +190,7 @@ function relation_views_data_alter(&$data) {
       $t_arguments = array(
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
+        '@relation_type_reverse_label' => $relation_type->reverse_label,
         '@arrow' => $relation_type->directional ? '->' : '<->',
       );
       $data[$base_table_left]['relation_base_left_' . $type] = array(
@@ -247,8 +248,8 @@ function relation_views_data_alter(&$data) {
         // Provide reverse relationships
         if ($entity_type_right != $entity_type_left) {
           $data[$base_table_right]['relation_' . $type . '_' . $entity_type_left] = array(
-            'title' => t('Relation: @relation_type_label (@right @arrow @left)', $t_arguments),
-            'help' => t('Provides a reverse relationship from @right to @left via the relation @relation_type_label', $t_arguments),
+            'title' => t('Relation: @relation_type_reverse_label (@right @arrow @left)', $t_arguments),
+            'help' => t('Provides a relationship from @right to @left via the relation @relation_type_reverse_label', $t_arguments),
             'relationship' => array(
               // relation_handler_relationship::options_form() relies on this check_plain().
               'label' => check_plain($relation_type->reverse_label),
@@ -262,6 +263,22 @@ function relation_views_data_alter(&$data) {
               'directional' => $relation_type->directional,
             ),
           );
+          $data[$base_table_right]['relation_base_right_' . $type] = array(
+            'title' => t('Relation: @relation_type_reverse_label (@right -> relation)', $t_arguments),
+            'help' => t('Provides a relationship from @right to the relation table via the relation @relation_type_reverse_label', $t_arguments),
+            'relationship' => array(
+              // relation_handler_relationship::options_form() relies on this check_plain().
+              'label' => check_plain($relation_type->reverse_label),
+              'base' => 'relation',
+              'base field' => 'rid',
+              'relationship field' => $entity_infos[$entity_type_right]['entity keys']['id'],
+              'handler' => 'relation_handler_relationship',
+              'relation_type' => $type,
+              'entity_type_right' => $entity_type_right,
+              'directional' => $relation_type->directional,
+            ),
+          );
+
         }
       }
     }
