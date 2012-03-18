@@ -140,7 +140,7 @@ class relation_handler_relationship extends views_handler_relationship {
     if ($endpoints_twice && $this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
       $join->definition['extra'][] = array(
         // This definition is a bit funny but there's no other way to tell
-        // Views to use this as it is.
+        // Views to use an expression in join extra as it is.
         'table' => NULL,
         'field' => "$r.$r_index_field_name != $l.$r_index_field_name AND 1",
         'value' => 1,
