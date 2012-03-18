@@ -396,8 +396,11 @@ class RelationViewsTestCase extends RelationTestCase {
       $this->assertEqual(count($view->result), 4 - 2 * $i);
       $possible_nids = array($this->node3->nid => TRUE, $this->node4->nid => TRUE);
       $fail = FALSE;
+      $all_results = array();
       foreach ($view->result as $result) {
         $this->assertTrue(isset($possible_nids[$result->nid]) && isset($possible_nids[$result->node_users_nid]), 'Correct nid found');
+        $this->assertFalse(isset($all_results[$result->nid][$result->node_users_nid]), 'No row duplication');
+        $all_results[$result->nid][$result->node_users_nid] = TRUE;
         $fail = $fail || ($i && $result->nid == $result->node_users_nid);
       }
       if ($i) {
