@@ -170,21 +170,16 @@ class relation_handler_relationship extends views_handler_relationship {
   }
 
   protected function ensure_no_duplicate_entities(&$extra, $check, $relation_type, $entity_type, $table, $field) {
-    if ($check && isset($this->view->relation_entity_tables[$entity_type])) {
-      foreach ($this->view->relation_entity_tables[$entity_type] as $entity_table) {
-        if ($entity_table['relation_type'] == $relation_type) {
-          $extra[] = array(
-            'table' => NULL,
-            'field' => $entity_table['expression'] . " != $table.$field AND 1",
-            'value' => 1,
-          );
-        }
+    if ($check && isset($this->view->relation_entity_tables[$entity_type][$relation_type])) {
+      foreach ($this->view->relation_entity_tables[$entity_type][$relation_type] as $expression) {
+        $extra[] = array(
+          'table' => NULL,
+          'field' => "$expression != $table.$field AND 1",
+          'value' => 1,
+        );
       }
     }
-    $this->view->relation_entity_tables[$entity_type][] = array(
-      'relation_type' => $relation_type,
-      'expression' => "$table.$field",
-    );
+    $this->view->relation_entity_tables[$entity_type][$relation_type][] = "$table.$field";
   }
 
 }
