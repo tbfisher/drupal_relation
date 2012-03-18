@@ -185,7 +185,6 @@ function relation_views_data_alter(&$data) {
     foreach ($relation_type->source_bundles as $source_bundle) {
       $source_bundle = explode(':', $source_bundle, 2);
       $entity_type_left = $source_bundle[0];
-      $relationship_field = $entity_infos[$entity_type_left]['entity keys']['id'];
       $base_table_left = $entity_tables[$entity_type_left];
       $t_arguments = array(
         '@left' => $entity_type_left,
@@ -201,7 +200,7 @@ function relation_views_data_alter(&$data) {
           'label' => check_plain($relation_type->label),
           'base' => 'relation',
           'base field' => 'rid',
-          'relationship field' => $relationship_field,
+          'relationship field' => $entity_infos[$entity_type_left]['entity keys']['id'],
           'handler' => 'relation_handler_relationship',
           'relation_type' => $type,
           'entity_type_left' => $entity_type_left,
@@ -222,7 +221,7 @@ function relation_views_data_alter(&$data) {
             'label' => check_plain($relation_type->label),
             'base' => $base_table_right,
             'base field' => $entity_infos[$entity_type_right]['entity keys']['id'],
-            'relationship field' => $relationship_field,
+            'relationship field' => $entity_infos[$entity_type_left]['entity keys']['id'],
             'handler' => 'relation_handler_relationship',
             'relation_type' => $type,
             'entity_type_left' => $entity_type_left,
@@ -254,7 +253,7 @@ function relation_views_data_alter(&$data) {
               // relation_handler_relationship::options_form() relies on this check_plain().
               'label' => check_plain($relation_type->reverse_label),
               'base' => $base_table_left,
-              'base field' => $relationship_field,
+              'base field' => $entity_infos[$entity_type_left]['entity keys']['id'],
               'relationship field' => $entity_infos[$entity_type_right]['entity keys']['id'],
               'handler' => 'relation_handler_relationship',
               'relation_type' => $type,
@@ -265,7 +264,7 @@ function relation_views_data_alter(&$data) {
           );
           $data[$base_table_right]['relation_base_right_' . $type] = array(
             'title' => t('Relation: @relation_type_reverse_label (@right -> relation)', $t_arguments),
-            'help' => t('Provides a relationship from @right to the relation table via the relation @relation_type_reverse_label', $t_arguments),
+            'help' => t('Provides a relationship from @right to the relation table via the relation @relation_type_reverse_label. Usually only needed to access the fields of the relation itself.', $t_arguments),
             'relationship' => array(
               // relation_handler_relationship::options_form() relies on this check_plain().
               'label' => check_plain($relation_type->reverse_label),
@@ -275,6 +274,21 @@ function relation_views_data_alter(&$data) {
               'handler' => 'relation_handler_relationship',
               'relation_type' => $type,
               'entity_type_right' => $entity_type_right,
+              'directional' => $relation_type->directional,
+            ),
+          );
+          $data['relation']['relation_base_' . $type . '_' . $entity_type_left] = array(
+            'title' => t('Relation: @relation_type_reverse_label (relation -> @left)', $t_arguments),
+            'help' => t('Provides a relationship from the relation table to @left via the relation @relation_type_reverse_label', $t_arguments),
+            'relationship' => array(
+              // relation_handler_relationship::options_form() relies on this check_plain().
+              'label' => check_plain($relation_type->reverse_label),
+              'base' => $base_table_left,
+              'base field' => $entity_infos[$entity_type_left]['entity keys']['id'],
+              'relationship field' => 'rid',
+              'handler' => 'relation_handler_relationship',
+              'relation_type' => $type,
+              'entity_type_left' => $entity_type_left,
               'directional' => $relation_type->directional,
             ),
           );
