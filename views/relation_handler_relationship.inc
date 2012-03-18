@@ -12,6 +12,8 @@ class relation_handler_relationship extends views_handler_relationship {
   function option_definition() {
     $options = parent::option_definition();
     $options['r_index'] = array('default' => -1);
+    $options['entity_deduplication_left'] = array('default' => FALSE);
+    $options['entity_deduplication_right'] = array('default' => FALSE);
     return $options;
   }
 
@@ -31,6 +33,17 @@ class relation_handler_relationship extends views_handler_relationship {
         // check_plain()'d in the definition.
         '#description' => t('Select whether the entity you are adding the relationship to is source or target of !relation_type_label relation.', array('!relation_type_label' => $this->definition['label'])),
       );
+    }
+    foreach (array('left', 'right') as $key) {
+      if (isset($this->definition['entity_type_' . $key])) {
+        $form['entity_deduplication_' . $key] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Avoid @type duplication', array('@type' => $this->definition['entity_type_' . $key])),
+          '#default_value' => $this->options['entity_deduplication_' . $key],
+          // check_plain()'d in the definition.
+          '#description' => t('For example, if node1 related to node2 (relation1) and node1 related to node3 (relation) then two Views relationships from node to relation and from relation to node will display A on both end of the chain. Check this option if this is undesired.'),
+        );
+      }
     }
   }
 
@@ -61,7 +74,6 @@ class relation_handler_relationship extends views_handler_relationship {
       'left_table' => $this->table_alias,
       'left_field' => $this->real_field,
       'table'      => $relation_data_table_name,
-      'field'      => isset($this->definition['entity_type_left']) ? $entity_id_field_name : 'entity_id',
       'type'       => $join_type,
       'extra'      => array(
         array(
@@ -71,10 +83,17 @@ class relation_handler_relationship extends views_handler_relationship {
       ),
     );
     if (isset($this->definition['entity_type_left'])) {
+      // The other table is an entity we are relating to.
+      $join->definition['field'] = $entity_id_field_name;
+      $this->ensure_no_duplicate_entities($join->definition['extra'], $this->options['entity_deduplication_left'], $this->definition['relation_type'], $this->definition['entity_type_left'], $this->table_alias, $this->real_field);
       $join->definition['extra'][] = array(
         'field' => $entity_type_field_name,
         'value' => $this->definition['entity_type_left'],
       );
+    }
+    else {
+      // The other table is relation.
+      $join->definition['field'] = 'entity_id';
     }
     if ($this->definition['directional'] && $this->options['r_index'] > -1) {
       $join->definition['extra'][] = array(
@@ -112,13 +131,13 @@ class relation_handler_relationship extends views_handler_relationship {
     $join = new views_join();
     $join->definition = array(
       'left_table' => $r,
-      'left_field' => isset($this->definition['entity_type_right']) ? $entity_id_field_name : 'entity_id',
       'table'      => $this->definition['base'],
       'field'      => $this->definition['base field'],
       'type'       => $join_type,
     );
     // There is no query where these conditions could be added earlier:
-    // $r might be just $l.
+    // $r might be just $l. But even if it's not there's no point in adding
+    // condition if the entity types already restrict them apart.
     if ($endpoints_twice && $this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
       $join->definition['extra'][] = array(
         // This definition is a bit funny but there's no other way to tell
@@ -129,11 +148,18 @@ class relation_handler_relationship extends views_handler_relationship {
       );
     }
     if (isset($this->definition['entity_type_right'])) {
+      // We are finishing on an entity table.
+      $join->definition['left_field'] = $entity_id_field_name;
+      $this->ensure_no_duplicate_entities($join->definition['extra'], $this->options['entity_deduplication_right'], $this->definition['relation_type'], $this->definition['entity_type_right'], $r, $entity_id_field_name);
       $join->definition['extra'][] = array(
         'table' => $r,
         'field' => $entity_type_field_name,
         'value' => $this->definition['entity_type_right'],
       );
+    }
+    else {
+      // We are finishing on relation.
+      $join->definition['left_field'] = 'entity_id';
     }
 
     $join->construct();
@@ -142,4 +168,23 @@ class relation_handler_relationship extends views_handler_relationship {
     $alias = $this->definition['base'] . '_' . $this->table;
     $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
   }
+
+  protected function ensure_no_duplicate_entities(&$extra, $check, $relation_type, $entity_type, $table, $field) {
+    if ($check && isset($this->view->relation_entity_tables[$entity_type])) {
+      foreach ($this->view->relation_entity_tables[$entity_type] as $entity_table) {
+        if ($entity_table['relation_type'] == $relation_type) {
+          $extra[] = array(
+            'table' => NULL,
+            'field' => $entity_table['expression'] . " != $table.$field AND 1",
+            'value' => 1,
+          );
+        }
+      }
+    }
+    $this->view->relation_entity_tables[$entity_type][] = array(
+      'relation_type' => $relation_type,
+      'expression' => "$table.$field",
+    );
+  }
+
 }
