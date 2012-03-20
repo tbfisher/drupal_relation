@@ -298,3 +298,27 @@ function relation_views_data_alter(&$data) {
     }
   }
 }
+
+/**
+ * Implements hook_form_views_ui_add_item_form_alter().
+ */
+function relation_form_views_ui_add_item_form_alter(&$form, $form_state) {
+  if ($form_state['type'] == 'relationship') {
+    // Collect the relation types already added as a relationship.
+    $preg_pieces = array();
+    foreach ($form_state['view']->display_handler->handlers['relationship'] as $relationship) {
+      if (get_class($relationship) == 'relation_handler_relationship') {
+        $preg_pieces[] = '^relation\.relation_base_' . $relationship->definition['relation_type'];
+      }
+    }
+    if ($preg_pieces) {
+      // Filter out impossible Views relationships.
+      $relation_type_preg = '/' . implode('|', array_unique($preg_pieces)) .'/';
+      foreach (element_children($form['options']['name']) as $name) {
+        if (substr($name, 0, 9) == 'relation.' && !preg_match($relation_type_preg, $name)) {
+          $form['options']['name'][$name]['#access'] = FALSE;
+        }
+      }
+    }
+  }
+}
