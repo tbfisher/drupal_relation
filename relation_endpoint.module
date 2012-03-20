@@ -265,8 +265,8 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
         }
       }
       $build = array();
-      $function = $endpoint_entity_type . '_view';
-      foreach ($endpoints as $delta => $endpoint) {
+      foreach ($items as $delta => $endpoint) {
+        $function = $endpoint['entity_type'] . '_view';
         if ($multiple) {
           $entity = $entities[$endpoint['entity_id']];
         }
