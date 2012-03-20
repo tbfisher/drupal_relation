@@ -303,7 +303,7 @@ function relation_views_data_alter(&$data) {
  * Implements hook_form_views_ui_add_item_form_alter().
  */
 function relation_form_views_ui_add_item_form_alter(&$form, $form_state) {
-  if ($form_state['type'] == 'relationship') {
+  if ($form_state['type'] == 'relationship' && $form_state['view']->base_table != 'relation') {
     // Collect the relation types already added as a relationship.
     $preg_pieces = array();
     foreach ($form_state['view']->display_handler->handlers['relationship'] as $relationship) {
