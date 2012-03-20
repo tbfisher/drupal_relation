@@ -308,6 +308,11 @@ function relation_form_views_ui_add_item_form_alter(&$form, $form_state) {
     $preg_pieces = array();
     foreach ($form_state['view']->display_handler->handlers['relationship'] as $relationship) {
       if (get_class($relationship) == 'relation_handler_relationship') {
+        // If the relation type contains relation as an endpoint, stop.
+        // @TODO: iterate the bundles of the relation to provide filtering.
+        if ($relationship->definition['entity_type_right'] == 'relation') {
+          return;
+        }
         $preg_pieces[] = '^relation\.relation_base_' . $relationship->definition['relation_type'];
       }
     }
