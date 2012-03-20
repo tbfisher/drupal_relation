@@ -237,6 +237,7 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
   switch ($display['type']) {
     case 'relation_endpoint':
       $build['table'] = _relation_endpoint_field_create_html_table($items);
+      break;
     case 'relation_endpoint_full':
       $list_items = array();
       $endpoint_entity_type = '';
