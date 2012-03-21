@@ -304,15 +304,19 @@ function relation_views_data_alter(&$data) {
  */
 function relation_form_views_ui_add_item_form_alter(&$form, $form_state) {
   if ($form_state['type'] == 'relationship' && $form_state['view']->base_table != 'relation') {
+    foreach (relation_get_types() as $relation_type) {
+      foreach (array('source_bundles', 'target_bundles') as $endpoint_bundles) {
+        foreach ($relation_type->$endpoint_bundles as $relation_bundle) {
+          if (substr($relation_bundle, 0, 9) == 'relation:') {
+            return;
+          }
+        }
+      }
+    }
     // Collect the relation types already added as a relationship.
     $preg_pieces = array();
     foreach ($form_state['view']->display_handler->get_handlers('relationship') as $relationship) {
       if (get_class($relationship) == 'relation_handler_relationship') {
-        // If the relation type contains relation as an endpoint, stop.
-        // @TODO: iterate the bundles of the relation to provide filtering.
-        if ($relationship->definition['entity_type_right'] == 'relation') {
-          return;
-        }
         $preg_pieces[] = '^relation\.relation_base_' . $relationship->definition['relation_type'];
       }
     }
