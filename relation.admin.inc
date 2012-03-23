@@ -29,7 +29,7 @@ function relation_type_list() {
     if ($ctools) {
       $row[] =  l(t('export'), $url . '/export');
     }
-    $row[] =  l(t('delete'), $url . '/delete');
+    $row[] =  empty($relation_type->in_code_only) ? l(t('delete'), $url . '/delete') : '&nbsp;';
     $rows[] = $row;
   }
   $output = array(
