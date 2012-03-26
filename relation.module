@@ -744,13 +744,17 @@ function relation_save($relation) {
   catch (FieldValidationException $e) {
     return FALSE;
   }
+  // Determine if we will be inserting a new relation.
+  if (!isset($relation->is_new)) {
+    $relation->is_new = empty($relation->rid);
+  }
   $transaction = db_transaction();
   $endpoints = field_get_items('relation', $relation, 'endpoints');
   $relation->arity = count($endpoints);
   // use time() instead of REQUEST_TIME, because otherwise tests
   // RelationQuery::order() are impossible.
   $relation->changed = time();
-  if (empty($relation->is_new) && !empty($relation->rid)) {
+  if (!$relation->is_new) {
     $keys = array('rid');
     $op = 'update';
   }
@@ -764,6 +768,12 @@ function relation_save($relation) {
   unset($relation->vid);
   drupal_write_record('relation_revision', $relation);
   drupal_write_record('relation', $relation, $keys);
+  if ($relation->is_new) {
+    db_update('relation_revision')
+      ->fields(array('rid' => $relation->rid))
+      ->condition('vid', $relation->vid)
+      ->execute();
+  }
   call_user_func("field_attach_$op", 'relation', $relation);
   module_invoke_all('entity_' . $op, $relation, 'relation');
   module_invoke('rules', 'invoke_event', 'relation_' . $op, $relation);

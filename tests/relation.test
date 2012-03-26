@@ -354,6 +354,13 @@ class RelationAPITestCase extends RelationTestCase {
         unset($need_ids[$endpoint['entity_id']]);
       }
       $this->assertFalse($need_ids, 'All ids found.');
+      // Confirm the rid in revision table.
+      $revision = db_select('relation_revision', 'v')
+          ->fields('v', array('rid'))
+          ->condition('vid', $relation->vid)
+          ->execute()
+          ->fetchAllAssoc('rid');
+      $this->assertTrue(array_key_exists($rid, $revision), 'Relation revision created.');
     }
   }
 
