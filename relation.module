@@ -375,6 +375,7 @@ function relation_type_create($info = array()) {
 function relation_type_save($relation_type, $write_record_keys = array(), $rebuild_menu = TRUE) {
   // Make sure all keys are populated.
   $relation_type = relation_type_create($relation_type);
+  $existing_relation_type = relation_get_types(array($relation_type->relation_type));
 
   $type = $relation_type->relation_type;
   $source_bundles = $relation_type->source_bundles;
@@ -404,6 +405,9 @@ function relation_type_save($relation_type, $write_record_keys = array(), $rebui
   relation_type_ensure_instance($type);
   if ($rebuild_menu) {
     menu_rebuild();
+  }
+  if (empty($existing_relation_type)) {
+    field_attach_create_bundle('relation', $relation_type->relation_type);
   }
 }
 
