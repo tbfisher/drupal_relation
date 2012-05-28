@@ -236,7 +236,7 @@ function _relation_endpoint_get_endpoint_entity_types($instance) {
 function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   switch ($display['type']) {
     case 'relation_endpoint':
-      $build['table'] = _relation_endpoint_field_create_html_table($items);
+      $build[] = _relation_endpoint_field_create_html_table($items);
       break;
     case 'relation_endpoint_full':
       $list_items = array();
