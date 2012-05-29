@@ -188,122 +188,6 @@ function relation_permission() {
 }
 
 /**
- * Implements hook_menu().
- */
-function relation_menu() {
-  $items['relation/%relation'] = array(
-    'title callback' => 'relation_page_title',
-    'title arguments' => array(1),
-    'access arguments' => array('access relations'),
-    'page callback' => 'relation_page',
-    'page arguments' => array(1),
-  );
-  $items['relation/%relation/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['relation/%relation/edit'] = array(
-    'title' => 'Edit',
-    'access arguments' => array('edit relations'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_edit_form', 1),
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['relation/%relation/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_delete_confirm', 1),
-    'access arguments' => array('delete relations'),
-    'weight' => 10,
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['admin/structure/relation'] = array(
-    'title' => 'Relation types',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'relation_type_list',
-    'file' => 'relation.admin.inc',
-    'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-  );
-  $items['admin/structure/relation/list'] = array(
-    'title' => 'List',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['admin/structure/relation/add'] = array(
-    'title' => 'Add relation type',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_type_form'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'relation.admin.inc',
-    'description' => 'Add new relation types.',
-  );
-  $items['admin/structure/relation/import'] = array(
-    'title' => 'Import  relation type',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_type_import'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'relation.admin.inc',
-    'description' => 'Import existing relation types.',
-  );
-  $items['admin/structure/relation/manage/%relation_type'] = array(
-    'title' => 'Edit relation type',
-    'title callback' => 'relation_type_page_title',
-    'title arguments' => array(4),
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_type_form', 4),
-    'file' => 'relation.admin.inc',
-    'description' => 'Edit an existing relation type, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-  );
-  $items['admin/structure/relation/manage/%relation_type/edit'] = array(
-    'title' => 'Edit',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['admin/structure/relation/manage/%relation_type/delete'] = array(
-    'title' => 'Delete',
-    'page arguments' => array('relation_type_delete_confirm', 4),
-    'access arguments' => array('administer relation types'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'relation.admin.inc',
-    'weight' => 20,
-    'description' => 'Delete an existing relation type.',
-  );
-  if (module_exists('ctools')) {
-    $items['admin/structure/relation/manage/%relation_type/export'] = array(
-      'title' => 'Export',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('relation_export_relation_type', 4),
-      'access arguments' => array('export relation types'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'relation.ctools.inc',
-      'weight' => 10,
-    );
-  }
-  $items['admin/config/development/generate/relation'] = array(
-    'title' => 'Generate relations',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_generate_form'),
-    'file' => 'relation.admin.inc',
-    'description' => 'Generate relations for testing.',
-  );
-  // Relations listing.
-  $items['admin/content/relation'] = array(
-    'title' => 'Relations',
-    'page callback' => 'relation_admin_content',
-    'access arguments' => array('administer relations'),
-    'description' => 'View, edit and delete all the available relations on your site.',
-    'file' => 'relation.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-  );
-  return $items;
-}
-
-/**
  * Creates a relation bundle.
  *
  * @param $info
@@ -625,13 +509,6 @@ function relation_multiple_view($relations, $view_mode) {
     $build['relation'][$relation->rid] = relation_view($relation, $view_mode);
   }
   return $build;
-}
-
-/**
- * Relation display page title callback.
- */
-function relation_page_title($relation) {
-  return 'Relation ' . $relation->rid;
 }
 
 /**
@@ -1052,18 +929,4 @@ function relation_get_type_label($relation, $reverse = FALSE) {
   else {
     return $type->label;
   }
-}
-
-/**
- * Implements hook_theme().
- */
-function relation_theme() {
-  $theme = array(
-    // relation.admin.inc.
-    'relation_admin_content' => array(
-      'variables' => array('relations' => NULL),
-      'file' => 'relation.admin.inc',
-    ),
-  );
-  return $theme;
 }
