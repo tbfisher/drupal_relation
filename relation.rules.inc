@@ -24,7 +24,7 @@ function relation_rules_event_info() {
  * Implements hook_rules_action_info().
  */
 function relation_rules_action_info() {
-  $items = array (
+  $items = array(
     'relation_rules_load_related' => array(
       'label' => t('Loads related entities'),
       'group' => t('Relation'),
