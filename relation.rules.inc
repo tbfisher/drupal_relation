@@ -283,7 +283,7 @@ function relation_rules_fetch_endpoint_type_options(RulesAbstractPlugin $element
   }
   $all_entity_types = rules_entity_type_options();
   if (!empty($element->settings['relation_type'])) {
-    $types = $element->settings['relation_type'];
+    $types[] = $element->settings['relation_type'];
   } elseif ($wrapper = $element->applyDataSelector($element->settings['relation:select'])) {
     // If we can: limit the list of entity types to those relative to the selected relation type.
     if (($info = $wrapper->info()) && !empty($info['bundle'])) {
