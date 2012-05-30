@@ -171,4 +171,19 @@ class RelationUITestCase extends RelationTestCase {
     // Delete unused relation.
     relation_type_delete('is_similar_to');
   }
+
+  /**
+   * Tests endpoint field settings.
+   */
+  function testRelationEndpointsField() {
+    $field_label = $this->randomName();
+    $edit = array(
+      'instance[label]' => $field_label,
+    );
+    $this->drupalPost('admin/structure/relation/manage/symmetric/fields/endpoints', $edit, t('Save settings'));
+    $this->assertText(t('Saved @label configuration.', array('@label' => $field_label)));
+
+    $this->drupalGet('admin/structure/relation/manage/symmetric/fields');
+    $this->assertFieldByXPath('//table[@id="field-overview"]//td[1]', $field_label, t('Endpoints field label appears to be changed in the overview table.'));
+  }
 }
