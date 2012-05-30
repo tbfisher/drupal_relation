@@ -25,6 +25,10 @@ function relation_endpoint_field_info() {
  * Implements hook_field_validate().
  */
 function relation_endpoint_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  if (empty($entity_type) && empty($entity)) {
+    return;
+  }
+
   $relation_type = relation_type_load($entity->relation_type);
   // Check that relation_type exists.
   if (!$relation_type) {
