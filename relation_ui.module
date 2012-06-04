@@ -456,9 +456,7 @@ function relation_ui_admin_content() {
 
   // Grab all relations.
   $query = db_select('relation', 'r')->extend('PagerDefault')->extend('TableSort');
-  $query->join('relation_type', 'rt', 'r.relation_type = rt.relation_type');
   $query->fields('r', array('rid', 'relation_type'))
-    ->fields('rt', array('directional'))
     ->limit(50)
     ->orderByHeader($header);
   $relations = $query->execute();
@@ -472,6 +470,7 @@ function relation_ui_admin_content() {
 function theme_relation_ui_admin_content($variables) {
   $relations = $variables['relations'];
   $header = $variables['header'];
+  $types = relation_get_types();
 
   $rows = array();
   if (empty($relations)) {
@@ -488,6 +487,8 @@ function theme_relation_ui_admin_content($variables) {
       $r = relation_load($relation->rid);
       // Get the endpoints for this relation.
       $endpoints = field_get_items('relation', $r, 'endpoints');
+      // Get the type for this relation
+      $type = $types[$r->relation_type];
 
       $relation_entities = array();
       if (!empty($endpoints)) {
@@ -520,7 +521,7 @@ function theme_relation_ui_admin_content($variables) {
       $rows[] = array(
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
         $relation->relation_type,
-        implode(($relation->directional) ? " -> " : " -- ", $relation_column),
+        implode(($type->directional) ? " -> " : " -- ", $relation_column),
         user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit') : '',
         user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete') : '',
       );
