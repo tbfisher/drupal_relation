@@ -272,7 +272,6 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
       }
       $build = array();
       foreach ($items as $delta => $endpoint) {
-        $function = $endpoint['entity_type'] . '_view';
         if ($multiple) {
           $entity = $entities[$endpoint['entity_id']];
         }
@@ -280,7 +279,13 @@ function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $
           $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
           $entity = reset($entities);
         }
-        $build[$delta] = $function($entity, $view_mode);
+        if (function_exists('entity_view')) {
+          $build[$delta] = entity_view($endpoint['entity_type'], array($entity), $view_mode);
+        }
+        else {
+          $function = $endpoint['entity_type'] . '_view';
+          $build[$delta] = $function($entity, $view_mode);
+        }
       }
   }
   return $build;
