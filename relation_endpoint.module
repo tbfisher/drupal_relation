@@ -185,6 +185,7 @@ function relation_endpoint_field_formatter_info() {
   );
   foreach (entity_get_info() as $entity_type => $data) {
     $info['relation_endpoint_full']['settings']['view_modes'][$entity_type] = 'default';
+    $info['relation_endpoint']['settings']['view_modes'][$entity_type] = 'default';
   }
   return $info;
 }
