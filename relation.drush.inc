@@ -15,8 +15,8 @@ function relation_drush_command() {
       'number_relations' => dt('The number of relations to generate.'),
     ),
     'options' => array(
-      'kill' => 'Delete all content before generating new content.',
-      'types' => 'A comma delimited list of content types to create. Defaults to page,article.',
+      'kill' => 'Delete all relations before generating new ones.',
+      'types' => 'A comma delimited list of relation types to create.',
     ),
     'aliases' => array('genrel'),
   );
