@@ -19,7 +19,7 @@ function relation_entity_info() {
     'base table' => 'relation',
     'revision table' => 'relation_revision',
     'fieldable' => TRUE,
-    'controller class' => 'DrupalDefaultEntityController',
+    'controller class' => 'RelationController',
     'save callback' => 'relation_save',
     'creation callback' => 'relation_rules_create',
     'deletion callback' => 'relation_delete',
@@ -620,7 +620,11 @@ function relation_create($type, $endpoints, $account = NULL) {
  * @return
  *   The new relation id.
  */
-function relation_save($relation) {
+function relation_save($relation, $account = NULL) {
+  if (!isset($account)) {
+    $account = $GLOBALS['user'];
+  }
+  global $user;
   try {
     field_attach_validate('relation', $relation);
   }
@@ -649,7 +653,10 @@ function relation_save($relation) {
   field_attach_presave('relation', $relation);
   module_invoke_all('entity_presave', $relation, 'relation');
   unset($relation->vid);
+  $temp_uid = $relation->uid;
+  $relation->uid = $account->uid;
   drupal_write_record('relation_revision', $relation);
+  $relation->uid = $temp_uid;
   drupal_write_record('relation', $relation, $keys);
   if ($relation->is_new) {
     db_update('relation_revision')
@@ -928,5 +935,26 @@ function relation_get_type_label($relation, $reverse = FALSE) {
   }
   else {
     return $type->label;
+  }
+}
+
+/**
+ * Controller class for relation.
+ *
+ * This extends the DrupalDefaultEntityController class, adding required
+ * special handling for relation revisions, very similar to what's being done
+ * with nodes.
+ */
+class RelationController extends DrupalDefaultEntityController {
+
+  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+    // Ensure that uid is taken from the {relation} table
+    $query = parent::buildQuery($ids, $conditions, $revision_id);
+    $fields =& $query->getFields();
+    $fields['uid']['table'] = 'base';
+    $query->addField('revision', 'uid', 'revision_uid');
+    $fields['changed']['table'] = 'base';
+    $query->addField('revision', 'changed', 'changed');
+    return $query;
   }
 }

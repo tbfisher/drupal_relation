@@ -364,4 +364,29 @@ class RelationAPITestCase extends RelationTestCase {
       $this->assertTrue(array_key_exists($rid, $revision), 'Relation revision created.');
     }
   }
+
+  /**
+   * Tests relation revisions.
+   */
+  function testRelationRevision() {
+    $first_user = $this->drupalCreateUser(array('edit relations'));
+    $second_user = $this->drupalCreateUser(array('edit relations'));
+
+    $this->drupalLogin($first_user);
+    $relation = relation_create($this->relation_type_octopus, $this->endpoints_4, $first_user);
+    $rid = relation_save($relation, $first_user);
+    $this->assertEqual($relation->uid, $first_user->uid);
+    $vid = $relation->vid;
+
+    // Relation should still be owned by the first user
+    $this->drupalLogin($second_user);
+    $relation = relation_load($rid);
+    relation_save($relation, $second_user);
+    $this->assertEqual($relation->uid, $first_user->uid);
+
+    // Relation revision authors should not be identical though.
+    $first_revision = relation_load($rid, $vid);
+    $second_revision = relation_load($rid, $relation->vid);
+    $this->assertNotIdentical($first_revision->revision_uid, $second_revision->revision_uid, 'Each revision has a distinct user.');
+  }
 }
