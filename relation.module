@@ -162,7 +162,6 @@ function relation_permission() {
     ),
     'export relation types' => array(
       'title' => t('Export Relation types'),
-      'description' => t('Export relation types.'),
     ),
     'access relations' => array(
       'title' => t('View Relations'),
@@ -170,19 +169,15 @@ function relation_permission() {
     ),
     'create relations' => array(
       'title' => t('Create Relations'),
-      'description' => t('Create Relations between entities.'),
     ),
     'edit relations' => array(
       'title' => t('Edit Relations'),
-      'description' => t('Edit fields on existing relations.'),
     ),
     'delete relations' => array(
       'title' => t('Delete Relations'),
-      'description' => t('Delete existing relations.'),
     ),
     'administer relations' => array(
       'title' => t('Administer Relations'),
-      'description' => t('Administer existing relations.'),
     ),
   );
 }
