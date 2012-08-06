@@ -256,11 +256,6 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
     '#options' => $options,
     '#description' => t('Minimum number of entities joined by relations of this type (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => $relation_type->min_arity ? $relation_type->min_arity : 2,
-    '#states' => array(
-      'disabled' => array(   // action to take.
-        ':input[name="directional"]' => array('checked' => TRUE),
-      ),
-    ),
   );
 
   $options = array('2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '0' => t('Infinite'));
@@ -270,11 +265,6 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
     '#options' => $options,
     '#description' => t('Maximum number of entities joined by relations of this type. <em>In nearly all cases you will want to leave this set to 2</em>.'),
     '#default_value' => isset($relation_type->max_arity) ? $relation_type->max_arity : 2,
-    '#states' => array(
-      'disabled' => array(   // action to take.
-        ':input[name="directional"]' => array('checked' => TRUE),
-      ),
-    ),
   );
   $counter = 0;
   foreach (entity_get_info() as $entity_type => $entity) {
@@ -330,8 +320,8 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
  */
 function relation_ui_type_form_submit($form, &$form_state) {
   $relation_type = $form_state['values']['relation_type'];
-  $min_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['advanced']['min_arity'];
-  $max_arity = $form_state['values']['directional'] ? 2 : $form_state['values']['advanced']['max_arity'];
+  $min_arity = $form_state['values']['advanced']['min_arity'];
+  $max_arity = $form_state['values']['advanced']['max_arity'];
   $record = array(
     'relation_type'   => $relation_type,
     'min_arity'   => $min_arity,
