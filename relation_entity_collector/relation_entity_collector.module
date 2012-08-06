@@ -397,7 +397,7 @@ function relation_entity_collector_save($form, $form_state) {
     array_multisort($form_state['values']['table']['weight'], SORT_ASC, $relation->endpoints[LANGUAGE_NONE]);
     $rid = relation_save($relation);
     if ($rid) {
-      $link = l($_SESSION['relation_type'], "relation/$rid");
+      $link = l(relation_get_type_label($relation), "relation/$rid");
       $list = _relation_stored_entity_keys_list();
       $rendered_list = drupal_render($list);
       $t_arguments = array('!link' => $link, '!list' => $rendered_list);
