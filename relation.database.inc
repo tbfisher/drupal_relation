@@ -23,7 +23,6 @@ class RelationQuery extends EntityFieldQuery {
       $this->related($entity_type, $entity_id, $r_index);
     }
     $this->entityCondition('entity_type', 'relation');
-    $this->range(0, 50);
   }
 
   /**

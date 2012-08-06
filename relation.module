@@ -778,7 +778,9 @@ function relation_uri($relation) {
  *   The query object itself.
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
-  return new RelationQuery($entity_type, $entity_id, $r_index);
+  $query = new RelationQuery($entity_type, $entity_id, $r_index);
+  $query->range(0, 50);
+  return $query;
 }
 
 /**
