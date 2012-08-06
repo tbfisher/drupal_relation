@@ -122,7 +122,9 @@ function relation_entity_collector($form, &$form_state) {
   );
   $types = relation_get_types();
   if (empty($types)) {
-    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array('!link' => l(t('relation types'), 'admin/structure/relation')));
+    $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array(
+      '!link' => module_exists('relation_ui') ? l(t('relation types'), 'admin/structure/relation') : t('relation types')
+    ));
     return $form;
   }
   $relation_type = isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '';
