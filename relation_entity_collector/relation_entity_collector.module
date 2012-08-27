@@ -441,6 +441,7 @@ function relation_entity_collector_views_post_execute($view) {
           'entity_type' => $entity_type,
         );
       }
+      $collect = array();
       foreach ($view->query->fields as $alias => $field) {
         if (isset($field['table'])) {
           $table_name = $view->query->table_queue[$field['table']]['table'];
