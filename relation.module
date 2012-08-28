@@ -641,7 +641,7 @@ function relation_save($relation, $account = NULL) {
     $op = 'update';
   }
   else {
-    $relation->created = time();
+    $relation->created = $relation->changed;
     $keys = array();
     $op = 'insert';
   }
