@@ -8,7 +8,7 @@
 /**
  * Functional tests of Relation's integration with Migrate.
  */
- class RelationMigrateTestCase extends RelationTestCase {
+class RelationMigrateTestCase extends RelationTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Relation Migrate test',
@@ -269,4 +269,4 @@
     $this->assertRaw('<td><a href="' . url('node/' . $this->node4->nid) . '">' . $this->node4->title . '</a> -> <a href="' . url('node/' . $this->node2->nid) . '">' . $this->node2->title . '</a></td>', t('Entity reference migrated successfully.'));
     $this->assertRaw('<td><a href="' . url('node/' . $this->node5->nid) . '">' . $this->node5->title . '</a> -> <a href="' . url('node/' . $this->node1->nid) . '">' . $this->node1->title . '</a></td>', t('Entity reference migrated successfully.'));
   }
- }
+}
