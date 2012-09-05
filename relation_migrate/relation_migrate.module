@@ -64,11 +64,36 @@ function relation_migrate_configuration_form($form, &$form_state) {
         '#description' => t('Select relation type that should be used when migrating reference fields.'),
         '#element_validate' => array('_relation_migrate_validate_type'),
       );
+
+      $user = user_load(variable_get('relation_migrate_' . $field_type_name . '_user', 1));
+      $form[$field_type_name]['relation_migrate_' . $field_type_name . '_user'] = array(
+        '#type' => 'textfield',
+        '#title' => t('User'),
+        '#default_value' => $user->name,
+        '#description' => t('User that should own created relations.'),
+        '#autocomplete_path' => 'user/autocomplete',
+        '#element_validate' => array('_relation_migrate_uid_validate'),
+      );
     }
   }
 
   return system_settings_form($form);
 }
+
+/**
+ * Validate function for UID field at configuration form.
+ * Transforms user name to UID.
+ */
+function _relation_migrate_uid_validate($element, &$form_state, $form) {
+  $user = user_load_by_name($form_state['values'][$element['#name']]);
+  if ($user) {
+    $form_state['values'][$element['#name']] = $user->uid;
+  }
+  else {
+    form_error($element, t('User not found.'));
+  }
+}
+
 
 /**
  * Validates relation type selection on configuration form.

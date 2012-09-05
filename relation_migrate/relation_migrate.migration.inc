@@ -44,6 +44,10 @@ abstract class RelationMigrateReference extends Migration {
     );
 
     $this->destination = new MigrateDestinationRelation($this->relation_type);
+
+    $this->addFieldMapping('uid')
+         ->defaultValue(variable_get('relation_migrate_' . $field_type . '_user', 1))
+         ->description(t('The owner of relation.'));
   }
 
   public function prepare(stdClass $relation, stdClass $source_row) {
