@@ -49,6 +49,9 @@ class RelationQuery extends EntityFieldQuery {
 
   function execute() {
     $results = parent::execute();
+    if ($this->count) {
+      return $results;
+    }
     return isset($results['relation']) ? $results['relation'] : array();
   }
 }

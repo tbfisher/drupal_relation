@@ -298,6 +298,16 @@ class RelationAPITestCase extends RelationTestCase {
       ->propertyOrderBy('created', 'DESC')
       ->execute();
     $this->assertEqual(array_keys($relations), array($this->rid_octopus, $this->rid_directional, $this->rid_symmetric));
+    
+    // Create 10 more symmetric relations and verify that the count works with
+    // double digit counts as well.
+    for($i = 0; $i < 10; $i++) {
+      $this->createRelationSymmetric();
+    }
+    $count = relation_query('node', $this->node4->nid)
+      ->count()
+      ->execute();
+    $this->assertEqual($count, 16);        
   }
 
   /**
