@@ -190,10 +190,10 @@ function relation_views_data_alter(&$data) {
         '@left' => $entity_type_left,
         '@relation_type_label' => $relation_type->label,
         '@relation_type_reverse_label' => $relation_type->reverse_label,
-        '@arrow' => $relation_type->directional ? '->' : '<->',
+        '@arrow' => $relation_type->directional ? '→' : '↔',
       );
       $data[$base_table_left]['relation_base_left_' . $type] = array(
-        'title' => t('Relation: @relation_type_label (@left -> relation)', $t_arguments),
+        'title' => t('Relation: @relation_type_label (@left → relation)', $t_arguments),
         'help' => t('Provides a relationship from @left to the relation table via the relation @relation_type_label', $t_arguments),
         'relationship' => array(
           // relation_handler_relationship::options_form() relies on this check_plain().
@@ -230,7 +230,7 @@ function relation_views_data_alter(&$data) {
           ),
         );
         $data['relation']['relation_base_' . $type . '_' . $entity_type_right] = array(
-          'title' => t('Relation: @relation_type_label (relation -> @right)', $t_arguments),
+          'title' => t('Relation: @relation_type_label (relation → @right)', $t_arguments),
           'help' => t('Provides a relationship from the relation table to @right via the relation @relation_type_label', $t_arguments),
           'relationship' => array(
             // relation_handler_relationship::options_form() relies on this check_plain().
@@ -263,7 +263,7 @@ function relation_views_data_alter(&$data) {
             ),
           );
           $data[$base_table_right]['relation_base_right_' . $type] = array(
-            'title' => t('Relation: @relation_type_reverse_label (@right -> relation)', $t_arguments),
+            'title' => t('Relation: @relation_type_reverse_label (@right → relation)', $t_arguments),
             'help' => t('Provides a relationship from @right to the relation table via the relation @relation_type_reverse_label. Usually only needed to access the fields of the relation itself.', $t_arguments),
             'relationship' => array(
               // relation_handler_relationship::options_form() relies on this check_plain().
@@ -278,7 +278,7 @@ function relation_views_data_alter(&$data) {
             ),
           );
           $data['relation']['relation_base_' . $type . '_' . $entity_type_left] = array(
-            'title' => t('Relation: @relation_type_reverse_label (relation -> @left)', $t_arguments),
+            'title' => t('Relation: @relation_type_reverse_label (relation → @left)', $t_arguments),
             'help' => t('Provides a relationship from the relation table to @left via the relation @relation_type_reverse_label', $t_arguments),
             'relationship' => array(
               // relation_handler_relationship::options_form() relies on this check_plain().
