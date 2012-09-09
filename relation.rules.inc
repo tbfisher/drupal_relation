@@ -24,6 +24,13 @@ function relation_rules_event_info() {
         'relation' => array('type' => 'relation', 'label' => t('relation')),
       ),
     ),
+    'relation_delete' => array(
+      'label' => t('After deleting a relation'),
+      'group' => t('Relation'),
+      'variables' => array(
+        'relation' => array('type' => 'relation', 'label' => t('relation')),
+      ),
+    ),
   );
 }
 
