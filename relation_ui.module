@@ -106,6 +106,7 @@ function relation_ui_menu() {
   // Relations listing.
   $items['admin/content/relation'] = array(
     'title' => 'Relations',
+    'file' => 'relation_ui.module',
     'page callback' => 'relation_ui_admin_content',
     'access arguments' => array('administer relations'),
     'description' => 'View, edit and delete all the available relations on your site.',
