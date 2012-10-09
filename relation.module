@@ -639,6 +639,7 @@ function relation_save($relation, $account = NULL) {
   if (!$relation->is_new) {
     $keys = array('rid');
     $op = 'update';
+    $relation->original = relation_load($relation->rid, $relation->vid);
   }
   else {
     $relation->created = $relation->changed;

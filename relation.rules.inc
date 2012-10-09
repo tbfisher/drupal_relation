@@ -22,6 +22,7 @@ function relation_rules_event_info() {
       'group' => t('Relation'),
       'variables' => array(
         'relation' => array('type' => 'relation', 'label' => t('relation')),
+        'relation_unchanged' => array('type' => 'relation', 'label' => t('unchanged relation'), 'handler' => 'rules_events_entity_unchanged'),
       ),
     ),
     'relation_delete' => array(
