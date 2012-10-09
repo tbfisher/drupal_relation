@@ -14,15 +14,15 @@ function relation_rules_event_info() {
       'label' => t('After saving a new relation'),
       'group' => t('Relation'),
       'variables' => array(
-        'relation' => array('type' => 'relation', 'label' => t('relation')),
+        'relation' => array('type' => 'relation', 'label' => t('relation'), 'description' => t('The relation.')),
       ),
     ),
     'relation_update' => array(
       'label' => t('After updating a relation'),
       'group' => t('Relation'),
       'variables' => array(
-        'relation' => array('type' => 'relation', 'label' => t('relation')),
-        'relation_unchanged' => array('type' => 'relation', 'label' => t('unchanged relation'), 'handler' => 'rules_events_entity_unchanged'),
+        'relation' => array('type' => 'relation', 'label' => t('relation'), 'description' => t('The relation.')),
+        'relation_unchanged' => array('type' => 'relation', 'label' => t('unchanged relation'), 'description' => t('The unchanged relation.'), 'handler' => 'rules_events_entity_unchanged'),
       ),
     ),
     'relation_delete' => array(
