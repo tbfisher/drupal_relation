@@ -83,15 +83,15 @@ function relation_dummy_field_field_formatter_info() {
   return array(
     'relation_default' => array(
       'label' => t('Default'),
-      'field types' => array('relation'),
+      'field types' => array('relation_dummy'),
     ),
     'relation_otherendpoint' => array(
       'label' => t('Other endpoint'),
-      'field types' => array('relation'),
+      'field types' => array('relation_dummy'),
     ),
     'relation_natural' => array(
       'label' => t('Natural language'),
-      'field types' => array('relation'),
+      'field types' => array('relation_dummy'),
     ),
   );
 }
