@@ -10,9 +10,9 @@
  */
 function relation_dummy_field_field_info() {
   return array(
-    'relation' => array(
-      'label' => t('Relation'),
-      'description' => t('Stores relationships between entities.'),
+    'relation_dummy' => array(
+      'label' => t('Relation dummy field'),
+      'description' => t("A non-editable field displaying information about this entity's relations."),
       'settings' => array(),
       'default_widget' => 'relation_default',
       'default_formatter' => 'relation_default',
@@ -61,7 +61,7 @@ function relation_dummy_field_field_widget_info() {
   return array(
     'relation_default' => array(
       'label' => t('No edit widget'),
-      'field types' => array('relation'),
+      'field types' => array('relation_dummy'),
       'behaviors' => array(
         'multiple values' => FIELD_BEHAVIOR_CUSTOM,
       ),
