@@ -284,14 +284,3 @@ function relation_update_7002() {
       ->execute();
   }
 }
-
-/**
- * Ensure Relation Dummy Fields use 'relation_dummy' field type.
- */
-function relation_update_7003() {
-  db_update('field_config')
-    ->condition('module', 'relation_dummy_field')
-    ->condition('type', 'relation_dummy')
-    ->fields(array('type' => 'relation_basic'))
-    ->execute();
-}
