@@ -512,11 +512,11 @@ function theme_relation_ui_admin_content($variables) {
 
       $destination = drupal_get_destination();
       $options = array(
-           'attributes' => array(),
-           'query' => array(
-                'destination' => $destination['destination'],
-            ),
-          );
+       'attributes' => array(),
+       'query' => array(
+          'destination' => $destination['destination'],
+        ),
+      );
 
       $rows[] = array(
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
