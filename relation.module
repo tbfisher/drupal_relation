@@ -311,7 +311,7 @@ function relation_type_ensure_instance($type) {
  *   The machine name of the relation type (bundle) to be loaded.
  *
  * @return
- *   A relation type record (as an Array) in the same format as expected by
+ *   A relation type record (as an Object) in the same format as expected by
  *   relation_type_save().
  */
 function relation_type_load($relation_type) {
