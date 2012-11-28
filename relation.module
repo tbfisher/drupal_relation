@@ -770,7 +770,7 @@ function relation_uri($relation) {
  * @param $entity_type
  *   (optional) The entity type of one of the endpoints.
  * @param $entity_id
- *   (optional) The entity id of one of the endpoints. Can also be an array of 
+ *   (optional) The entity id of one of the endpoints. Can also be an array of
  *   entity IDs.
  * @param $r_index
  *   (optional) The index of the search entity in the relation to be found

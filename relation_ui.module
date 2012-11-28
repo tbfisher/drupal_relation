@@ -509,12 +509,21 @@ function theme_relation_ui_admin_content($variables) {
 
       // Build the rows to pass to the table theme function.
       // Directional is implemented, not sure how well it works.
+
+      $destination = drupal_get_destination();
+      $options = array(
+           'attributes' => array(),
+           'query' => array(
+                'destination' => $destination['destination'],
+            ),
+          );
+
       $rows[] = array(
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
         $relation->relation_type,
         implode(($type->directional) ? " → " : " ↔ ", $relation_column),
-        user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit') : '',
-        user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete') : '',
+        user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit', $options) : '',
+        user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete', $options) : '',
       );
     }
   }
