@@ -146,6 +146,12 @@ function _relation_migrate_validate_type_source($fields, $relation_type) {
 function relation_migrate_migrate_api() {
   $api = array(
     'api' => 2,
+    'migrations' => array(
+      'RelationMigrateEntityReference' => array('class_name' => 'RelationMigrateEntityReference'),
+      'RelationMigrateNodeReference' => array('class_name' => 'RelationMigrateNodeReference'),
+      'RelationMigrateUserReference' => array('class_name' => 'RelationMigrateUserReference'),
+      'RelationMigrateTermReference' => array('class_name' => 'RelationMigrateTermReference'),
+    )
   );
   return $api;
 }
