@@ -89,7 +89,7 @@ abstract class MigrateSourceReference extends MigrateSource {
 
       if (!empty($field_info) && $field_info['type'] == $this->field_type) {
         $field_data = db_select('field_data_' . $field_name, 'f')
-          ->fields('f', array('entity_type', 'entity_id', $field_name . '_' . $columns[0]))
+          ->fields('f', array('entity_type', 'entity_id', 'delta', $field_name . '_' . $columns[0]))
           ->condition('deleted', 0);
         $field_data->addExpression(":name", 'field_name', array(':name' => $field_name));
         $field_data = $field_data->execute()->fetchAll();
@@ -118,6 +118,7 @@ abstract class MigrateSourceReference extends MigrateSource {
         'destination_type' => $destination_type,
         'destination_id' => $item->{$id_key},
         'field_name' => $field_name,
+        'delta' => $item->delta,
       );
 
       return (object)$ret;

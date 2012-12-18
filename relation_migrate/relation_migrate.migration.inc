@@ -39,6 +39,11 @@ abstract class RelationMigrateReference extends Migration {
           'unsigned' => TRUE,
           'not null' => TRUE,
         ),
+        'delta' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
       ),
       MigrateDestinationRelation::getKeySchema()
     );
