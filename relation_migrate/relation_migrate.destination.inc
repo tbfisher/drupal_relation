@@ -26,7 +26,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
    * @param string $bundle
    *  A.k.a. the content type (page, article, etc.) of the node.
    * @param array $options
-+   *  Options applied to nodes.
+   *  Options applied to nodes.
    */
   public function __construct($bundle, array $options = array()) {
     parent::__construct('relation', $bundle, $options);
@@ -120,6 +120,9 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
     }
 
     // Set some required properties.
+    if (!isset($relation->uid)) {
+      $relation->uid = $GLOBALS['user']->uid;
+    }
     // Set type before invoking prepare handlers - they may take type-dependent actions.
     $relation->relation_type = $this->bundle;
 
