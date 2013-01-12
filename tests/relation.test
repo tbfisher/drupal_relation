@@ -376,6 +376,18 @@ class RelationAPITestCase extends RelationTestCase {
   }
 
   /**
+   * Tests relation delete.
+   */
+  function testRelationDelete() {
+    // Invalid relations are deleted when any endpoint entity is deleted. 
+    // Octopus relation is valid with 3 endpoints, currently it has 4.
+    node_delete($this->node1->nid);
+    $this->assertTrue(relation_load($this->rid_octopus, NULL, TRUE), 'Relation is not deleted.');
+    node_delete($this->node2->nid);
+    $this->assertFalse(relation_load($this->rid_octopus, NULL, TRUE), 'Relation is deleted.');
+  }
+
+  /**
    * Tests relation revisions.
    */
   function testRelationRevision() {
