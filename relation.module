@@ -787,10 +787,10 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL)
 
 /**
  * Return endpoint entities.
- * 
+ *
  * @param $relation
  *   Full relation object containing the endpoints
- * 
+ *
  * @param $entity_type
  *   (optional) Filter endpoints by entity type. Return all endpoint entities
  *   if empty.
@@ -803,10 +803,10 @@ function relation_load_endpoint_entities($relation, $entity_type = NULL) {
     }
     $entities[$endpoint['entity_type']][] = $endpoint['entity_id'];
   }
-  if(empty($entities)) {
+  if (empty($entities)) {
     return FALSE;
   }
-  foreach($entities as $entity_type => $ids) {
+  foreach ($entities as $entity_type => $ids) {
     $entities[$entity_type] = entity_load($entity_type, $ids);
   }
   return $entities;
@@ -929,7 +929,7 @@ function relation_entity_delete($entity, $entity_type) {
   $relations = relation_query($entity_type, $id)->execute();
   relation_delete_multiple(array_keys($relations));
   if ($relations) {
-    drupal_set_message(t('Relations !relations have been deleted.', array('!relations' => implode(', ', array_keys($relations)))));
+    drupal_set_message(t('Relations @relations have been deleted.', array('@relations' => implode(', ', array_keys($relations)))));
   }
 }
 
