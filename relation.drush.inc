@@ -103,7 +103,11 @@ function relation_generate_relations($number_relations = 10, $types = array(), $
           // range(0, 1). See http://drupal.org/node/1174806
           ->range(0, 2 * $number_relations);
         if (!in_array('*', $available_types[$direction][$entity_type])) {
-          $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
+          // Entities with a single bundle don't support EFQ bundle condition.
+          $entity_info = entity_get_info($entity_type);
+          if (count($entity_info['bundles']) > 1) {
+            $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
+          }
         }
         $results = $query->execute();
         if ($results) {
