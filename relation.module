@@ -925,11 +925,35 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
  * Implements hook_entity_delete().
  */
 function relation_entity_delete($entity, $entity_type) {
-  list($id) = entity_extract_ids($entity_type, $entity);
-  $relations = relation_query($entity_type, $id)->execute();
-  relation_delete_multiple(array_keys($relations));
-  if ($relations) {
-    drupal_set_message(t('Relations @relations have been deleted.', array('@relations' => implode(', ', array_keys($relations)))));
+  list($entity_id) = entity_extract_ids($entity_type, $entity);
+  $relations = relation_query($entity_type, $entity_id)->execute();
+  $relations_to_delete = array();
+  foreach ($relations as $row) {
+    // Remove any endpoints pointing to entity
+    $relation = relation_load($row->rid);
+    foreach ($relation->endpoints[LANGUAGE_NONE] as $key => $endpoint) {
+      if ($endpoint['entity_id'] == $entity_id
+        && $endpoint['entity_type'] == $entity_type) {
+        unset($relation->endpoints[LANGUAGE_NONE][$key]);
+      }
+    }
+    // Check if relation remains valid with regards to arity
+    $type = relation_get_types(array($relation->relation_type));
+    $min_arity = $type[$relation->relation_type]->min_arity;
+    $arity = count($relation->endpoints[LANGUAGE_NONE]);
+    if ($arity < $min_arity) {
+      // Not valid - delete
+      array_push($relations_to_delete, $relation->rid);
+    }
+    else {
+      // Valid - save
+      relation_save($relation);
+    }
+  }
+  if (!empty($relations_to_delete)) {
+    relation_delete_multiple($relations_to_delete);  
+    drupal_set_message(t('Relations @relations have been deleted.', 
+      array('@relations' => implode(', ', $relations_to_delete))));
   }
 }
 
