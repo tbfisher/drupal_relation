@@ -59,6 +59,7 @@ class RelationTestCase extends DrupalWebTestCase {
     $this->node3 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1, 'title' => 'Parent'));
     $this->node4 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0, 'title' => 'Child'));
     $this->node5 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0));
+    $this->node6 = $this->drupalCreateNode(array('type' => 'page', 'promote' => 0, 'title' => 'Unrelated'));
   }
 
   function createRelationUsers() {
