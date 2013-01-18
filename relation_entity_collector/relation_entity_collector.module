@@ -127,7 +127,16 @@ function relation_entity_collector($form, &$form_state) {
     ));
     return $form;
   }
+  $relation_types = array();
+  foreach ($types as $type) {
+    $relation_types[$type->relation_type] = $type->label;
+  }
   $relation_type = isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '';
+  // forget the selected relation type if it's no longer available
+  if (!isset($relation_types[$relation_type])) {
+    unset($_SESSION['relation_type']);
+    $relation_type = '';
+  }
   if ($relation_entities = drupal_static('relation_entities', array())) {
     $options = array();
     foreach ($relation_entities as $entity_type => $entities) {
@@ -159,10 +168,6 @@ function relation_entity_collector($form, &$form_state) {
   if (empty($form_state['relation_entities_options'])) {
     $form['explanation']['#markup'] = t('This block shows all loaded entities on a page and allows adding them to a relation. Please navigate to a page where entities are loaded. Entities picked stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.');
     return $form;
-  }
-  $relation_types = array();
-  foreach ($types as $type) {
-    $relation_types[$type->relation_type] = $type->label;
   }
   $form['relation_type'] = array(
     '#type'          => 'select',
