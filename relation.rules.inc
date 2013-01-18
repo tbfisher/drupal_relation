@@ -117,9 +117,10 @@ function relation_rules_access($op, $entity = NULL, $account = NULL) {
  */
 function relation_rules_get_endpoints($relation, array $options, $property_name, $entity_type) {
   $array = array();
-  foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
-    $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
-    $array[] = entity_metadata_wrapper($endpoint['entity_type'], reset($entities));
+  foreach (relation_get_endpoints($relation) as $entity_type => $entities) {
+    foreach ($entities as $entity) {
+      $array[] = entity_metadata_wrapper($entity_type, $entity);
+    }
   }
   return $array;
 }

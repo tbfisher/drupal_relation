@@ -795,7 +795,7 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL)
  *   (optional) Filter endpoints by entity type. Return all endpoint entities
  *   if empty.
  */
-function relation_load_endpoint_entities($relation, $entity_type = NULL) {
+function relation_get_endpoints($relation, $entity_type = NULL) {
   $entities = array();
   foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
     if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
