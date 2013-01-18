@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Migrations between *reference fields and relations.
+ */
 
 /**
  * Implements hook_menu().
@@ -127,7 +131,7 @@ function _relation_migrate_validate_type_source($fields, $relation_type) {
     $field = field_info_field($field_name);
     foreach ($field['bundles'] as $entity_type => $bundles) {
       if (!in_array($entity_type . ':*', $allowed_bundles)) {
-        foreach($bundles as $bundle) {
+        foreach ($bundles as $bundle) {
           if (!in_array($entity_type . ':' . $bundle, $allowed_bundles)) {
             return FALSE;
           }

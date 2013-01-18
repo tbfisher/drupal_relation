@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @files
+ * @file
  * Migration for entityreference fields.
  */
 
@@ -18,8 +18,8 @@ abstract class RelationMigrateReference extends Migration {
     $this->dependencies = array();
     $this->description = 'Copy the contents from the ' . $field_type . ' fields to relation entities.';
     $this->map = new MigrateSQLMap($this->machineName,
-      array (
-        'source_type' => array (
+      array(
+        'source_type' => array(
           'type' => 'varchar',
           'length' => 128,
           'not null' => TRUE,
@@ -29,7 +29,7 @@ abstract class RelationMigrateReference extends Migration {
           'unsigned' => TRUE,
           'not null' => TRUE,
         ),
-        'destination_type' => array (
+        'destination_type' => array(
           'type' => 'varchar',
           'length' => 128,
           'not null' => TRUE,
@@ -51,8 +51,8 @@ abstract class RelationMigrateReference extends Migration {
     $this->destination = new MigrateDestinationRelation($this->relation_type);
 
     $this->addFieldMapping('uid')
-         ->defaultValue(variable_get('relation_migrate_' . $field_type . '_user', 1))
-         ->description(t('The owner of relation.'));
+      ->defaultValue(variable_get('relation_migrate_' . $field_type . '_user', 1))
+      ->description(t('The owner of relation.'));
   }
 
   public function prepare(stdClass $relation, stdClass $source_row) {

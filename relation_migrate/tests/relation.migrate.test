@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @files
+ * @file
  * Test case that tests relation_migrate.module.
  */
 
@@ -90,7 +90,7 @@ class RelationMigrateTestCase extends RelationTestCase {
     node_save($this->node4); node_save($this->node5);
   }
 
-  function testRelationMigrate(){
+  function testRelationMigrate() {
     if (!module_exists('migrate') || !module_exists('migrate_ui') || !module_exists('node_reference') || !module_exists('user_reference') || !module_exists('entityreference')) {
       return;
     }
