@@ -571,6 +571,8 @@ function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_
     $query->propertyCondition('relation_type', $relation_type);
   }
   $query->propertyCondition('arity', count($entity_keys));
+  // Avoid Node Access restrictions when checking for a relation
+  $query->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
   $relation_ids = $query->execute();
   return $relation_ids ? $relation_ids : FALSE;
 }
