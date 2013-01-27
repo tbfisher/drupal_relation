@@ -626,6 +626,8 @@ function relation_save($relation, $account = NULL) {
     field_attach_validate('relation', $relation);
   }
   catch (FieldValidationException $e) {
+    watchdog_exception('relation', $e, t('Field validation failed.'), NULL, 
+      WATCHDOG_ERROR);
     return FALSE;
   }
   // Determine if we will be inserting a new relation.
