@@ -583,8 +583,6 @@ function theme_relation_ui_admin_content($variables) {
       $r = relation_load($relation->rid);
       // Get the endpoints for this relation.
       $endpoints = field_get_items('relation', $r, 'endpoints');
-      // Get the type for this relation
-      $type = $types[$r->relation_type];
 
       $relation_entities = array();
       if (!empty($endpoints)) {
@@ -623,10 +621,18 @@ function theme_relation_ui_admin_content($variables) {
         ),
       );
 
+      $endpoint_separator = ', ';
+      $type_label = '';
+      // Get the type for this relation
+      if (isset($types[$r->relation_type])) {
+        $type = $types[$r->relation_type];
+        $endpoint_separator = $type->directional ? " → " : " ↔ ";
+        $type_label = $relation->relation_type;
+      }
       $rows[] = array(
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
-        $relation->relation_type,
-        implode(($type->directional) ? " → " : " ↔ ", $relation_column),
+        $type_label,
+        implode($endpoint_separator, $relation_column),
         user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit', $options) : '',
         user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete', $options) : '',
       );

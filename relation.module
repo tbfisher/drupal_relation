@@ -423,10 +423,6 @@ function relation_list_types() {
  *   The machine name of the relation type (bundle) to be deleted.
  */
 function relation_type_delete($relation_type) {
-  $endpoints_field = field_read_instance('relation', 'endpoints', $relation_type);
-  field_delete_instance($endpoints_field, FALSE);
-  field_attach_delete_bundle('relation', $relation_type);
-
   db_delete('relation_type')->condition('relation_type', $relation_type)->execute();
   db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
 }
