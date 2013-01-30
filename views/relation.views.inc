@@ -158,6 +158,49 @@ function relation_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
+
+  // View link.
+  $data['relation']['link'] = array(
+    'title' => t('Link'),
+    'help' => t('Provide a simple link to the relation entity.'),
+    'field' => array(
+      'handler' => 'views_handler_field_relation_link',
+      'click sortable' => TRUE,
+      'real field' => 'rid',
+      'additional fields' => array(
+        'rid',
+      ),
+    ),
+  );
+
+  // Edit link.
+  $data['relation']['edit'] = array(
+    'title' => t('Edit link'),
+    'help' => t('Provide a simple link to edit the relation entity.'),
+    'field' => array(
+      'handler' => 'views_handler_field_relation_link_edit',
+      'click sortable' => TRUE,
+      'real field' => 'rid',
+      'additional fields' => array(
+        'rid',
+      ),
+    ),
+  );
+
+  // Delete link.
+  $data['relation']['delete'] = array(
+    'title' => t('Delete link'),
+    'help' => t('Provide a simple link to delete the relation entity.'),
+    'field' => array(
+      'handler' => 'views_handler_field_relation_link_delete',
+      'click sortable' => TRUE,
+      'real field' => 'rid',
+      'additional fields' => array(
+        'rid',
+      ),
+    ),
+  );
+
   return $data;
 }
 
