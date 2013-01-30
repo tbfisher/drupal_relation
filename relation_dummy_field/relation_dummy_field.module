@@ -196,7 +196,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
 function relation_dummy_field_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
   foreach ($entities as $id => $entity) {
     $relation_types = $instances[$id]['settings']['relation_type'];
-    $query = relation_query($entity_type, $id);
+    $query = relation_query($entity_type, $id)->range(0, 50);
     if ($relation_types) {
       $query->entityCondition('bundle', $relation_types, 'IN');
     }

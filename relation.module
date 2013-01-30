@@ -784,9 +784,7 @@ function relation_uri($relation) {
  *   The query object itself.
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
-  $query = new RelationQuery($entity_type, $entity_id, $r_index);
-  $query->range(0, 50);
-  return $query;
+  return new RelationQuery($entity_type, $entity_id, $r_index);
 }
 
 /**
@@ -854,7 +852,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     $items[$cache_key] = $entities;
   }
   else {
-    $query = relation_query($entity_type, $entity_id, $r_index);
+    $query = relation_query($entity_type, $entity_id, $r_index)->range(0, 1);
     if ($relation_type) {
       $query->entityCondition('bundle', $relation_type);
     }

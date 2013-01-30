@@ -191,7 +191,11 @@ function relation_rules_get_related_entities($entity, array $options, $name, $ty
   $source_entity = entity_metadata_wrapper($type, $entity);
   $source_entity_type = $source_entity->type();
   $source_entity_id = $source_entity->getIdentifier();
-  $rids = array_keys(relation_query($source_entity_type, $source_entity_id)->entityCondition('bundle', $info['relation_type'])->execute());
+  $results = relation_query($source_entity_type, $source_entity_id)
+    ->entityCondition('bundle', $info['relation_type'])
+    ->range(0, 50)
+    ->execute();
+  $rids = array_keys($results);
   $entities_ids = array();
   if (!$rids) {
     return $entities_ids;
