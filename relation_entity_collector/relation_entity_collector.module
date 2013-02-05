@@ -458,7 +458,11 @@ function relation_entity_collector_views_post_execute($view) {
       $ids = array();
       foreach ($view->result as $row) {
         foreach ($collect as $entity_type => $alias) {
-          $ids[$entity_type][] = $row->$alias;
+          // Skip empty values, which may happen for entities that are obtained
+          // via a non-required relationship in the view.
+          if (!empty($row->$alias)) {
+            $ids[$entity_type][] = $row->$alias;
+          }
         }
       }
       foreach ($ids as $entity_type => $entity_ids) {
