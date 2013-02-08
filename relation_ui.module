@@ -448,6 +448,7 @@ function relation_ui_filter_form($form, $form_state) {
       $$filter = $values;
     }
   }
+  $bundles = array();
   $types = relation_get_types();
   foreach ($types as $name => $relation) {
     $bundles[$name] = $relation->label;
