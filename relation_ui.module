@@ -36,6 +36,18 @@ function relation_ui_menu() {
     'weight' => 10,
     'type' => MENU_LOCAL_TASK,
   );
+  if (module_exists('devel')) {
+    $items['relation/%relation/devel'] = array(
+      'title' => 'Devel',
+      'page callback' => 'devel_load_object',
+      'page arguments' => array('relation', 1),
+      'access arguments' => array('access devel information'),
+      'type' => MENU_LOCAL_TASK,
+      'file path' => drupal_get_path('module', 'devel') . '/',
+      'file' => 'devel.pages.inc',
+      'weight' => 100,
+    );
+  }
   $items['admin/structure/relation'] = array(
     'title' => 'Relation types',
     'access arguments' => array('administer relation types'),
