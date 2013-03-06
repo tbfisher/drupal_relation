@@ -425,6 +425,15 @@ function relation_list_types() {
 function relation_type_delete($relation_type) {
   db_delete('relation_type')->condition('relation_type', $relation_type)->execute();
   db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
+
+  if (field_read_instance('relation', 'endpoints', $relation_type)) {
+    $instance = array(
+      'field_name' => 'endpoints',
+      'entity_type' => 'relation',
+      'bundle' => $relation_type,
+    );
+    field_delete_instance($instance, FALSE);
+  }
 }
 
 /**
