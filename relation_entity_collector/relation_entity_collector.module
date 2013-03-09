@@ -228,7 +228,11 @@ function relation_entity_collector($form, &$form_state) {
       $form['reload']['table']['#tree'] = TRUE;
       $form['reload']['table']['#theme'] = 'relation_entity_collector_table';
     }
-    if (count($_SESSION['relation_entity_keys']) > 1) {
+    if (!isset($relation_type_object) && !empty($relation_type)) {
+      $relation_type_object = relation_type_load($relation_type);
+    }
+    $min_arity = isset($relation_type_object->min_arity) ? $relation_type_object->min_arity : 1;
+    if (count($_SESSION['relation_entity_keys']) >= $min_arity) {
       $form['reload']['save'] = array(
         '#type' => 'submit',
         '#value' => t('Save relation'),

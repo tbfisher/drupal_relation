@@ -865,7 +865,12 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     $result = reset($results);
     if ($result) {
       $relation = relation_load($result->rid);
-      $entities = field_get_items('relation', $relation, 'endpoints');
+      if ($relation->arity == 1) {
+        $entities = FALSE;
+      }
+      else {
+        $entities = field_get_items('relation', $relation, 'endpoints');
+      }
     }
     else {
       $entities = FALSE;
