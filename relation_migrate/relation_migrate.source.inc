@@ -37,7 +37,7 @@ abstract class MigrateSourceReference extends MigrateSource {
    * @param string $field Field type machine name.
    * @param array $fields List of fields to be migrated.
    */
-  public function __construct($field_type, array$fields, array$options = array()) {
+  public function __construct($field_type, array $fields, array $options = array()) {
     parent::__construct($options);
     $this->fields = $fields;
     $this->field_type = $field_type;
@@ -104,7 +104,7 @@ abstract class MigrateSourceReference extends MigrateSource {
    * @param string $destination_type Destiantion entity type.
    * @param string $field_name Field's machine name.
    */
-  protected function _constructRow(stdClass$item, $destination_type, $field_name) {
+  protected function _constructRow(stdClass $item, $destination_type, $field_name) {
     $field_info = field_read_field($field_name);
     $columns = array_keys($field_info['columns']);
     $id_key = $field_name . '_' . $columns[0];
@@ -132,7 +132,7 @@ class MigrateSourceEntityReference extends MigrateSourceReference {
    *
    * @param array $fields List of fields to be migrated.
    */
-  function __construct(array$fields, array$options = array()) {
+  function __construct(array $fields, array $options = array()) {
     parent::__construct('entityreference', $fields, $options);
   }
 
@@ -163,7 +163,7 @@ class MigrateSourceNodeReference extends MigrateSourceReference {
    *
    * @param array $fields List of fields to be migrated.
    */
-  function __construct(array$fields, array$options = array()) {
+  function __construct(array $fields, array $options = array()) {
     parent::__construct('node_reference', $fields, $options);
   }
 
@@ -193,7 +193,7 @@ class MigrateSourceUserReference extends MigrateSourceReference {
    *
    * @param array $fields List of fields to be migrated.
    */
-  function __construct(array$fields, array$options = array()) {
+  function __construct(array $fields, array $options = array()) {
     parent::__construct('user_reference', $fields, $options);
   }
 
@@ -223,7 +223,7 @@ class MigrateSourceTermReference extends MigrateSourceReference {
    *
    * @param array $fields List of fields to be migrated.
    */
-  function __construct(array$fields, array$options = array()) {
+  function __construct(array $fields, array $options = array()) {
     parent::__construct('taxonomy_term_reference', $fields, $options);
   }
 

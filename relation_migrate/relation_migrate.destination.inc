@@ -28,7 +28,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
    * @param array $options
    *  Options applied to nodes.
    */
-  public function __construct($bundle, array$options = array()) {
+  public function __construct($bundle, array $options = array()) {
     parent::__construct('relation', $bundle, $options);
   }
 
@@ -61,7 +61,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
    * @param $rids
    *  Array of relation IDs to be deleted.
    */
-  public function bulkRollback(array$rids) {
+  public function bulkRollback(array $rids) {
     migrate_instrument_start('relation_delete_multiple');
     $this->prepareRollback($rids);
     relation_delete_multiple($rids);
@@ -81,7 +81,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
    *  Array of key fields (rid only in this case) of the relation that was saved if
    *  successful. FALSE on failure.
    */
-  public function import(stdClass$relation, stdClass$row) {
+  public function import(stdClass $relation, stdClass $row) {
     // Updating previously-migrated content?
     $migration = Migration::currentMigration();
     if (isset($row->migrate_map_destid1)) {
