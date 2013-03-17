@@ -1001,6 +1001,23 @@ function relation_get_type_label($relation, $reverse = FALSE) {
 }
 
 /**
+ * Return the label for a given entity type and bundle.
+ *
+ * @param string $entity_type
+ *   The entity type.
+ *
+ * @param string $entity_bundle
+ *   The entity bundle.
+ *
+ * @return string
+ *   The label of the given entity type and bundle.
+ */
+function _relation_get_bundle_label($entity_type, $entity_bundle) {
+  $entity_info = entity_get_info($entity_type);
+  return $entity_info['bundles'][$entity_bundle]['label'];
+}
+
+/**
  * Controller class for relation.
  *
  * This extends the DrupalDefaultEntityController class, adding required
