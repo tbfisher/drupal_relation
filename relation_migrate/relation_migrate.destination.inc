@@ -89,7 +89,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
       $relation->is_new = FALSE;
       if (isset($relation->rid)) {
         if ($relation->rid != $row->migrate_map_destid1) {
-          thrownew MigrateException(t("Incoming rid !rid and map destination rid !destid1 don't match",
+          throw new MigrateException(t("Incoming rid !rid and map destination rid !destid1 don't match",
               array('!rid' => $relation->rid, '!destid1' => $row->migrate_map_destid1)
             ));
         }
@@ -103,7 +103,7 @@ class MigrateDestinationRelation extends MigrateDestinationEntity {
     }
     if ($migration->getSystemOfRecord() == Migration::DESTINATION) {
       if (!isset($relation->rid)) {
-        thrownew MigrateException(t('System-of-record is DESTINATION, but no destination rid provided'));
+        throw new MigrateException(t('System-of-record is DESTINATION, but no destination rid provided'));
       }
       $old_relation = relation_load($relation->rid);
       if (!isset($relation->created)) {
