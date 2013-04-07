@@ -140,24 +140,49 @@ function relation_ui_type_list() {
   $relation = Drupal::service('plugin.manager.entity')->getDefinition('relation');
   $field_ui = module_exists('field_ui');
   $ctools = module_exists('ctools');
-  $ops_count = 2 + 2 * $field_ui + $ctools;
-
-  $headers = array(
-    array('data' => t('Name'), 'width' => '40%'),
-    array('data' => t('Operations'), 'colspan' => $ops_count));
+  $headers = array(t('Name'), t('Operations'));
   $rows = array();
+
   foreach ($relation['bundles'] as $type => $relation_type) {
     $url = 'admin/structure/relation/manage/' . $type;
     $row = array(l($relation_type['label'], $url));
-    $row[] = l(t('edit'), $url . '/edit');
+    $links['edit'] = array(
+      'title' => t('edit'),
+      'href' => $url . '/edit',
+      'weight' => 0
+    );
     if ($field_ui) {
-      $row[] =  l(t('manage fields'), $url . '/fields');
-      $row[] =  l(t('display fields'), $url . '/display');
+      $links['fields'] = array(
+        'title' => t('manage fields'),
+        'href' => $url . '/fields',
+        'weight' => 5
+      );
+      $links['display'] = array(
+        'title' => t('display fields'),
+        'href' => $url . '/display',
+        'weight' => 10
+      );
     }
     if ($ctools) {
-      $row[] =  l(t('export'), $url . '/export');
+      $links['export'] = array(
+        'title' => t('export'),
+        'href' => $url . '/export',
+        'weight' => 20
+      );
     }
-    $row[] =  empty($relation_type->in_code_only) ? l(t('delete'), $url . '/delete') : '&nbsp;';
+    if (empty($relation_type->in_code_only)) {
+      $links['delete'] = array(
+        'title' => t('delete'),
+        'href' => $url . '/delete',
+        'weight' => 30
+      );
+    }
+    $row[] = array(
+      'data' => array(
+        '#type' => 'operations',
+        '#links' => $links,
+      ),
+    );
     $rows[] = $row;
   }
   $output = array(
