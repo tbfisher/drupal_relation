@@ -137,7 +137,7 @@ function relation_ui_menu() {
  * List all relation_types (page callback).
  */
 function relation_ui_type_list() {
-  $relation = relation_entity_info();
+  $relation = Drupal::service('plugin.manager.entity')->getDefinition('relation');
   $field_ui = module_exists('field_ui');
   $ctools = module_exists('ctools');
   $ops_count = 2 + 2 * $field_ui + $ctools;
@@ -146,7 +146,7 @@ function relation_ui_type_list() {
     array('data' => t('Name'), 'width' => '40%'),
     array('data' => t('Operations'), 'colspan' => $ops_count));
   $rows = array();
-  foreach ($relation['relation']['bundles'] as $type => $relation_type) {
+  foreach ($relation['bundles'] as $type => $relation_type) {
     $url = 'admin/structure/relation/manage/' . $type;
     $row = array(l($relation_type['label'], $url));
     $row[] = l(t('edit'), $url . '/edit');
@@ -408,7 +408,7 @@ function relation_ui_type_delete_confirm_submit($form, &$form_state) {
   watchdog('relation', 'Deleted the %label relation type.', $t_args, WATCHDOG_NOTICE);
 
   // @TODO: relation_types_rebuild() ?;
-  menu_rebuild();
+  menu_router_rebuild();
 
   $form_state['redirect'] = 'admin/structure/relation';
   return;

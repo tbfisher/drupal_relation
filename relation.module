@@ -258,10 +258,11 @@ function relation_type_save($relation_type, $write_record_keys = array(), $rebui
   $query->execute();
   relation_type_ensure_instance($type);
   if ($rebuild_menu) {
-    menu_rebuild();
+    menu_router_rebuild();
   }
   if (empty($existing_relation_type)) {
-    field_attach_create_bundle('relation', $relation_type->relation_type);
+    // @todo figure out what to do with this
+    #field_attach_create_bundle('relation', $relation_type->relation_type);
   }
 }
 
@@ -796,7 +797,8 @@ function relation_uri($relation) {
  *   The query object itself.
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
-  return new RelationQuery($entity_type, $entity_id, $r_index);
+  $query = entity_query('relation');
+  return $query;
 }
 
 /**
@@ -944,14 +946,13 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
  * Implements hook_entity_delete().
  */
 function relation_entity_delete($entity, $entity_type) {
-  list($entity_id) = entity_extract_ids($entity_type, $entity);
-  $relations = relation_query($entity_type, $entity_id)->execute();
+  $relations = relation_query($entity_type, $entity->id())->execute();
   $relations_to_delete = array();
   foreach ($relations as $row) {
     // Remove any endpoints pointing to entity
     $relation = relation_load($row->rid);
     foreach ($relation->endpoints[LANGUAGE_NONE] as $key => $endpoint) {
-      if ($endpoint['entity_id'] == $entity_id
+      if ($endpoint['entity_id'] == $entity->id()
         && $endpoint['entity_type'] == $entity_type) {
         unset($relation->endpoints[LANGUAGE_NONE][$key]);
       }

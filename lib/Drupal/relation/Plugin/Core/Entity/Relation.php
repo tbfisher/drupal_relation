@@ -33,7 +33,7 @@ use Drupal\Core\Annotation\Translation;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   },
+ *   }
  * )
  */
 class Relation extends Entity implements ContentEntityInterface {

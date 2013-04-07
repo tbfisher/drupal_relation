@@ -7,7 +7,7 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Config\Entity\ConfigStorageController;
+use Drupal\Core\Entity\DatabaseStorageControllerNG;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -17,7 +17,7 @@ use Drupal\Core\Entity\EntityInterface;
  * handling for relation revisions, very similar to what's being done with
  * nodes.
  */
-class RelationStorageController extends DatabaseStorageController {
+class RelationStorageController extends DatabaseStorageControllerNG {
 
   /**
    * Overrides Drupal\Core\Entity\DatabaseStorageController::buildQuery().
