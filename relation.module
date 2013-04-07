@@ -578,8 +578,40 @@ function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_
   $query->propertyCondition('arity', count($entity_keys));
   // Avoid Node Access restrictions when checking for a relation
   $query->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
+  // If direction of the relation is not forced make sure the each endpoint
+  // is counted just once.
+  if (!$enforce_direction) {
+    $query->addTag('enforce_distinct_endpoints');
+  }
   $relation_ids = $query->execute();
   return $relation_ids ? $relation_ids : FALSE;
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Adds conditions to query to ensure different r_index for each endpoint.
+ */
+function relation_query_enforce_distinct_endpoints_alter(QueryAlterableInterface $query) {
+  // Get arity of the query
+  $relation_query = $query->getMetaData('entity_field_query');
+  foreach ($relation_query->propertyConditions as $condition) {
+    if ($condition['column'] == 'arity') {
+      $arity = $condition['value'];
+      break;
+    }
+  }
+  // Add r_index conditions between all endpoints
+  for ($i = 0; $i < $arity; $i++) {
+    for ($k = $i + 1; $k < $arity; $k++) {
+      // @see http://drupal.org/node/1859084
+      // For now each endpoint condition adds 2 joins to the query. Add
+      // conditions between even numbers.
+      $column_left = 'field_data_endpoints' . $i*2 . '.endpoints_r_index';
+      $column_right = 'field_data_endpoints' . $k*2 . '.endpoints_r_index';
+      $query->where("$column_left != $column_right");
+    }
+  }
 }
 
 /**
