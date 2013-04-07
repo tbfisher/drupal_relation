@@ -1,0 +1,6 @@
+name: 'Relation'
+description: 'Describes relationships between entities.'
+package: Relation
+core: 8.x
+dependencies:
+  - relation_endpoint
