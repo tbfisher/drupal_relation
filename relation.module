@@ -1048,24 +1048,3 @@ function _relation_get_bundle_label($entity_type, $entity_bundle) {
   $entity_info = entity_get_info($entity_type);
   return $entity_info['bundles'][$entity_bundle]['label'];
 }
-
-/**
- * Controller class for relation.
- *
- * This extends the DrupalDefaultEntityController class, adding required
- * special handling for relation revisions, very similar to what's being done
- * with nodes.
- */
-class RelationController extends DrupalDefaultEntityController {
-
-  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
-    // Ensure that uid is taken from the {relation} table
-    $query = parent::buildQuery($ids, $conditions, $revision_id);
-    $fields =& $query->getFields();
-    $fields['uid']['table'] = 'base';
-    $query->addField('revision', 'uid', 'revision_uid');
-    $fields['changed']['table'] = 'base';
-    $query->addField('revision', 'changed', 'changed');
-    return $query;
-  }
-}
