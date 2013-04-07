@@ -2,15 +2,21 @@
 
 /**
  * @file
- * Tests for Relation UI module.
+ * Definition of Drupal\relation_ui\Tests\RelationUITest.
  */
+
+namespace Drupal\relation_ui\Tests;
+
+use Drupal\relation\Tests\RelationTestBase;
 
 /**
  * Tests Relation UI.
  *
  * Check that relation administration interface works.
  */
-class RelationUITestCase extends RelationTestCase {
+class RelationUITest extends RelationTestBase {
+
+  public static $modules = array('relation', 'relation_ui');
 
   public static function getInfo() {
     return array(
@@ -23,7 +29,7 @@ class RelationUITestCase extends RelationTestCase {
   function setUp() {
     // This is necessary for the ->propertyOrderBy('created', 'DESC') test.
     $this->sleep = TRUE;
-    parent::setUp('relation_ui');
+    parent::setUp();
   }
 
   /**

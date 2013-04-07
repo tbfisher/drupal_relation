@@ -2,13 +2,19 @@
 
 /**
  * @file
- * Tests for Relation Dummy Field module.
+ * Definition of Drupal\relation_dummy_field\Tests\RelationDummyFieldTest.
  */
+
+namespace Drupal\relation_dummy_field\Tests;
+
+use Drupal\relation\Tests\RelationTestBase;
 
 /**
  * Functional test of Relation's integration with the Dummy Field.
  */
-class RelationDummyFieldTestCase extends RelationTestCase {
+class RelationDummyFieldTest extends RelationTestBase {
+
+  public static $modules = array('relation', 'relation_dummy_field');
 
   public static function getInfo() {
     return array(
@@ -19,7 +25,7 @@ class RelationDummyFieldTestCase extends RelationTestCase {
   }
 
   function setUp() {
-    parent::setUp('relation', 'relation_dummy_field');
+    parent::setUp();
   }
 
   /**

@@ -11,43 +11,18 @@ if (module_exists('ctools')) {
  */
 
 /**
- * Implements hook_entity_info().
+ * Implements hook_entity_info_alter().
  */
-function relation_entity_info() {
-  $entities['relation'] = array(
-    'label' => t('Relation'),
-    'base table' => 'relation',
-    'revision table' => 'relation_revision',
-    'fieldable' => TRUE,
-    'controller class' => 'RelationController',
-    'save callback' => 'relation_save',
-    'creation callback' => 'relation_rules_create',
-    'deletion callback' => 'relation_delete',
-    'access callback' => 'relation_rules_access',
-    'uri callback' => 'relation_uri',
-    'view callback' => 'relation_multiple_view',
-    'entity keys' => array(
-      'id' => 'rid',
-      'revision' => 'vid',
-      'bundle' => 'relation_type',
-      'label' => 'rid',
-    ),
-    'bundle keys' => array(
-      'bundle' => 'relation_type',
-    ),
-    'bundles' => array(),
-    'view modes' => array(),
-  );
-  foreach (relation_get_types() as $type => $info) {
-    $entities['relation']['bundles'][$type] = (array) $info;
-    $entities['relation']['bundles'][$type]['admin'] = array(
+function relation_entity_info_alter(&$info) {
+  foreach (relation_get_types() as $type => $type_info) {
+    $info['relation']['bundles'][$type] = (array) $type_info;
+    $info['relation']['bundles'][$type]['admin'] = array(
       'path' => 'admin/structure/relation/manage/%relation_type',
       'real path' => 'admin/structure/relation/manage/' . $type,
       'bundle argument' => 4,
       'access arguments' => array('administer relation types'),
     );
   }
-  return $entities;
 }
 
 /**

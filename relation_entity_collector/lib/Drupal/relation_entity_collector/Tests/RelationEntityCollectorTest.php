@@ -2,13 +2,17 @@
 
 /**
  * @file
- * Tests for Relation Entity Collector module.
+ * Definition of Drupal\relation_entity_collector\Tests\RelationEntityCollectorTest.
  */
+
+namespace Drupal\relation_entity_collector\Tests;
+
+use Drupal\relation\Tests\RelationTestBase;
 
 /**
  * Functional test of Relation's integration with the Entity Collector.
  */
-class RelationEntityCollectorTestCase extends RelationTestCase {
+class RelationEntityCollectorTest extends RelationTestBase {
 
   public static function getInfo() {
     return array(
