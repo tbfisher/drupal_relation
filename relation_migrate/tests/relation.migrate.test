@@ -58,32 +58,32 @@ class RelationMigrateTestCase extends RelationTestCase {
     taxonomy_term_save($this->tag);
 
     // Node reference.
-    $this->node1->field_node[LANGUAGE_NONE][0]['nid'] = $this->node2->nid;
-    $this->node2->field_node[LANGUAGE_NONE][0]['nid'] = $this->node3->nid;
-    $this->node3->field_node[LANGUAGE_NONE][0]['nid'] = $this->node4->nid;
-    $this->node4->field_node[LANGUAGE_NONE][0]['nid'] = $this->node5->nid;
-    $this->node5->field_node[LANGUAGE_NONE][0]['nid'] = $this->node1->nid;
+    $this->node1->field_node[LANGUAGE_NOT_SPECIFIED][0]['nid'] = $this->node2->nid;
+    $this->node2->field_node[LANGUAGE_NOT_SPECIFIED][0]['nid'] = $this->node3->nid;
+    $this->node3->field_node[LANGUAGE_NOT_SPECIFIED][0]['nid'] = $this->node4->nid;
+    $this->node4->field_node[LANGUAGE_NOT_SPECIFIED][0]['nid'] = $this->node5->nid;
+    $this->node5->field_node[LANGUAGE_NOT_SPECIFIED][0]['nid'] = $this->node1->nid;
 
     //User reference
-    $this->node1->field_user[LANGUAGE_NONE][0]['uid'] = $this->user1->uid;
-    $this->node2->field_user[LANGUAGE_NONE][0]['uid'] = $this->user1->uid;
-    $this->node3->field_user[LANGUAGE_NONE][0]['uid'] = $this->user1->uid;
-    $this->node4->field_user[LANGUAGE_NONE][0]['uid'] = $this->user1->uid;
-    $this->node5->field_user[LANGUAGE_NONE][0]['uid'] = $this->user1->uid;
+    $this->node1->field_user[LANGUAGE_NOT_SPECIFIED][0]['uid'] = $this->user1->uid;
+    $this->node2->field_user[LANGUAGE_NOT_SPECIFIED][0]['uid'] = $this->user1->uid;
+    $this->node3->field_user[LANGUAGE_NOT_SPECIFIED][0]['uid'] = $this->user1->uid;
+    $this->node4->field_user[LANGUAGE_NOT_SPECIFIED][0]['uid'] = $this->user1->uid;
+    $this->node5->field_user[LANGUAGE_NOT_SPECIFIED][0]['uid'] = $this->user1->uid;
 
     // Entity reference
-    $this->node1->field_entity[LANGUAGE_NONE][0]['target_id'] = $this->node5->nid;
-    $this->node2->field_entity[LANGUAGE_NONE][0]['target_id'] = $this->node4->nid;
-    $this->node3->field_entity[LANGUAGE_NONE][0]['target_id'] = $this->node3->nid;
-    $this->node4->field_entity[LANGUAGE_NONE][0]['target_id'] = $this->node2->nid;
-    $this->node5->field_entity[LANGUAGE_NONE][0]['target_id'] = $this->node1->nid;
+    $this->node1->field_entity[LANGUAGE_NOT_SPECIFIED][0]['target_id'] = $this->node5->nid;
+    $this->node2->field_entity[LANGUAGE_NOT_SPECIFIED][0]['target_id'] = $this->node4->nid;
+    $this->node3->field_entity[LANGUAGE_NOT_SPECIFIED][0]['target_id'] = $this->node3->nid;
+    $this->node4->field_entity[LANGUAGE_NOT_SPECIFIED][0]['target_id'] = $this->node2->nid;
+    $this->node5->field_entity[LANGUAGE_NOT_SPECIFIED][0]['target_id'] = $this->node1->nid;
 
     // Term reference
-    $this->node1->field_tags[LANGUAGE_NONE][0]['tid'] = $this->tag->tid;
-    $this->node2->field_tags[LANGUAGE_NONE][0]['tid'] = $this->tag->tid;
-    $this->node3->field_tags[LANGUAGE_NONE][0]['tid'] = $this->tag->tid;
-    $this->node4->field_tags[LANGUAGE_NONE][0]['tid'] = $this->tag->tid;
-    $this->node5->field_tags[LANGUAGE_NONE][0]['tid'] = $this->tag->tid;
+    $this->node1->field_tags[LANGUAGE_NOT_SPECIFIED][0]['tid'] = $this->tag->tid;
+    $this->node2->field_tags[LANGUAGE_NOT_SPECIFIED][0]['tid'] = $this->tag->tid;
+    $this->node3->field_tags[LANGUAGE_NOT_SPECIFIED][0]['tid'] = $this->tag->tid;
+    $this->node4->field_tags[LANGUAGE_NOT_SPECIFIED][0]['tid'] = $this->tag->tid;
+    $this->node5->field_tags[LANGUAGE_NOT_SPECIFIED][0]['tid'] = $this->tag->tid;
 
     // Save nodes again
     node_save($this->node1); node_save($this->node2); node_save($this->node3);
@@ -270,7 +270,7 @@ class RelationMigrateTestCase extends RelationTestCase {
     $this->assertRaw('<td><a href="' . url('node/' . $this->node5->nid) . '">' . $this->node5->title . '</a> → <a href="' . url('node/' . $this->node1->nid) . '">' . $this->node1->title . '</a></td>', t('Entity reference migrated successfully.'));
 
     // Test if duplicated relations get migrated properly - add one first
-    $this->node1->field_tags[LANGUAGE_NONE][1]['tid'] = $this->tag->tid;
+    $this->node1->field_tags[LANGUAGE_NOT_SPECIFIED][1]['tid'] = $this->tag->tid;
     node_save($this->node1);
 
     // Check if new reference appeared and migrate it to relation.

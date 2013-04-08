@@ -17,6 +17,7 @@ function relation_endpoint_field_info() {
       'default_formatter' => 'relation_endpoint',
       'entity types' => array('relation'),
       'no_ui' => TRUE,
+      'field item class' => 'Drupal\relation_endpoint\Type\RelationEndpoint',
     ),
   );
 }
@@ -24,7 +25,7 @@ function relation_endpoint_field_info() {
 /**
  * Implements hook_field_validate().
  */
-function relation_endpoint_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+function relation_endpoint_field_validate(EntityInterface $entity, $field, $instance, $langcode, $items, &$errors) {
   if (empty($entity_type) && empty($entity)) {
     return;
   }
@@ -120,7 +121,7 @@ function relation_endpoint_field_validate($entity_type, $entity, $field, $instan
 /**
  * Implements hook_field_presave().
  */
-function relation_endpoint_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+function relation_endpoint_field_presave(EntityInterface $entity, $field, $instance, $langcode, &$items) {
   // We need r_index here because EntityFieldQuery can't query on deltas.
   foreach ($items as $delta => &$item) {
     $item['r_index'] = $delta;
@@ -130,7 +131,7 @@ function relation_endpoint_field_presave($entity_type, $entity, $field, $instanc
 /**
  * Implements hook_field_update().
  */
-function relation_endpoint_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+function relation_endpoint_field_update(EntityInterface $entity, $field, $instance, $langcode, &$items) {
   // We do not update.
 }
 
@@ -256,7 +257,7 @@ function _relation_endpoint_get_endpoint_entity_types($instance) {
 /**
  * Implements hook_field_formatter_view().
  */
-function relation_endpoint_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+function relation_endpoint_field_formatter_view(EntityInterface $entity, $field, $instance, $langcode, $items, $display) {
   switch ($display['type']) {
     case 'relation_endpoint':
       $build[] = _relation_endpoint_field_create_html_table($items);

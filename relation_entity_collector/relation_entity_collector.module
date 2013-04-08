@@ -61,7 +61,7 @@ function relation_entity_collector_store($relation) {
   $_SESSION['relation_edit'] = $relation;
   $_SESSION['relation_type'] = $relation->relation_type;
   $_SESSION['relation_entity_keys'] = array();
-  foreach ($relation->endpoints[LANGUAGE_NONE] as $delta => $endpoint) {
+  foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $delta => $endpoint) {
     $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
     $entity = $entities[$endpoint['entity_id']];
     list( , , $entity_bundle) = entity_extract_ids($endpoint['entity_type'], $entity);
@@ -366,7 +366,7 @@ function _relation_entity_collector_get_entity($relation_type = NULL, $endpoints
   if (isset($_SESSION['relation_edit'])) {
     $relation = $_SESSION['relation_edit'];
     if (isset($endpoints)) {
-      $relation->endpoints[LANGUAGE_NONE] = $endpoints;
+      $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = $endpoints;
     }
     return $relation;
   }
@@ -404,7 +404,7 @@ function relation_entity_collector_remove($form, &$form_state) {
 function relation_entity_collector_save($form, $form_state) {
   $relation = _relation_entity_collector_get_entity();
   if ($relation) {
-    array_multisort($form_state['values']['table']['weight'], SORT_ASC, $relation->endpoints[LANGUAGE_NONE]);
+    array_multisort($form_state['values']['table']['weight'], SORT_ASC, $relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
     $rid = relation_save($relation);
     if ($rid) {
       $link = l(relation_get_type_label($relation), "relation/$rid");

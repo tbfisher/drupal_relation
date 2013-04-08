@@ -470,9 +470,9 @@ function relation_view($relation, $view_mode = 'full') {
   $build += array(
     '#entity' => $relation,
     '#view_mode' => $view_mode,
-    '#language' => LANGUAGE_NONE,
+    '#language' => LANGUAGE_NOT_SPECIFIED,
   );
-  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NONE);
+  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NOT_SPECIFIED);
   drupal_alter('entity_view', $build, $entity_type);
   return $build;
 }
@@ -614,7 +614,7 @@ function relation_create($type, $endpoints, $account = NULL) {
   $relation->is_new = TRUE;
   $relation->relation_type = $type;
   $relation->uid = $account->uid;
-  $relation->endpoints[LANGUAGE_NONE] = $endpoints;
+  $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = $endpoints;
   return $relation;
 }
 
@@ -634,7 +634,7 @@ function relation_save($relation, $account = NULL) {
   }
   global $user;
   try {
-    field_attach_validate('relation', $relation);
+    field_attach_validate($relation);
   }
   catch (FieldValidationException $e) {
     watchdog_exception('relation', $e, t('Field validation failed.'), NULL, 
@@ -811,7 +811,7 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL)
  */
 function relation_get_endpoints($relation, $entity_type = NULL) {
   $entities = array();
-  foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+  foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
     if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
       continue;
     }
@@ -949,16 +949,16 @@ function relation_entity_delete($entity, $entity_type) {
   foreach ($relations as $row) {
     // Remove any endpoints pointing to entity
     $relation = relation_load($row->rid);
-    foreach ($relation->endpoints[LANGUAGE_NONE] as $key => $endpoint) {
+    foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $key => $endpoint) {
       if ($endpoint['entity_id'] == $entity->id()
         && $endpoint['entity_type'] == $entity_type) {
-        unset($relation->endpoints[LANGUAGE_NONE][$key]);
+        unset($relation->endpoints[LANGUAGE_NOT_SPECIFIED][$key]);
       }
     }
     // Check if relation remains valid with regards to arity
     $type = relation_get_types(array($relation->relation_type));
     $min_arity = $type[$relation->relation_type]->min_arity;
-    $arity = count($relation->endpoints[LANGUAGE_NONE]);
+    $arity = count($relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
     if ($arity < $min_arity) {
       // Not valid - delete
       array_push($relations_to_delete, $relation->rid);

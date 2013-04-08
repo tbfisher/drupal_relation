@@ -15,6 +15,8 @@ namespace Drupal\relation\Tests;
  */
 class RelationAPITest extends RelationTestBase {
 
+  public static $modules = array('relation', 'node');
+
   public static function getInfo() {
     return array(
       'name' => 'Relation test',
@@ -37,7 +39,7 @@ class RelationAPITest extends RelationTestBase {
     $relations = entity_load('relation', array_keys(relation_query('node', $this->node1->nid)->execute()));
 
     // Check that symmetric relation is correctly related to node 4.
-    $this->assertEqual($relations[$this->rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'], $this->node4->nid, 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[LANGUAGE_NONE][1]['entity_id'] . '==' . $this->node4->nid);
+    $this->assertEqual($relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'], $this->node4->nid, 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'] . '==' . $this->node4->nid);
 
     // Symmetric relation is Article 1 <--> Page 4
     $entity_keys = array(
@@ -172,14 +174,14 @@ class RelationAPITest extends RelationTestBase {
       $relation = relation_create($relation_type, $endpoints);
       $rid = relation_save($relation);
       $this->assertTrue($rid, 'Relation created.');
-      $count = count($relation->endpoints[LANGUAGE_NONE]);
+      $count = count($relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
       $this->assertEqual($count, count($endpoints));
       $this->assertEqual($relation->arity, count($endpoints));
       $this->assertEqual($relation->relation_type, $relation_type);
-      foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+      foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
         $need_ids[$endpoint['entity_id']] = TRUE;
       }
-      foreach ($relation->endpoints[LANGUAGE_NONE] as $delta => $endpoint) {
+      foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $delta => $endpoint) {
         $this->assertEqual($endpoint['entity_type'], $endpoints[$delta]['entity_type'], 'The entity type is ' . $endpoints[$delta]['entity_type'] . ': ' . $endpoint['entity_type']);
         $this->assertTrue(isset($need_ids[$endpoint['entity_id']]), 'The entity ID is correct: ' . $need_ids[$endpoint['entity_id']]);
         unset($need_ids[$endpoint['entity_id']]);

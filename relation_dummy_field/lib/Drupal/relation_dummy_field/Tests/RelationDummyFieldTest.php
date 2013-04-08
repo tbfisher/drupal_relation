@@ -14,7 +14,7 @@ use Drupal\relation\Tests\RelationTestBase;
  */
 class RelationDummyFieldTest extends RelationTestBase {
 
-  public static $modules = array('relation', 'relation_dummy_field');
+  public static $modules = array('relation', 'node', 'relation_dummy_field');
 
   public static function getInfo() {
     return array(

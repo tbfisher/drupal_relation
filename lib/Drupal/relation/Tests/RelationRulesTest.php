@@ -1,13 +1,19 @@
 <?php
+
 /**
  * @file
- * Tests for Rules support.
+ * Definition of Drupal\relation\Tests\RelationRulesTest.
  */
+
+namespace Drupal\relation\Tests;
 
 /**
  * Functional test of Relation's integration with Rules.
  */
-class RelationRulesTestCase extends RelationTestCase {
+class RelationRulesTest extends RelationTestBase {
+
+  public static $modules = array('relation', 'node', 'rules');
+
   public static function getInfo() {
     return array(
       'name' => 'Relation Rules integration test',
@@ -52,7 +58,7 @@ class RelationRulesTestCase extends RelationTestCase {
       $rid = db_query('SELECT MAX(rid) FROM {relation}')->fetchField();
       // If all went well, we should now have a relation with correct endpoints.
       $relation = relation_load($rid);
-      $correct = ($relation->endpoints[LANGUAGE_NONE][0]['entity_id'] == $node->nid) && ($relation->endpoints[LANGUAGE_NONE][1]['entity_id'] == $user->uid);
+      $correct = ($relation->endpoints[LANGUAGE_NOT_SPECIFIED][0]['entity_id'] == $node->nid) && ($relation->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'] == $user->uid);
       $this->assertTrue($correct, 'Relation was created by setting two endpoints from rule context and saving it.');
 
       // Test to create a relation by first fetching the endpoints from the
@@ -77,7 +83,7 @@ class RelationRulesTestCase extends RelationTestCase {
       $relation = relation_load($rid);
       // The $node and the $user should be the the same as in the last test, since
       // we fetched the endpoits from that relation.
-      $correct = ($relation->endpoints[LANGUAGE_NONE][0]['entity_id'] == $node->nid) && ($relation->endpoints[LANGUAGE_NONE][1]['entity_id'] == $user->uid);
+      $correct = ($relation->endpoints[LANGUAGE_NOT_SPECIFIED][0]['entity_id'] == $node->nid) && ($relation->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'] == $user->uid);
       $this->assertTrue($correct, 'Relation was created by fetching endpoints from another relation and saving it.');
 
 

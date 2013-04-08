@@ -17,6 +17,11 @@ abstract class RelationTestBase extends WebTestBase {
 
   function setUp() {
     parent::setUp();
+    // Create Basic page and Article node types.
+    if ($this->profile != 'standard') {
+      $this->drupalCreateContentType(array('type' => 'page', 'name' => 'Basic page'));
+      $this->drupalCreateContentType(array('type' => 'article', 'name' => 'Article'));
+    }
 
     // Defines users and permissions.
     $permissions = array(

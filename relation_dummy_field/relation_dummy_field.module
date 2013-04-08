@@ -108,7 +108,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
       foreach ($items as $delta => $item) {
         $links = array();
         $relation = (object) $item;
-        foreach (array_filter($relation->endpoints[LANGUAGE_NONE]) as $endpoint) {
+        foreach (array_filter($relation->endpoints[LANGUAGE_NOT_SPECIFIED]) as $endpoint) {
           $related_entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
           $related_entity = reset($related_entities);
           if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $entity_id) {
@@ -144,14 +144,14 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
         $relation_type = relation_type_load($relation->relation_type);
 
         $subject = entity_label($entity_type, $entity) . ' '; // Subject of the sentence.
-        $subject_is_source = ($relation->endpoints[LANGUAGE_NONE]['0']['entity_id']) == $id ? TRUE : FALSE;
+        $subject_is_source = ($relation->endpoints[LANGUAGE_NOT_SPECIFIED]['0']['entity_id']) == $id ? TRUE : FALSE;
         $count = 0; // For comma separation of objects.
         $duplicate = FALSE; // To make sure duplicates of $entity get included in object list.
         $objects = ''; // Comma separated list of entities that are the object of the sentence.
         // Gramatical predicate of teh sentence.
         $predicate = $relation_type->directional ? $relation_type->reverse_label : $relation_type->label;
 
-        foreach ($relation->endpoints[LANGUAGE_NONE] as $endpoint) {
+        foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
           // Add all entities that aren't this entity to the sentence $objects.
           // Check for duplicates of the $subject first.
           if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $id && $duplicate == FALSE) {

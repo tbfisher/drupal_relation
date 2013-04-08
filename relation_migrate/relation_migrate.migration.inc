@@ -55,7 +55,7 @@ abstract class RelationMigrateReference extends Migration {
   }
 
   public function prepare(stdClass $relation, stdClass $source_row) {
-    $relation->endpoints[LANGUAGE_NONE] = array(
+    $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = array(
       array('entity_type' => $source_row->source_type, 'entity_id' => $source_row->source_id),
       array('entity_type' => $source_row->destination_type, 'entity_id' => $source_row->destination_id),
     );

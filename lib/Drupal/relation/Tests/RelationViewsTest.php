@@ -1,13 +1,18 @@
 <?php
+
 /**
  * @file
- * Tests for Views support in the Relation module.
+ * Definition of Drupal\relation\Tests\RelationViewsTest.
  */
+
+namespace Drupal\relation\Tests;
 
 /**
  * Functional test of Relation's integration with Views.
  */
-class RelationViewsTestCase extends RelationTestCase {
+class RelationViewsTest extends RelationTestBase {
+
+  public static $modules = array('relation', 'node', 'views');
 
   public static function getInfo() {
     return array(

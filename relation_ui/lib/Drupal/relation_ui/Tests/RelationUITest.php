@@ -16,7 +16,7 @@ use Drupal\relation\Tests\RelationTestBase;
  */
 class RelationUITest extends RelationTestBase {
 
-  public static $modules = array('relation', 'relation_ui');
+  public static $modules = array('relation', 'relation_ui', 'node');
 
   public static function getInfo() {
     return array(
