@@ -11,18 +11,21 @@ if (module_exists('ctools')) {
  */
 
 /**
- * Implements hook_entity_info_alter().
+ * Implements hook_entity_bundle_info().
  */
-function relation_entity_info_alter(&$info) {
-  foreach (relation_get_types() as $type => $type_info) {
-    $info['relation']['bundles'][$type] = (array) $type_info;
-    $info['relation']['bundles'][$type]['admin'] = array(
-      'path' => 'admin/structure/relation/manage/%relation_type',
-      'real path' => 'admin/structure/relation/manage/' . $type,
-      'bundle argument' => 4,
-      'access arguments' => array('administer relation types'),
+function relation_entity_bundle_info() {
+  $bundles = array();
+  foreach (relation_get_types() as $type => $info) {
+    $bundles['relation'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/structure/relation/manage/%relation_type',
+        'real path' => 'admin/structure/relation/manage/' . $type,
+        'bundle argument' => 4,
+      ),
     );
   }
+  return $bundles;
 }
 
 /**

@@ -137,15 +137,15 @@ function relation_ui_menu() {
  * List all relation_types (page callback).
  */
 function relation_ui_type_list() {
-  $relation = Drupal::service('plugin.manager.entity')->getDefinition('relation');
+  $relation_types = relation_get_types();
   $field_ui = module_exists('field_ui');
   $ctools = module_exists('ctools');
   $headers = array(t('Name'), t('Operations'));
   $rows = array();
 
-  foreach ($relation['bundles'] as $type => $relation_type) {
+  foreach ($relation_types as $type => $relation_type) {
     $url = 'admin/structure/relation/manage/' . $type;
-    $row = array(l($relation_type['label'], $url));
+    $row = array(l($relation_type->label, $url));
     $links['edit'] = array(
       'title' => t('edit'),
       'href' => $url . '/edit',
