@@ -10,7 +10,7 @@
  */
 function relation_ui_menu() {
   $items['relation/%relation'] = array(
-    'title callback' => 'relation_page_title',
+    'title callback' => 'relation_ui_page_title',
     'title arguments' => array(1),
     'access arguments' => array('access relations'),
     'page callback' => 'relation_page',
