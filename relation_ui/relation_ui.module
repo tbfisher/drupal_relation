@@ -13,8 +13,8 @@ function relation_ui_menu() {
     'title callback' => 'relation_ui_page_title',
     'title arguments' => array(1),
     'access arguments' => array('access relations'),
-    'page callback' => 'relation_page',
-    'page arguments' => array(1),
+    'page callback' => 'entity_view',
+    'page arguments' => array(1, 'full'),
   );
   $items['relation/%relation/view'] = array(
     'title' => 'View',
@@ -24,17 +24,18 @@ function relation_ui_menu() {
   $items['relation/%relation/edit'] = array(
     'title' => 'Edit',
     'access arguments' => array('edit relations'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_edit_form', 1),
+    'page callback' => 'entity_get_form',
+    'page arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
   );
   $items['relation/%relation/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_delete_confirm', 1),
+    'page arguments' => array('relation_ui_delete_confirm', 1),
     'access arguments' => array('delete relations'),
     'weight' => 10,
     'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
   );
   if (module_exists('devel')) {
     $items['relation/%relation/devel'] = array(
@@ -437,6 +438,37 @@ function relation_ui_type_delete_confirm_submit($form, &$form_state) {
 
   $form_state['redirect'] = 'admin/structure/relation';
   return;
+}
+
+/**
+ * Menu callback: ask for confirmation of relation deletion.
+ */
+function relation_ui_delete_confirm($form, &$form_state, EntityInterface $relation) {
+  $form['#relation'] = $relation;
+  $uri = $relation->uri();
+
+  return confirm_form($form,
+    t('Are you sure you want to delete relation %id?', array('%id' => $relation->id())),
+    $uri['path'],
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Executes relation deletion.
+ */
+function relation_ui_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $relation = $form['#relation'];
+    $relation->delete();
+    $replacements = array('@bundle' => $relation->bundle(), '%id' => $relation->id());
+    watchdog('relation', '@bundle: deleted %id.', $replacements);
+    drupal_set_message(t('@bundle %id has been deleted.', $replacements));
+  }
+
+  $form_state['redirect'] = '<front>';
 }
 
 /**

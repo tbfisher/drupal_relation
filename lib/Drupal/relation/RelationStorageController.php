@@ -7,7 +7,7 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\DatabaseStorageControllerNG;
+use Drupal\Core\Entity\DatabaseStorageController;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
@@ -17,7 +17,24 @@ use Drupal\Core\Entity\EntityInterface;
  * handling for relation revisions, very similar to what's being done with
  * nodes.
  */
-class RelationStorageController extends DatabaseStorageControllerNG {
+class RelationStorageController extends DatabaseStorageController {
+  /**
+   * Overrides Drupal\Core\Entity\DatabaseStorageController::create().
+   */
+  public function create(array $values) {
+    $values += array(
+      'created' => REQUEST_TIME,
+      'uid' => $GLOBALS['user']->uid,
+    );
+    return parent::create($values)->getBCEntity();
+  }
+
+  /**
+   * Overrides Drupal\Core\Entity\DatabaseStorageController::preSave().
+   */
+  protected function preSave(EntityInterface $relation) {
+    $relation->changed = REQUEST_TIME;
+  }
 
   /**
    * Overrides Drupal\Core\Entity\DatabaseStorageController::buildQuery().

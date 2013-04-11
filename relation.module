@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Entity\EntityInterface;
+
 require_once dirname(__FILE__) . '/relation.rules.inc';
 if (module_exists('ctools')) {
   require_once dirname(__FILE__) . '/relation.ctools.inc';
@@ -427,62 +429,8 @@ function relation_type_delete($relation_type) {
  *     - entity_type: The type of the entity (eg. node).
  *     - entity_id: Numeric entity ID.
  */
-function relation_load($rid, $vid = NULL, $reset = FALSE) {
-  $conditions = (isset($vid) ? array('vid' => $vid) : array());
-  $relations = relation_load_multiple(array($rid), $conditions, $reset);
-  return reset($relations);
-}
-
-/**
- * Loads a set of relations from an array of relation ids.
- *
- * @param $rids
- *   Array of numerical relation ids of the relations to be loaded.
- *
- * @return
- *   Associative array of loaded relation objects, keyed by relation id.
- *
- * @see relation_load()
- */
-function relation_load_multiple($rids, $conditions = array(), $reset = FALSE) {
-  // Entity load handles field_attach_load for us.
-  return entity_load('relation', $rids, $conditions, $reset);
-}
-
-/**
- * Relation display page. Currently only displays related entities.
- *
- * @TODO: implement directionality, possibly give more details on entities?
- */
-function relation_page($relation) {
-  $view_mode = 'full';
-  return relation_view($relation);
-}
-
-function relation_view($relation, $view_mode = 'full') {
-  $entity_type = 'relation';
-  $entity = $relation;
-  $entities = array($relation->rid => $relation);
-
-  field_attach_prepare_view($entity_type, $entities, $view_mode);
-  entity_prepare_view($entity_type, $entities);
-  $build = field_attach_view($entity_type, $entity, $view_mode);
-  $build += array(
-    '#entity' => $relation,
-    '#view_mode' => $view_mode,
-    '#language' => LANGUAGE_NOT_SPECIFIED,
-  );
-  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, LANGUAGE_NOT_SPECIFIED);
-  drupal_alter('entity_view', $build, $entity_type);
-  return $build;
-}
-
-function relation_multiple_view($relations, $view_mode) {
-  $build = array();
-  foreach ($relations as $relation) {
-    $build['relation'][$relation->rid] = relation_view($relation, $view_mode);
-  }
-  return $build;
+function relation_load($rid) {
+  return entity_load('relation', $rid);
 }
 
 /**
@@ -490,29 +438,6 @@ function relation_multiple_view($relations, $view_mode) {
  */
 function relation_type_page_title($type) {
   return $type->label;
-}
-
-/**
- * Relation edit form.
- */
-function relation_edit_form($form, &$form_state, $relation) {
-  $form_state['relation'] = $relation;
-  field_attach_form('relation', $relation, $form, $form_state);
-  $form['actions']['#weight'] = 100;
-  $form['actions']['save'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-  return $form;
-}
-
-function relation_edit_form_submit($form, &$form_state) {
-  $relation = $form_state['relation'];
-  entity_form_submit_build_entity('relation', $relation, $form, $form_state);
-  $rid = relation_save($relation);
-  if ($rid) {
-    $form_state['redirect'] = 'relation/' . $rid;
-  }
 }
 
 /**
@@ -589,101 +514,6 @@ function relation_query_enforce_distinct_endpoints_alter(QueryAlterableInterface
 }
 
 /**
- * Constructs a relation from a machine name and a list of endpoints.
- *
- * @param $relation_type
- *   The relation type (bundle) of the relation to be created.
- * @param $endpoints
- *   A list of endpoint entities. Each endpoint is defined by an associate
- *   array, with an entity_type and entity_id key. For example:
- *   @code
- *   array(
- *     array('entity_type' => 'node', 'entity_id' => 1),
- *     array('entity_type' => 'user', 'entity_id' => 5),
- *   array);
- *   @endcode
- *
- * @return
- *   The new relation object.
- */
-function relation_create($type, $endpoints, $account = NULL) {
-  if (!isset($account)) {
-    $account = $GLOBALS['user'];
-  }
-  $relation = new stdClass();
-  $relation->is_new = TRUE;
-  $relation->relation_type = $type;
-  $relation->uid = $account->uid;
-  $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = $endpoints;
-  return $relation;
-}
-
-/**
- * Saves a relation.
- *
- * @param $relation
- *   The relation entity data object. See relation_create() for the appropriate
- *   format (or just use it).
- *
- * @return
- *   The new relation id.
- */
-function relation_save($relation, $account = NULL) {
-  if (!isset($account)) {
-    $account = $GLOBALS['user'];
-  }
-  global $user;
-  try {
-    field_attach_validate($relation);
-  }
-  catch (FieldValidationException $e) {
-    watchdog_exception('relation', $e, t('Field validation failed.'), NULL, 
-      WATCHDOG_ERROR);
-    return FALSE;
-  }
-  // Determine if we will be inserting a new relation.
-  if (!isset($relation->is_new)) {
-    $relation->is_new = empty($relation->rid);
-  }
-  $transaction = db_transaction();
-  $endpoints = field_get_items('relation', $relation, 'endpoints');
-  $relation->arity = count($endpoints);
-  // use time() instead of REQUEST_TIME, because otherwise tests
-  // RelationQuery::order() are impossible.
-  $relation->changed = time();
-  if (!$relation->is_new) {
-    $keys = array('rid');
-    $op = 'update';
-    $relation->original = relation_load($relation->rid, $relation->vid);
-  }
-  else {
-    $relation->created = $relation->changed;
-    $keys = array();
-    $op = 'insert';
-  }
-  field_attach_presave('relation', $relation);
-  module_invoke_all('entity_presave', $relation, 'relation');
-  unset($relation->vid);
-  $temp_uid = $relation->uid;
-  $relation->uid = $account->uid;
-  drupal_write_record('relation_revision', $relation);
-  $relation->uid = $temp_uid;
-  drupal_write_record('relation', $relation, $keys);
-  if ($relation->is_new) {
-    db_update('relation_revision')
-      ->fields(array('rid' => $relation->rid))
-      ->condition('vid', $relation->vid)
-      ->execute();
-  }
-  call_user_func("field_attach_$op", 'relation', $relation);
-  module_invoke_all('entity_' . $op, $relation, 'relation');
-  module_invoke('rules', 'invoke_event', 'relation_' . $op, $relation);
-  relation_clear_related_entities_cache($endpoints);
-
-  return $relation->rid;
-}
-
-/**
  * Clear the cache for a set of endpoints.
  *
  * @param $endpoints
@@ -697,28 +527,28 @@ function relation_clear_related_entities_cache($endpoints) {
 }
 
 /**
- * Insert a new relation in the database.
- */
-function relation_insert($type, $endpoints) {
-  $relation = relation_create($type, $endpoints);
-  return relation_save($relation);
-}
-
-/**
- * Updates a relation.
- */
-function relation_update($relation) {
-  relation_save($relation);
-}
-
-/**
- * Deletes a relation.
+ * Constructs and saves a simple relation.
  *
- * @param $rid
- *   The numeric id of the relation to be deleted.
+ * @param $relation_type
+ *   The relation type machine name.
+ * @param $endpoints
+ *   A list of endpoint entities. Each endpoint is defined by an associate
+ *   array, with an entity_type and entity_id key. For example:
+ *   @code
+ *   array(
+ *     array('entity_type' => 'node', 'entity_id' => 1),
+ *     array('entity_type' => 'user', 'entity_id' => 5),
+ *   array);
+ *   @endcode
+ *
+ * @return \Drupal\relation\Plugin\Core\Entity\Relation
+ *   A saved relation.
  */
-function relation_delete($rid) {
-  relation_delete_multiple(array($rid));
+function relation_insert($relation_type, $endpoints) {
+  $relation = entity_create('relation', array('relation_type' => $relation_type));
+  $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = $endpoints;
+  $relation->save();
+  return $relation;
 }
 
 /**
@@ -727,7 +557,7 @@ function relation_delete($rid) {
  * @param $rid
  *   An array of numeric ids of the relation to be deleted.
  */
-function relation_delete_multiple($rids) {
+function relation_delete_multiple(array $rids) {
   $relations = relation_load_multiple($rids);
   foreach ($relations as $rid => $relation) {
     db_delete('relation')->condition('rid', $rid)->execute();
@@ -741,41 +571,11 @@ function relation_delete_multiple($rids) {
 }
 
 /**
- * Menu callback: ask for confirmation of relation deletion.
- */
-function relation_delete_confirm($form, &$form_state, $relation) {
-  $form['#relation'] = $relation;
-  // Always provide entity id in the same form key as in the entity edit form.
-  $form['rid'] = array('#type' => 'value', '#value' => $relation->rid);
-  return confirm_form($form,
-    t('Are you sure you want to delete relation %rid?', array('%rid' => $relation->rid)),
-    'relation/' . $relation->rid,
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
-}
-
-/**
- * Executes relation deletion.
- */
-function relation_delete_confirm_submit($form, &$form_state) {
-  if ($form_state['values']['confirm']) {
-    $relation = $form['#relation'];
-    relation_delete($form_state['values']['rid']);
-    watchdog('relation', '@type: deleted %title.', array('@type' => $relation->relation_type, '%title' => $relation->rid));
-    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation->relation_type, '%title' => $relation->rid)));
-  }
-
-  $form_state['redirect'] = '<front>';
-}
-
-/**
  * Gets a relation's URI.
  *
  * @see entity_uri()
  */
-function relation_uri($relation) {
+function relation_uri(EntityInterface $relation) {
   return array('path' => 'relation/' . $relation->rid);
 }
 
@@ -996,8 +796,8 @@ function relation_views_api() {
  * @return
  *   The label of the relation type.
  */
-function relation_get_type_label($relation, $reverse = FALSE) {
-  $type = relation_type_load($relation->relation_type);
+function relation_get_type_label(EntityInterface $relation, $reverse = FALSE) {
+  $type = relation_type_load($relation->bundle());
   if ($type->directional && $reverse) {
     return $type->reverse_label;
   }
