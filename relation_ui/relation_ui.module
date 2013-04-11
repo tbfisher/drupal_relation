@@ -323,14 +323,14 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
     '#default_value' => isset($relation_type->max_arity) ? $relation_type->max_arity : 2,
   );
   $counter = 0;
-  foreach (entity_get_info() as $entity_type => $entity) {
-    $bundles[$entity['label']]["$entity_type:*"] = 'all ' . $entity['label'] . ' bundles';
+  $entity_info = entity_get_info();
+  foreach (entity_get_bundles() as $entity_type => $bundles) {
     $counter += 2;
-    if (isset($entity['bundles'])) {
-      foreach ($entity['bundles'] as $bundle_id => $bundle) {
-        $bundles[$entity['label']]["$entity_type:$bundle_id"] = $bundle['label'];
-        $counter++;
-      }
+    $entity_label = $entity_info[$entity_type]['label'];
+    $options_bundles[$entity_label]["$entity_type:*"] = 'all ' . $entity_label . ' bundles';
+    foreach ($bundles as $bundle_id => $bundle) {
+      $options_bundles[$entity_label]["$entity_type:$bundle_id"] = $bundle['label'];
+      $counter++;
     }
   }
   $form['endpoints'] = array(
@@ -343,7 +343,7 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
   $form['endpoints']['source_bundles'] = array(
     '#type'          => 'select',
     '#title'         => t('Available source bundles'),
-    '#options'       => $bundles,
+    '#options'       => $options_bundles,
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->source_bundles,
     '#multiple'      => TRUE,
@@ -352,7 +352,7 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
   $form['endpoints']['target_bundles'] = array(
     '#type'          => 'select',
     '#title'         => t('Available target bundles'),
-    '#options'       => $bundles,
+    '#options'       => $options_bundles,
     '#size'          => max(12, $counter),
     '#default_value' => $relation_type->target_bundles,
     '#multiple'      => TRUE,
