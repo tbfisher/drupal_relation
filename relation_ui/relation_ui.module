@@ -408,7 +408,7 @@ function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {
   $caption = '';
 
   $num_relations = relation_query()
-    ->propertyCondition('relation_type', $relation_type->relation_type)
+    ->condition('relation_type', $relation_type->bundle())
     ->count()
     ->execute();
   if ($num_relations) {
