@@ -400,7 +400,7 @@ function relation_ui_type_form_submit($form, &$form_state) {
 /**
  * Menu callback; deletes a single relation type.
  */
-function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {
+function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {dvm('hjai');
   $form['relation_type'] = array('#type' => 'value', '#value' => $relation_type->relation_type);
   $form['label'] = array('#type' => 'value', '#value' => $relation_type->label);
 
@@ -408,7 +408,7 @@ function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {
   $caption = '';
 
   $num_relations = relation_query()
-    ->condition('relation_type', $relation_type->bundle())
+    ->condition('relation_type', $relation_type->relation_type)
     ->count()
     ->execute();
   if ($num_relations) {
@@ -664,7 +664,7 @@ function theme_relation_ui_admin_content($variables) {
       // Load the relation.
       $r = relation_load($relation->rid);
       // Get the endpoints for this relation.
-      $endpoints = field_get_items('relation', $r, 'endpoints');
+      $endpoints = field_get_items($r, 'endpoints');
 
       $relation_entities = array();
       if (!empty($endpoints)) {

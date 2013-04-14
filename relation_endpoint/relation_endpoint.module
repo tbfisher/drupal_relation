@@ -5,6 +5,8 @@
  * Relation endpoints field.
  */
 
+use Drupal\Core\Entity\EntityInterface;
+
 /**
  * Implements hook_field_info().
  */

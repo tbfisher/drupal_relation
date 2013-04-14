@@ -48,7 +48,7 @@ class RelationEntityCollectorTest extends RelationTestBase {
     $this->drupalPost('node', array(), t('Save relation'));
     // Now figure out the new rid.
     $result = array_keys(relation_query('node', $this->node3->nid)
-      ->propertyCondition('relation_type', $relation_type)
+      ->condition('relation_type', $relation_type)
       ->execute());
     $path = 'relation/' . $result[0];
     $link = l($relation_type, $path);

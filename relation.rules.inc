@@ -143,9 +143,8 @@ function relation_rules_get_specific_endpoints($relation, array $options, $prope
 
   $array = array();
   foreach ($endpoints as $endpoint) {
-    $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
-    $entity_id = entity_extract_ids($endpoint['entity_type'], reset($entities));
-    $array[] = $entity_id[0];
+    $entity = entity_load($endpoint['entity_type'], $endpoint['entity_id']);
+    $array[] = $entity->id();
   }
   return $array;
 }
@@ -431,7 +430,7 @@ function relation_rules_fetch_endpoint($relation, $entity_type, $number = 1) {
   // Make sure we have the fully loaded relation entity.
   $loaded_relation = relation_load($relation->rid);
   // Load the endpoints
-  $endpoints = field_get_items('relation', $loaded_relation, 'endpoints');
+  $endpoints = field_get_items($loaded_relation, 'endpoints');
 
   $entity_ids = array();
   foreach ($endpoints as $endpoint) {

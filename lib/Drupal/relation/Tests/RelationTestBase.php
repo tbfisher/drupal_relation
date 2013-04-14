@@ -212,11 +212,10 @@ abstract class RelationTestBase extends WebTestBase {
    * Saves a relation.
    */
   function saveRelation($relation_type, $endpoints) {
-    $relation = relation_create($relation_type, $endpoints);
-    $rid = relation_save($relation);
+    $relation = relation_insert($relation_type, $endpoints);
     if ($this->sleep) {
       sleep(1);
     }
-    return $rid;
+    return $relation->id();
   }
 }

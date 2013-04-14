@@ -34,6 +34,8 @@ class RelationStorageController extends DatabaseStorageController {
    */
   protected function preSave(EntityInterface $relation) {
     $relation->changed = REQUEST_TIME;
+    $endpoints = field_get_items($relation, 'endpoints');
+    $relation->arity = count($endpoints);
   }
 
   /**

@@ -198,7 +198,7 @@ function relation_dummy_field_field_prepare_view($entity_type, $entities, $field
     $relation_types = $instances[$id]['settings']['relation_type'];
     $query = relation_query($entity_type, $id)->range(0, 50);
     if ($relation_types) {
-      $query->entityCondition('bundle', $relation_types, 'IN');
+      $query->condition('relation_type', $relation_types, 'IN');
     }
     $relation_ids = array_keys($query->execute());
     // Who knows why but field does not like if the delta does not start at 0...

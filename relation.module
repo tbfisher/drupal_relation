@@ -455,26 +455,26 @@ function relation_type_page_title($type) {
  *   $results = relation_relation_exists($entity_keys, $relation_type);
  * @endcode
  *
- * @param $entity_keys
- *   The entity keys of the relation to found. Entity_keys are arrays keyed by
+ * @param array $endpoints
+ *   An array containing endpoints. Each endpoint is an array with keys 
  *   'entity_type' and 'entity_id'.
  * @param $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
  * @param $enforce_direction
  *   (Optional) Whether to enforce direction as specified in $entity_keys.
  *
- * @return
- *   Return FALSE if no relation exists, or an array of matching relations.
+ * @return array
+ *   Array of Relation ID's keyed by revision ID.
  */
-function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_direction = FALSE) {
-  $query = relation_query();
-  foreach ($entity_keys as $r_index => $entity_key) {
-    $query->related($entity_key['entity_type'], $entity_key['entity_id'], $enforce_direction ? $r_index : NULL);
+function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_direction = FALSE) {
+  $query = entity_query('relation');
+  foreach ($endpoints as $r_index => $entity_key) {
+    relation_query_add_related($query, $entity_key['entity_type'], $entity_key['entity_id'], $enforce_direction ? $r_index : NULL);
   }
   if ($relation_type) {
-    $query->propertyCondition('relation_type', $relation_type);
+    $query->condition('relation_type', $relation_type);
   }
-  $query->propertyCondition('arity', count($entity_keys));
+  $query->condition('arity', count($endpoints));
   // Avoid Node Access restrictions when checking for a relation
   $query->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
   // If direction of the relation is not forced make sure the each endpoint
@@ -482,8 +482,7 @@ function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_
   if (!$enforce_direction) {
     $query->addTag('enforce_distinct_endpoints');
   }
-  $relation_ids = $query->execute();
-  return $relation_ids ? $relation_ids : FALSE;
+  return $query->execute();
 }
 
 /**
@@ -491,11 +490,10 @@ function relation_relation_exists($entity_keys, $relation_type = NULL, $enforce_
  *
  * Adds conditions to query to ensure different r_index for each endpoint.
  */
-function relation_query_enforce_distinct_endpoints_alter(QueryAlterableInterface $query) {
+function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
   // Get arity of the query
-  $relation_query = $query->getMetaData('entity_field_query');
-  foreach ($relation_query->propertyConditions as $condition) {
-    if ($condition['column'] == 'arity') {
+  foreach ($query->conditions() as $condition) {
+    if ($condition['field'] == 'relation.arity') {
       $arity = $condition['value'];
       break;
     }
@@ -503,11 +501,13 @@ function relation_query_enforce_distinct_endpoints_alter(QueryAlterableInterface
   // Add r_index conditions between all endpoints
   for ($i = 0; $i < $arity; $i++) {
     for ($k = $i + 1; $k < $arity; $k++) {
-      // @see http://drupal.org/node/1859084
+      // @see http://drupal.org/node/1859084, http://drupal.org/node/1760026
       // For now each endpoint condition adds 2 joins to the query. Add
       // conditions between even numbers.
-      $column_left = 'field_data_endpoints' . $i*2 . '.endpoints_r_index';
-      $column_right = 'field_data_endpoints' . $k*2 . '.endpoints_r_index';
+      $left_suffix = !$i ? '' : '_' . $i*2;
+      $right_suffix = !$k ? '' : '_' . $k*2;
+      $column_left = 'field_data_endpoints' . $left_suffix . '.endpoints_r_index';
+      $column_right = 'field_data_endpoints' . $right_suffix . '.endpoints_r_index';
       $query->where("$column_left != $column_right");
     }
   }
@@ -552,25 +552,6 @@ function relation_insert($relation_type, $endpoints) {
 }
 
 /**
- * Deletes a relation.
- *
- * @param $rid
- *   An array of numeric ids of the relation to be deleted.
- */
-function relation_delete_multiple(array $rids) {
-  $relations = relation_load_multiple($rids);
-  foreach ($relations as $rid => $relation) {
-    db_delete('relation')->condition('rid', $rid)->execute();
-    db_delete('relation_revision')->condition('rid', $rid)->execute();
-    module_invoke_all('entity_delete', $relation, 'relation');
-    module_invoke('rules', 'invoke_event', 'relation_delete', $relation);
-    field_attach_delete('relation', $relation);
-    $endpoints = field_get_items('relation', $relation, 'endpoints');
-    relation_clear_related_entities_cache($endpoints);
-  }
-}
-
-/**
  * Gets a relation's URI.
  *
  * @see entity_uri()
@@ -593,9 +574,40 @@ function relation_uri(EntityInterface $relation) {
  *
  * @return RelationQuery
  *   The query object itself.
+ *   
+ *   @todo deprecate this
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
   $query = entity_query('relation');
+  relation_query_add_related($query, $entity_type, $entity_id, $r_index);
+  return $query;
+}
+
+/**
+ * Add a related entity to the query.
+ *
+ * @param QueryInterface $query
+ * @param $entity_type
+ *   Entity type of the related entity.
+ * @param $entity_id
+ *   Entity id of the related entity. Can be an array of entity IDs.
+ * @param $r_index
+ *   The index of the related entity within the requested relation(s).
+ *
+ * @todo rename. / extend class ala RelationQuery::related()
+ *
+ * @return Drupal\Core\Entity\Query\QueryInterface
+ */
+function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $query, $entity_type, $entity_id, $r_index = NULL) {
+  $group = $query->andConditionGroup()
+    ->condition('endpoints.entity_type', $entity_type, '=')
+    ->condition('endpoints.entity_id', $entity_id, NULL);
+
+  if (isset($r_index)) {
+    $group->condition('endpoints', 'r_index', $r_index, '=');
+  }
+
+  $query->condition($group);
   return $query;
 }
 
@@ -621,7 +633,7 @@ function relation_get_endpoints($relation, $entity_type = NULL) {
     return FALSE;
   }
   foreach ($entities as $entity_type => $ids) {
-    $entities[$entity_type] = entity_load($entity_type, $ids);
+    $entities[$entity_type] = entity_load_multiple($entity_type, $ids);
   }
   return $entities;
 }
@@ -659,30 +671,34 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   if (isset($items[$cache_key])) {
     $entities = $items[$cache_key];
   }
-  elseif ($cached = cache_get('relation:' . $cache_key)) {
+  elseif ($cached = cache()->get("relation:$cache_key")) {
     $entities = $cached->data;
     $items[$cache_key] = $entities;
   }
   else {
-    $query = relation_query($entity_type, $entity_id, $r_index)->range(0, 1);
+    $query = entity_query('relation');
+    relation_query_add_related($query, $entity_type, $entity_id, $r_index)
+      ->range(0, 1);
     if ($relation_type) {
-      $query->entityCondition('bundle', $relation_type);
+      $query->condition('relation_type', $relation_type);
     }
     $results = $query->execute();
-    $result = reset($results);
-    if ($result) {
-      $relation = relation_load($result->rid);
+    $relation_id = reset($results);
+
+    if ($relation_id) {
+      $relation = entity_load('relation', $relation_id);
       if ($relation->arity == 1) {
         $entities = FALSE;
       }
       else {
-        $entities = field_get_items('relation', $relation, 'endpoints');
+        $entities = field_get_items($relation, 'endpoints');
       }
     }
     else {
       $entities = FALSE;
     }
-    cache_set('relation:' . $cache_key, $entities);
+    cache()->set("relation:$cache_key", $entities);
+
     $items[$cache_key] = $entities;
   }
 
@@ -693,12 +709,11 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
       $first_entity_key = $first_entity_key . ':' . $entities[0]['r_index'];
     }
     if ($request_key == $first_entity_key) {
-      $other_endpoints = entity_load($entities[1]['entity_type'], array($entities[1]['entity_id']));
-      return reset($other_endpoints);
+      return entity_load($entities[1]['entity_type'], $entities[1]['entity_id']);
     }
-    $other_endpoints = entity_load($entities[0]['entity_type'], array($entities[0]['entity_id']));
-    return reset($other_endpoints);
+    return entity_load($entities[0]['entity_type'], $entities[0]['entity_id']);
   }
+
   return FALSE;
 }
 
@@ -743,15 +758,20 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
 /**
  * Implements hook_entity_delete().
  */
-function relation_entity_delete($entity, $entity_type) {
-  $relations = relation_query($entity_type, $entity->id())->execute();
-  $relations_to_delete = array();
-  foreach ($relations as $row) {
+function relation_entity_delete(EntityInterface $entity) {
+  if ($entity->entityInfo() == 'relation') {
+    $endpoints = field_get_items($entity, 'endpoints');
+    relation_clear_related_entities_cache($endpoints);
+  }
+
+  // Delete relations to this entity.
+  $relation_ids = relation_query($entity->entityType(), $entity->id())->execute();
+  $relations_to_delete = array(); // ids of relations to delete
+  foreach (entity_load_multiple('relation', $relation_ids) as $relation) {
     // Remove any endpoints pointing to entity
-    $relation = relation_load($row->rid);
     foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $key => $endpoint) {
       if ($endpoint['entity_id'] == $entity->id()
-        && $endpoint['entity_type'] == $entity_type) {
+        && $endpoint['entity_type'] == $entity->entityType()) {
         unset($relation->endpoints[LANGUAGE_NOT_SPECIFIED][$key]);
       }
     }
@@ -761,17 +781,16 @@ function relation_entity_delete($entity, $entity_type) {
     $arity = count($relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
     if ($arity < $min_arity) {
       // Not valid - delete
-      array_push($relations_to_delete, $relation->rid);
+      array_push($relations_to_delete, $relation->id());
     }
     else {
       // Valid - save
-      relation_save($relation);
+      $relation->save();
     }
   }
   if (!empty($relations_to_delete)) {
-    relation_delete_multiple($relations_to_delete);  
-    drupal_set_message(t('Relations @relations have been deleted.', 
-      array('@relations' => implode(', ', $relations_to_delete))));
+    entity_delete_multiple('relation', $relations_to_delete);  
+    drupal_set_message(t('Relations @relations have been deleted.', array('@relations' => implode(', ', $relations_to_delete))));
   }
 }
 

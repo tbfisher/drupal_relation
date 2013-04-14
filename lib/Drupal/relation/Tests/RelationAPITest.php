@@ -36,7 +36,7 @@ class RelationAPITest extends RelationTestBase {
    * Creates some nodes, add some relations and checks if they are related.
    */
   function testRelationQuery() {
-    $relations = entity_load('relation', array_keys(relation_query('node', $this->node1->nid)->execute()));
+    $relations = entity_load_multiple('relation', array_keys(relation_query('node', $this->node1->nid)->execute()));
 
     // Check that symmetric relation is correctly related to node 4.
     $this->assertEqual($relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'], $this->node4->nid, 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'] . '==' . $this->node4->nid);
@@ -65,8 +65,8 @@ class RelationAPITest extends RelationTestBase {
     $this->assertEqual($count, 2);
 
     // Get relations between entities 2 and 5 (none).
-    $count = relation_query('node', $this->node2->nid)
-      ->related('node', $this->node5->nid)
+    $query = relation_query('node', $this->node2->nid);
+    $count = relation_query_add_related($query, 'node', $this->node5->nid)
       ->count()
       ->execute();
     $this->assertFalse($count);
@@ -79,8 +79,8 @@ class RelationAPITest extends RelationTestBase {
     $this->assertTrue(isset($relations[$this->rid_directional]), 'Got the correct directional relation for nid=3.');
 
     // Get relations between entities 2 and 3 (octopus).
-    $relations = relation_query('node', $this->node2->nid)
-      ->related('node', $this->node3->nid)
+    $query = relation_query('node', $this->node2->nid);
+    $relations = relation_query_add_related($query, 'node', $this->node3->nid)
       ->execute();
     $count = count($relations);
     $this->assertEqual($count, 1);
@@ -90,7 +90,7 @@ class RelationAPITest extends RelationTestBase {
     // Get relations for node 1 (symmetric, directional, octopus), limit to
     // directional and octopus with relation_type().
     $relations = relation_query('node', $this->node1->nid)
-      ->propertyCondition('relation_type', array(
+      ->condition('relation_type', array(
         $this->relation_types['directional']['relation_type'],
         $this->relation_types['octopus']['relation_type'],
       ))
@@ -104,7 +104,7 @@ class RelationAPITest extends RelationTestBase {
     // Get last two relations for node 1.
     $relations = relation_query('node', $this->node1->nid)
       ->range(1, 2)
-      ->propertyOrderBy('rid', 'ASC')
+      ->sort('rid', 'ASC')
       ->execute();
     $count = count($relations);
     $this->assertEqual($count, 2);
@@ -114,7 +114,7 @@ class RelationAPITest extends RelationTestBase {
 
     // Get all relations on node 1 and sort them in reverse created order.
     $relations = relation_query('node', $this->node1->nid)
-      ->propertyOrderBy('created', 'DESC')
+      ->sort('created', 'DESC')
       ->execute();
     $this->assertEqual(array_keys($relations), array($this->rid_octopus, $this->rid_directional, $this->rid_symmetric));
     
@@ -171,9 +171,8 @@ class RelationAPITest extends RelationTestBase {
       if ($relation_type == 'directional_entitydifferent') {
         $endpoints = $this->endpoints_entitydifferent;
       }
-      $relation = relation_create($relation_type, $endpoints);
-      $rid = relation_save($relation);
-      $this->assertTrue($rid, 'Relation created.');
+      $relation = relation_insert($relation_type, $endpoints);
+      $this->assertTrue($relation->id(), 'Relation created.');
       $count = count($relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
       $this->assertEqual($count, count($endpoints));
       $this->assertEqual($relation->arity, count($endpoints));
@@ -193,7 +192,7 @@ class RelationAPITest extends RelationTestBase {
           ->condition('vid', $relation->vid)
           ->execute()
           ->fetchAllAssoc('rid');
-      $this->assertTrue(array_key_exists($rid, $revision), 'Relation revision created.');
+      $this->assertTrue(array_key_exists($relation->id(), $revision), 'Relation revision created.');
     }
   }
 
@@ -217,20 +216,20 @@ class RelationAPITest extends RelationTestBase {
     $second_user = $this->drupalCreateUser(array('edit relations'));
 
     $this->drupalLogin($first_user);
-    $relation = relation_create($this->relation_type_octopus, $this->endpoints_4, $first_user);
-    $rid = relation_save($relation, $first_user);
-    $this->assertEqual($relation->uid, $first_user->uid);
-    $vid = $relation->vid;
+    $relation = relation_insert($this->relation_type_octopus, $this->endpoints_4);
+    $relation->save();
+    $rid = $relation->id();
+    $vid = $relation->getRevisionId();
 
     // Relation should still be owned by the first user
     $this->drupalLogin($second_user);
-    $relation = relation_load($rid);
-    relation_save($relation, $second_user);
+    $relation = entity_load('relation', $rid);
+    $relation->save();
     $this->assertEqual($relation->uid, $first_user->uid);
 
     // Relation revision authors should not be identical though.
-    $first_revision = relation_load($rid, $vid);
-    $second_revision = relation_load($rid, $relation->vid);
+    $first_revision = entity_revision_load('relation', $vid);
+    $second_revision = entity_revision_load('relation', $relation->vid);
     $this->assertNotIdentical($first_revision->revision_uid, $second_revision->revision_uid, 'Each revision has a distinct user.');
   }
 }

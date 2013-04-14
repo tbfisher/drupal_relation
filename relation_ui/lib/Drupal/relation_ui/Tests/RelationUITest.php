@@ -178,9 +178,9 @@ class RelationUITest extends RelationTestBase {
     // admin/content
     $endpoint = array('entity_type' => 'node', 'entity_id' => $this->node1->nid);
     $relation = relation_create('overridden_import_test', array_fill(0, 5, $endpoint));
-    $rid = relation_save($relation);
+    $relation->save();
     $this->drupalGet('admin/content/relation');
-    $this->assertLink(t('Relation') . ' ' . $rid, 0, t('Relation of imported type is listed in admin/content'));
+    $this->assertLink(t('Relation') . ' ' . $relation->id(), 0, t('Relation of imported type is listed in admin/content'));
 
     // Delete unused relation.
     relation_type_delete('overridden_import_test');
