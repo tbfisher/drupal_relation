@@ -138,15 +138,15 @@ function relation_ui_menu() {
  * List all relation_types (page callback).
  */
 function relation_ui_type_list() {
-  $relation_types = relation_get_types();
+  $relation_types = entity_load_multiple('relation_type');
   $field_ui = module_exists('field_ui');
   $ctools = module_exists('ctools');
   $headers = array(t('Name'), t('Operations'));
   $rows = array();
 
-  foreach ($relation_types as $type => $relation_type) {
-    $url = 'admin/structure/relation/manage/' . $type;
-    $row = array(l($relation_type->label, $url));
+  foreach ($relation_types as $relation_type) {
+    $url = 'admin/structure/relation/manage/' . $relation_type->id();
+    $row = array(l($relation_type->label(), $url));
     $links['edit'] = array(
       'title' => t('edit'),
       'href' => $url . '/edit',
@@ -400,7 +400,7 @@ function relation_ui_type_form_submit($form, &$form_state) {
 /**
  * Menu callback; deletes a single relation type.
  */
-function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {dvm('hjai');
+function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {
   $form['relation_type'] = array('#type' => 'value', '#value' => $relation_type->relation_type);
   $form['label'] = array('#type' => 'value', '#value' => $relation_type->label);
 
@@ -475,21 +475,21 @@ function relation_ui_delete_confirm_submit($form, &$form_state) {
  * Generate relations
  */
 function relation_ui_generate_form($form, &$form_state) {
-  $types = relation_get_types();
+  $relation_types = entity_load_multiple('relation_type');
 
-  if (empty($types)) {
+  if (empty($relation_types)) {
     $form['explanation']['#markup'] = t("Before you can generate relations, you need to define one or more !link.", array("!link" => l(t('relation types'), 'admin/structure/relation')));
     return $form;
   }
-  foreach ($types as $id => $type) {
-    $types[$id] = $type->label;
+  foreach ($relation_types as $relation_type) {
+    $options[$relation_type->id()] = $relation_type->label();
   }
 
   $form['relation_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Relation types'),
     '#description' => t('Select relation types to create relations from. If no types are selected, relations will be generated for all types.'),
-    '#options' => $types,
+    '#options' => $options,
   );
   $form['relation_number'] = array(
     '#type' => 'textfield',
@@ -499,7 +499,8 @@ function relation_ui_generate_form($form, &$form_state) {
   );
   $form['relation_kill'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Kill all existing relations first.'),
+    '#title' => t('Delete existing relations'),
+    '#description' => t('Deletes relations of selected types. If no types are selected, all relations will be deleted.'),
   );
 
   $form['submit'] = array(
@@ -509,15 +510,14 @@ function relation_ui_generate_form($form, &$form_state) {
   return $form;
 }
 
-function relation_ui_generate_form_submit($form, &$form_state) {
+function relation_ui_generate_form_submit($form, &$form_state) {  
   $number = $form_state['values']['relation_number'];
-  $types = $form_state['values']['relation_types'];
+  $relation_types = $form_state['values']['relation_types'];
   $kill = $form_state['values']['relation_kill'];
-  if (is_numeric($number) && $number > 0) {
-    include_once drupal_get_path('module', 'relation') . '/relation.drush.inc';
-    $types = array_keys(array_filter($types));
-    $rids = relation_generate_relations($number, $types, $kill);
-  }
+  include_once drupal_get_path('module', 'relation') . '/relation.drush.inc';
+  $relation_types = array_keys(array_filter($relation_types));
+  $relation_types = empty($relation_types) ? NULL : $relation_types;
+  $rids = relation_generate_relations($number, $relation_types, $kill);
 }
 
 /**
@@ -530,10 +530,10 @@ function relation_ui_filter_form($form, $form_state) {
     }
   }
   $bundles = array();
-  $types = relation_get_types();
-  foreach ($types as $name => $relation) {
-    $bundles[$name] = $relation->label;
+  foreach (entity_load_multiple('relation_type') as $relation_type) {
+    $bundles[$relation_type->id()] = $relation_type->label();
   }
+
   $form['filters'] = array(
     '#type' => 'fieldset',
     '#title' => t('Show only items where'),
@@ -629,7 +629,9 @@ function relation_ui_admin_content() {
   );
 
   // Grab all relations.
-  $query = db_select('relation', 'r')->extend('PagerDefault')->extend('TableSort');
+  $query = db_select('relation', 'r')
+    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+    ->extend('Drupal\Core\Database\Query\TableSortExtender');
   $query->fields('r', array('rid', 'relation_type'));
   relation_ui_build_filter_query($query);
   $query->limit(50)
@@ -648,7 +650,6 @@ function relation_ui_admin_content() {
 function theme_relation_ui_admin_content($variables) {
   $relations = $variables['relations'];
   $header = $variables['header'];
-  $types = relation_get_types();
 
   $rows = array();
   if (empty($relations)) {
@@ -669,10 +670,8 @@ function theme_relation_ui_admin_content($variables) {
       $relation_entities = array();
       if (!empty($endpoints)) {
         foreach ($endpoints as $endpoint) {
-          $entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
-          $entity = reset($entities);
-          $title = entity_label($endpoint['entity_type'], $entity);
-          $path = entity_uri($endpoint['entity_type'], $entity);
+          $entity = entity_load($endpoint['entity_type'], $endpoint['entity_id']);
+          $path = $entity->uri();
 
           // Logic to process how the different entities return a uri.
           // see this issue: http://drupal.org/node/1057242
@@ -682,7 +681,7 @@ function theme_relation_ui_admin_content($variables) {
           if ($endpoint['entity_type'] == 'taxonomy_vocabulary') {
             $path = array('path' => 'admin/structure/taxonomy/' . $entity->machine_name);
           }
-          $relation_entities[] = array('title' => $title, 'path' => $path['path']);
+          $relation_entities[] = array('title' => $entity->label(), 'path' => $path['path']);
         }
       }
 
@@ -706,10 +705,9 @@ function theme_relation_ui_admin_content($variables) {
       $endpoint_separator = ', ';
       $type_label = '';
       // Get the type for this relation
-      if (isset($types[$r->relation_type])) {
-        $type = $types[$r->relation_type];
-        $endpoint_separator = $type->directional ? " → " : " ↔ ";
-        $type_label = $relation->relation_type;
+      if ($relation_type = entity_load('relation_type', $r->relation_type)) {
+        $endpoint_separator = $relation_type->directional ? " → " : " ↔ ";
+        $type_label = $relation_type->label();
       }
       $rows[] = array(
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),

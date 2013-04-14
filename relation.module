@@ -283,16 +283,15 @@ function relation_type_ensure_instance($type) {
 /**
  * Loads a relation type (bundle).
  *
- * @param $relation_type
+ * @param $relation_id
  *   The machine name of the relation type (bundle) to be loaded.
  *
  * @return
  *   A relation type record (as an Object) in the same format as expected by
  *   relation_type_save().
  */
-function relation_type_load($relation_type) {
-  $types = relation_get_types(array($relation_type));
-  return isset($types[$relation_type]) ? $types[$relation_type] : FALSE;
+function relation_type_load($relation_id) {
+  return entity_load('relation_type', $relation_id);
 }
 
 /**
@@ -372,24 +371,6 @@ function _relation_get_types_bundles(&$relation_types) {
       $relation_type->bundles_loaded = TRUE;
     }
   }
-}
-
-/**
- * Lists all relation types.
- *
- * @return
- *   Array of relation type names in the format "Label (type)", keyed by
- *   relation_type.
- */
-function relation_list_types() {
-  $results = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label'))
-    ->execute()->fetchAllAssoc('relation_type');
-  $relation_types = array();
-  foreach ($results as $type => $relation_type) {
-    $relation_types[$type] = $relation_type->label . ' (' . $type . ')';
-  }
-  return $relation_types;
 }
 
 /**

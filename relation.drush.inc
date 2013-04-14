@@ -57,26 +57,28 @@ function relation_generate_message($message) {
  * @param $number_relations
  *   Number of entities to generate of each entity_type.
  * @param $types
- *   Array of relation_type to generate relations for.
+ *   Array of relation_type to generate and delete relations. Set to NULL to
+ *   generate and delete all.
  * @param $kill
  *   Whether to delete all existing relations before creating new ones.
  *
  * @return
  *   Array of rids of the generated relations.
  */
-function relation_generate_relations($number_relations = 10, $types = array(), $kill = FALSE) {
+function relation_generate_relations($number_relations = 10, $relation_types = array(), $kill = FALSE) {
+  $relation_types = entity_load_multiple('relation_type', $relation_types);
   if ($kill) {
-    $query = new EntityFieldQuery();
-    $results = $query->entityCondition('entity_type', 'relation')
-      ->execute();
-    if ($results) {
-      $rids = array_keys($results['relation']);
-      relation_delete_multiple($rids);
+    foreach ($relation_types as $relation_type) {
+      $relation_ids = entity_query('relation')
+        ->condition('relation_type', $relation_type->id())
+        ->execute();
+      entity_delete_multiple('relation', $relation_ids);
+      relation_generate_message(t('Deleted all @type relations.', array('@type' => $relation_type->label())));
     }
   }
-  $relation_types = relation_get_types($types);
+
   $new_rids = array();
-  foreach ($relation_types as $type => $relation_type) {
+  foreach ($relation_types as $relation_type) {
     $available_types = array();
     foreach ($relation_type->source_bundles as $bundle_key) {
       list($entity_type, $bundle) = explode(':', $bundle_key, 2);
@@ -87,44 +89,36 @@ function relation_generate_relations($number_relations = 10, $types = array(), $
       $available_types['target'][$entity_type][] = $bundle;
     }
     $arity = rand($relation_type->min_arity, $relation_type->min_arity);
+
     for ($i = $number_relations; $i > 0; $i--) { // start new relation
       $entity_keys = array();
       for ($r_index = 0; $r_index < $arity; $r_index++) {
-        if ($relation_type->directional && $r_index > 0) {
-          $direction = 'target';
-        }
-        else { // use source bundles
-          $direction = 'source';
-        }
+        $direction = ($relation_type->directional && $r_index > 0) ? 'target' : 'source';
         $entity_type = array_rand($available_types[$direction]);
-        $query = new EntityFieldQuery();
-        $query->entityCondition('entity_type', $entity_type, '=')
-          // Would be nice to ->entityOrderBy('RAND()'); here, and set
-          // range(0, 1). See http://drupal.org/node/1174806
-          ->range(0, 2 * $number_relations);
+        $entity_info = entity_get_info($entity_type);
+        $bundles = entity_get_bundles($entity_type);
+        $query = entity_query($entity_type);
+
         if (!in_array('*', $available_types[$direction][$entity_type])) {
           // Entities with a single bundle don't support EFQ bundle condition.
-          $entity_info = entity_get_info($entity_type);
-          if (count($entity_info['bundles']) > 1) {
-            $query->entityCondition('bundle', $available_types[$direction][$entity_type], 'IN');
+          if (count($bundles) > 1 && isset($entity_info['entity_keys']['bundle'])) {
+            $query->condition($entity_info['entity_keys']['bundle'], $available_types[$direction][$entity_type], 'IN');
           }
         }
-        $results = $query->execute();
-        if ($results) {
-          $entity_ids = array_keys(reset($results));
-          $key = array_rand($entity_ids); // pseudorandomise until EFQ does random.
+
+        if ($results = $query->execute()) {
+          $key = array_rand($results);
           $entity_keys[] = array(
             'entity_type' => $entity_type,
-            'entity_id'   => $entity_ids[$key],
+            'entity_id'   => $results[$key],
             'r_index'     => $r_index,
           );
         }
       }
-      $relation = relation_create($type, $entity_keys);
-      $relation->save();
+      $relation = relation_insert($relation_type->id(), $entity_keys);
       $new_rids[] = $relation->id();
+      relation_generate_message(t('Generated @number_relations @type relations.', array('@number_relations' => $number_relations, '@type' => $relation_type->id())), 'ok');
     }
   }
-  relation_generate_message(t('Generated @number_relations relations.', array('@number_relations' => $number_relations)), 'ok');
   return $new_rids;
 }
