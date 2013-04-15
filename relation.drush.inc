@@ -91,7 +91,7 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
     $arity = rand($relation_type->min_arity, $relation_type->min_arity);
 
     for ($i = $number_relations; $i > 0; $i--) { // start new relation
-      $entity_keys = array();
+      $endpoints = array();
       for ($r_index = 0; $r_index < $arity; $r_index++) {
         $direction = ($relation_type->directional && $r_index > 0) ? 'target' : 'source';
         $entity_type = array_rand($available_types[$direction]);
@@ -108,14 +108,14 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
 
         if ($results = $query->execute()) {
           $key = array_rand($results);
-          $entity_keys[] = array(
+          $endpoints[] = array(
             'entity_type' => $entity_type,
             'entity_id'   => $results[$key],
             'r_index'     => $r_index,
           );
         }
       }
-      $relation = relation_insert($relation_type->id(), $entity_keys);
+      $relation = relation_insert($relation_type->id(), $endpoints);
       $new_rids[] = $relation->id();
       relation_generate_message(t('Generated @number_relations @type relations.', array('@number_relations' => $number_relations, '@type' => $relation_type->id())), 'ok');
     }

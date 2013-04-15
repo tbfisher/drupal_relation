@@ -78,7 +78,7 @@ function relation_ui_menu() {
   );
   $items['admin/structure/relation/manage/%relation_type'] = array(
     'title' => 'Edit relation type',
-    'title callback' => 'relation_type_page_title',
+    'title callback' => 'relation_ui_type_page_title',
     'title arguments' => array(4),
     'access arguments' => array('administer relation types'),
     'page callback' => 'drupal_get_form',
@@ -482,20 +482,28 @@ function relation_ui_generate_form($form, &$form_state) {
     return $form;
   }
   foreach ($relation_types as $relation_type) {
-    $options[$relation_type->id()] = $relation_type->label();
+    $options[$relation_type->id()] = array(
+      'label' => $relation_type->label(),
+    );
   }
 
+  $header = array(
+    'label' => t('Relation type'),
+  );
+
   $form['relation_types'] = array(
-    '#type' => 'checkboxes',
+    '#type' => 'tableselect',
     '#title' => t('Relation types'),
     '#description' => t('Select relation types to create relations from. If no types are selected, relations will be generated for all types.'),
     '#options' => $options,
+    '#header' => $header,
   );
   $form['relation_number'] = array(
-    '#type' => 'textfield',
+    '#type' => 'number',
     '#title' => t('How many relations would you like to generate of each type?'),
     '#default_value' => 10,
     '#size' => 10,
+    '#min' => 0,
   );
   $form['relation_kill'] = array(
     '#type' => 'checkbox',
@@ -779,6 +787,13 @@ function relation_ui_type_import_submit($form, &$form_state) {
  */
 function relation_ui_page_title($relation) {
   return 'Relation ' . $relation->rid;
+}
+
+/**
+ * Relation type display/edit page title callback.
+ */
+function relation_ui_type_page_title(EntityInterface $relation_type) {
+  return $relation_type->label();
 }
 
 /**

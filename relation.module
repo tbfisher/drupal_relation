@@ -415,25 +415,18 @@ function relation_load($rid) {
 }
 
 /**
- * Relation type display/edit page title callback.
- */
-function relation_type_page_title($type) {
-  return $type->label;
-}
-
-/**
  * Checks if a relation exists.
  *
  * The following example demonstrates how to check if a relation of type
  * 'likes' exists between two entities, user 17 and node 253.
  *
  * @code
- *   $entity_keys = array(
+ *   $endpoints = array(
  *     array('entity_type' => 'user', 'entity_id' => 17),
  *     array('entity_type' => 'node', 'entity_id' => 253),
  *   );
  *   $relation_type = 'likes';
- *   $results = relation_relation_exists($entity_keys, $relation_type);
+ *   $results = relation_relation_exists($endpoints, $relation_type);
  * @endcode
  *
  * @param array $endpoints
@@ -442,15 +435,15 @@ function relation_type_page_title($type) {
  * @param $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
  * @param $enforce_direction
- *   (Optional) Whether to enforce direction as specified in $entity_keys.
+ *   (Optional) Whether to enforce direction as specified in $endpoints.
  *
  * @return array
  *   Array of Relation ID's keyed by revision ID.
  */
 function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_direction = FALSE) {
   $query = entity_query('relation');
-  foreach ($endpoints as $r_index => $entity_key) {
-    relation_query_add_related($query, $entity_key['entity_type'], $entity_key['entity_id'], $enforce_direction ? $r_index : NULL);
+  foreach ($endpoints as $r_index => $endpoint) {
+    relation_query_add_related($query, $endpoint['entity_type'], $endpoint['entity_id'], $enforce_direction ? $r_index : NULL);
   }
   if ($relation_type) {
     $query->condition('relation_type', $relation_type);
@@ -503,7 +496,7 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
 function relation_clear_related_entities_cache($endpoints) {
   drupal_static_reset('relation_get_related_entity');
   foreach ($endpoints as $endpoint) {
-    cache_clear_all('relation:' . $endpoint['entity_type'] . ':' . $endpoint['entity_id'], 'cache', TRUE);
+    cache()->delete('relation:' . $endpoint['entity_type'] . ':' . $endpoint['entity_id'], 'cache', TRUE);
   }
 }
 
@@ -590,33 +583,6 @@ function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $que
 
   $query->condition($group);
   return $query;
-}
-
-/**
- * Return endpoint entities.
- *
- * @param $relation
- *   Full relation object containing the endpoints
- *
- * @param $entity_type
- *   (optional) Filter endpoints by entity type. Return all endpoint entities
- *   if empty.
- */
-function relation_get_endpoints($relation, $entity_type = NULL) {
-  $entities = array();
-  foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
-    if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
-      continue;
-    }
-    $entities[$endpoint['entity_type']][] = $endpoint['entity_id'];
-  }
-  if (empty($entities)) {
-    return FALSE;
-  }
-  foreach ($entities as $entity_type => $ids) {
-    $entities[$entity_type] = entity_load_multiple($entity_type, $ids);
-  }
-  return $entities;
 }
 
 /**
@@ -740,7 +706,7 @@ function relation_get_available_types($entity_type, $bundle, $endpoint = 'source
  * Implements hook_entity_delete().
  */
 function relation_entity_delete(EntityInterface $entity) {
-  if ($entity->entityInfo() == 'relation') {
+  if ($entity->entityType() == 'relation') {
     $endpoints = field_get_items($entity, 'endpoints');
     relation_clear_related_entities_cache($endpoints);
   }
@@ -783,27 +749,6 @@ function relation_views_api() {
     'api' => 3.0,
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
-}
-
-/**
- * Gets the label of the relation type of the given relation
- *
- * @param $relation
- *   A relation object.
- * @param $reverse
- *   optional: whether to get the reverse label (boolean).
- *
- * @return
- *   The label of the relation type.
- */
-function relation_get_type_label(EntityInterface $relation, $reverse = FALSE) {
-  $type = relation_type_load($relation->bundle());
-  if ($type->directional && $reverse) {
-    return $type->reverse_label;
-  }
-  else {
-    return $type->label;
-  }
 }
 
 /**

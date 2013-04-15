@@ -42,11 +42,11 @@ class RelationAPITest extends RelationTestBase {
     $this->assertEqual($relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'], $this->node4->nid, 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[LANGUAGE_NOT_SPECIFIED][1]['entity_id'] . '==' . $this->node4->nid);
 
     // Symmetric relation is Article 1 <--> Page 4
-    $entity_keys = array(
+    $endpoints = array(
       array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
       array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
     );
-    $this->assertFalse(relation_relation_exists($entity_keys, 'symmetric'), 'node4 is not related to node4.');
+    $this->assertFalse(relation_relation_exists($endpoints, 'symmetric'), 'node4 is not related to node4.');
 
     // Get relations for node 1, should return 3 relations.
     $count = count($relations);

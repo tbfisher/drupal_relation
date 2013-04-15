@@ -103,7 +103,7 @@ function relation_tokens($type, $tokens, array $data = array(), array $options =
           break;
 
         case 'type-name':
-          $type_label = relation_get_type_label($relation);
+          $type_label = $relation->relation_type_label();
           $replacements[$original] = $sanitize ? check_plain($type_label) : $type_label;
           break;
 

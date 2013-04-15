@@ -83,4 +83,47 @@ class Relation extends Entity implements ContentEntityInterface {
   public function label($langcode = NULL) {
     return t('Relation @id', array('@id' => $this->id()));
   }
+
+  /**
+   * Return endpoints as loaded entities.
+   *
+   * @param $entity_type
+   *   (optional) Filter endpoints by entity type. Return all endpoint entities
+   *   if empty.
+   */
+  function endpoints_load($entity_type = NULL) {
+    $entities = array();
+    foreach ($this->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
+      if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
+        continue;
+      }
+      $entities[$endpoint['entity_type']][] = $endpoint['entity_id'];
+    }
+    if (empty($entities)) {
+      return FALSE;
+    }
+    foreach ($entities as $entity_type => $ids) {
+      $entities[$entity_type] = entity_load_multiple($entity_type, $ids);
+    }
+    return $entities;
+  }
+
+  /**
+   * Gets the label of the relation type of the given relation
+   *
+   * @param $relation
+   *   A relation object.
+   * @param $reverse
+   *   optional: whether to get the reverse label (boolean).
+   *
+   * @return string|NULL
+   *   The label of the relation type, or NULL if the relation type
+   *   does not exist.
+   */
+  function relation_type_label($reverse = FALSE) {
+    $relation_type = relation_type_load($this->bundle());
+    if ($relation_type) {
+      return ($relation_type->directional && $reverse) ? $relation_type->reverse_label : $relation_type->label;
+    }
+  }
 }
