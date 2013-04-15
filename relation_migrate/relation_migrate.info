@@ -1,4 +1,0 @@
-name = Relation migrate
-description = Migrate integration module for Relation.
-core = 7.x
-package = Relation
