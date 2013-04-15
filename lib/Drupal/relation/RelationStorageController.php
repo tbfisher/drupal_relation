@@ -41,9 +41,9 @@ class RelationStorageController extends DatabaseStorageController {
   /**
    * Overrides Drupal\Core\Entity\DatabaseStorageController::buildQuery().
    */
-  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+  protected function buildQuery($ids, $revision_id = FALSE) {
     // Ensure that uid is taken from the {relation} table
-    $query = parent::buildQuery($ids, $conditions, $revision_id);
+    $query = parent::buildQuery($ids, $revision_id);
     $fields =& $query->getFields();
     $fields['uid']['table'] = 'base';
     $query->addField('revision', 'uid', 'revision_uid');

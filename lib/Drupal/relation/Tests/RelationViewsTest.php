@@ -31,7 +31,7 @@ class RelationViewsTest extends RelationTestBase {
   /**
    * Tests views with relations as a base table.
    */
-  function testRelationsAsBaseTable() {
+  function todo_testRelationsAsBaseTable() {
     if (!module_exists('views')) {
       return;
     }
@@ -94,7 +94,7 @@ class RelationViewsTest extends RelationTestBase {
   /**
    * Tests views with symmetric relations.
    */
-  function testSymmetricRelations() {
+  function todo_testSymmetricRelations() {
     if (!module_exists('views')) {
       return;
     }
@@ -150,7 +150,7 @@ class RelationViewsTest extends RelationTestBase {
   /**
    * Tests views with directional relations to source, to target and to both.
    */
-  function testDirectionalRelations() {
+  function todo_testDirectionalRelations() {
     if (!module_exists('views')) {
       return;
     }
@@ -229,7 +229,7 @@ class RelationViewsTest extends RelationTestBase {
    * Tests views with forward directional relations to source, to target and to
    * both with the same entities types.
    */
-  function testForwardDirectionalSameEntityRelations() {
+  function todo_testForwardDirectionalSameEntityRelations() {
     if (!module_exists('views')) {
       return;
     }
@@ -289,7 +289,7 @@ class RelationViewsTest extends RelationTestBase {
    * Tests views with reverse directional relations to source, to target and to
    * both with the same entities types.
    */
-  function testReverseDirectionalSameEntityRelations() {
+  function todo_testReverseDirectionalSameEntityRelations() {
     for ($r_index = -1; $r_index < 2; $r_index++) {
       $view = new view;
       $view->base_table = 'node';
@@ -345,7 +345,7 @@ class RelationViewsTest extends RelationTestBase {
    * Tests views with forward directional relations to source, to target and to
    * both with different entities types.
    */
-  function testForwardDirectionalDifferentEntityRelations() {
+  function todo_testForwardDirectionalDifferentEntityRelations() {
     for ($r_index = -1; $r_index < 2; $r_index++) {
       $view = new view;
       $view->base_table = 'users';
@@ -401,7 +401,7 @@ class RelationViewsTest extends RelationTestBase {
    * Tests views with reverse directional relations to source, to target and to
    * both with different entities types.
    */
-  function testReverseDirectionalDifferentEntityRelations() {
+  function todo_testReverseDirectionalDifferentEntityRelations() {
     for ($r_index = -1; $r_index < 2; $r_index++) {
       $view = new view;
       $view->base_table = 'node';
@@ -456,7 +456,7 @@ class RelationViewsTest extends RelationTestBase {
   /**
    * Tests views deduplication.
    */
-  function testDeduplication() {
+  function todo_testDeduplication() {
     for ($i = 0; $i < 2; $i++) {
       $view = new view;
       $view->base_table = 'node';

@@ -116,7 +116,7 @@ class RelationAPITest extends RelationTestBase {
     $relations = relation_query('node', $this->node1->nid)
       ->sort('created', 'DESC')
       ->execute();
-    $this->assertEqual(array_keys($relations), array($this->rid_octopus, $this->rid_directional, $this->rid_symmetric));
+    $this->assertEqual($relations, array($this->rid_octopus => $this->rid_octopus, $this->rid_directional => $this->rid_directional, $this->rid_symmetric => $this->rid_symmetric));
     
     // Create 10 more symmetric relations and verify that the count works with
     // double digit counts as well.
@@ -151,9 +151,9 @@ class RelationAPITest extends RelationTestBase {
 
     // Delete all relations related to node 4, then confirm that these can
     // no longer be found as related entities.
-    $relations = relation_query('node', $this->node4->nid)->execute();
-    foreach ($relations as $relation) {
-      relation_delete($relation->rid);
+    $relation_ids = relation_query('node', $this->node4->nid)->execute();
+    foreach (entity_load_multiple('relation', $relation_ids) as $relation) {
+      $relation->delete();
     }
     $this->assertFalse(relation_get_related_entity('node', $this->node4->nid), 'The entity was not loaded after the relation was deleted.');
   }
@@ -219,13 +219,14 @@ class RelationAPITest extends RelationTestBase {
     $relation = relation_insert($this->relation_type_octopus, $this->endpoints_4);
     $relation->save();
     $rid = $relation->id();
+    $this->assertEqual($relation->uid, $first_user->uid, 'Relation uid set to logged in user.');
     $vid = $relation->getRevisionId();
 
     // Relation should still be owned by the first user
     $this->drupalLogin($second_user);
     $relation = entity_load('relation', $rid);
     $relation->save();
-    $this->assertEqual($relation->uid, $first_user->uid);
+    $this->assertEqual($relation->uid, $first_user->uid, 'Relation uid did not get changed to a user different to original.');
 
     // Relation revision authors should not be identical though.
     $first_revision = entity_revision_load('relation', $vid);

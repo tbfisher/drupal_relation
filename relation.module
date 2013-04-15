@@ -578,7 +578,7 @@ function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $que
     ->condition('endpoints.entity_id', $entity_id, NULL);
 
   if (isset($r_index)) {
-    $group->condition('endpoints', 'r_index', $r_index, '=');
+    $group->condition('endpoints.r_index', $r_index, '=');
   }
 
   $query->condition($group);

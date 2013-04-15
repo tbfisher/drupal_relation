@@ -498,17 +498,17 @@ function relation_ui_generate_form($form, &$form_state) {
     '#options' => $options,
     '#header' => $header,
   );
+  $form['relation_kill'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delete all relations in these relation types before generating new relations'),
+  );
+
   $form['relation_number'] = array(
     '#type' => 'number',
     '#title' => t('How many relations would you like to generate of each type?'),
     '#default_value' => 10,
     '#size' => 10,
     '#min' => 0,
-  );
-  $form['relation_kill'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Delete existing relations'),
-    '#description' => t('Deletes relations of selected types. If no types are selected, all relations will be deleted.'),
   );
 
   $form['submit'] = array(
