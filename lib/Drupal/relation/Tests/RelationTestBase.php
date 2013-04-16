@@ -141,8 +141,9 @@ abstract class RelationTestBase extends WebTestBase {
       'max_arity' => 1,
       'source_bundles' => array('node:page'),
     );
-    foreach ($this->relation_types as $relation_type) {
-      relation_type_save($relation_type);
+    foreach ($this->relation_types as $values) {
+      $relation_type = entity_create('relation_type', $values);
+      $relation_type->save();
     }
   }
 

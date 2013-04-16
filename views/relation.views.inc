@@ -222,8 +222,8 @@ function relation_views_data_alter(&$data) {
   $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
   $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
   // Build the relations between the different tables.
-  $types = relation_get_types();
-  foreach ($types as $type => $relation_type) {
+  foreach (entity_load_multiple('relation_type') as $relation_type) {
+    $type = $relation_type->id();
     $target_index = $relation_type->directional ? 'target_bundles' : 'source_bundles';
     foreach ($relation_type->source_bundles as $source_bundle) {
       $source_bundle = explode(':', $source_bundle, 2);
@@ -347,7 +347,7 @@ function relation_views_data_alter(&$data) {
  */
 function relation_form_views_ui_add_item_form_alter(&$form, $form_state) {
   if ($form_state['type'] == 'relationship' && $form_state['view']->base_table != 'relation') {
-    foreach (relation_get_types() as $relation_type) {
+    foreach (entity_load_multiple('relation_type') as $relation_type) {
       foreach (array('source_bundles', 'target_bundles') as $endpoint_bundles) {
         foreach ($relation_type->$endpoint_bundles as $relation_bundle) {
           if (substr($relation_bundle, 0, 9) == 'relation:') {

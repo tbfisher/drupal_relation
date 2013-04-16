@@ -120,20 +120,18 @@ function relation_entity_collector($form, &$form_state) {
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'relation_entity_collector') . '/relation_entity_collector.css',
   );
-  $types = relation_get_types();
-  if (empty($types)) {
+
+  $relation_types_options = relation_get_relation_types_options();
+  if (empty($relation_types_options)) {
     $form['explanation']['#markup'] = t('Before you can create relations, you need to create one or more !link. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array(
       '!link' => module_exists('relation_ui') ? l(t('relation types'), 'admin/structure/relation') : t('relation types')
     ));
     return $form;
   }
-  $relation_types = array();
-  foreach ($types as $type) {
-    $relation_types[$type->relation_type] = $type->label;
-  }
+
   $relation_type = isset($_SESSION['relation_type']) ? $_SESSION['relation_type'] : '';
   // forget the selected relation type if it's no longer available
-  if (!isset($relation_types[$relation_type])) {
+  if (!isset($relation_types_options[$relation_type])) {
     unset($_SESSION['relation_type']);
     $relation_type = '';
   }
@@ -158,8 +156,8 @@ function relation_entity_collector($form, &$form_state) {
           $valid = TRUE;
         }
         if ($valid) {
-          $bundle_label = _relation_get_bundle_label($entity_type, $entity_bundle);
-          $options["$entity_type:$entity_id"] = $bundle_label . ': ' . entity_label($entity_type, $entity);
+          $bundles = entity_get_bundles($entity_type);
+          $options["$entity_type:$entity_id"] = $bundles[$entity_bundle]['label'] . ': ' . entity_label($entity_type, $entity);
         }
       }
     }

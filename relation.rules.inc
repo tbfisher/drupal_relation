@@ -51,7 +51,7 @@ function relation_rules_action_info() {
         'relation_type' => array(
           'type' => 'text',
           'label' => t('Relation type'),
-          'options list' => 'relation_rules_get_type_options',
+          'options list' => 'relation_get_relation_types_options',
         ),
       ),
       'provides' => array(
@@ -81,19 +81,6 @@ function relation_rules_action_info() {
     ),
   );
   return $items;
-}
-
-
-/**
- * Options list callback for fetching relation types.
- */
-function relation_rules_get_type_options() {
-  $options = array();
-  $types = relation_get_types();
-  foreach ($types as $type) {
-    $options[$type->relation_type] = $type->label;
-  }
-  return $options;
 }
 
 /**
@@ -309,8 +296,8 @@ function relation_rules_fetch_endpoint_type_options(RulesAbstractPlugin $element
       $types[] = $info['bundle'];
     }
   }
-  $relation_types = relation_get_types($types);
-  foreach ($relation_types as $name => $relation_type) {
+
+  foreach (entity_load_multiple('relation_type') as $relation_type) {
     // Add the allowed source entity types to the list
     if (!empty($relation_type->source_bundles)) {
       foreach ($relation_type->source_bundles as $source_bundle) {

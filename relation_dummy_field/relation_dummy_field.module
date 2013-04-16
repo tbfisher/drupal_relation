@@ -32,14 +32,13 @@ function relation_dummy_field_field_is_empty($item, $field) {
  * Implements hook_field_instance_settings_form().
  */
 function relation_dummy_field_field_instance_settings_form($field, $instance) {
-  $relation_types = relation_get_types();
   $bundle_key = $instance['entity_type'] . ':' . $instance['bundle'];
   $bundle_wildcard_key = $instance['entity_type'] . ':' . '*';
   $options = array();
-  foreach ($relation_types as $relation_type => $relation_type_data) {
-    foreach ($relation_type_data->source_bundles as $relation_bundle_key) {
+  foreach (entity_load_multiple('relation_type') as $relation_type) {
+    foreach ($relation_type->source_bundles as $relation_bundle_key) {
       if ($bundle_key == $relation_bundle_key || $bundle_wildcard_key == $relation_bundle_key) {
-        $options[$relation_type] = $relation_type_data->label;
+        $options[$relation_type->id()] = $relation_type->label();
       }
     }
   }

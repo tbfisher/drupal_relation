@@ -141,8 +141,6 @@ function relation_schema() {
         'minimum_version' => 1,
         'current_version' => 1,
       ),
-      // the callback to load the available bundles
-      'subrecords callback' => '_relation_get_types_bundles',
       'export callback' => 'relation_relation_type_export',
     ),
     'fields' => array(

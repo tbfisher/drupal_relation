@@ -15,12 +15,36 @@ use Drupal\Core\Annotation\Translation;
 /**
  * Defines relation type entity
  *
+ *  - relation_type (required): Relation type machine name (string).
+ *  - label: Relation type human-readable name (string). Defaults to
+ *    duplicating relation_type.
+ *  - directional: whether relation is directional (boolean). Defaults to
+ *    FALSE.
+ *  - transitive: whether relation is transitive (boolean). Defaults to FALSE.
+ *  - r_unique: whether relations of this type are unique (boolean). Defaults
+ *    to FALSE.
+ *  - min_arity: minimum number of entities in relations of this type
+ *    (int >= 2). Defaults to 2.
+ *  - max_arity: maximum number of entities in relations of this type
+ *    (int >= min_arity). Defaults to 2.
+ *  - source_bundles: array containing allowed bundle keys. This is used for
+ *    both directional and non-directional relations. Bundle key arrays are
+ *    of the form 'entity:bundle', eg. 'node:article', or 'entity:*' for all
+ *    bundles of the type.
+ *  - target_bundles: array containing arrays allowed target bundle keys.
+ *    This is the same format as source_bundles, but is only used for
+ *    directional relations.
+ *
  * @Plugin(
  *   id = "relation_type",
  *   label = @Translation("Relation type"),
  *   module = "relation",
  *   controller_class = "Drupal\relation\RelationTypeStorageController",
+ *   form_controller_class = {
+ *     "default" = "Drupal\relation\RelationTypeFormController"
+ *   },
  *   base_table = "relation_type",
+ *   uri_callback = "relation_type_uri",
  *   fieldable = FALSE,
  *   entity_keys = {
  *     "id" = "relation_type",
@@ -35,9 +59,7 @@ class RelationType extends Entity implements ContentEntityInterface {
    */
   public $relation_type;
 
-  public function __construct(array $values, $entity_type) {
-    parent::__construct($values, $entity_type);
-
+  public function __construct(array $values) {
     if (empty($this->in_code_only) && empty($this->bundles_loaded)) {
       // If overridden or not exported at all, reset the bundles before
       // loading from the database to avoid duplication.
@@ -52,6 +74,8 @@ class RelationType extends Entity implements ContentEntityInterface {
       // type.
       $this->bundles_loaded = TRUE;
     }
+
+    parent::__construct($values, 'relation_type');
   }
 
   /**

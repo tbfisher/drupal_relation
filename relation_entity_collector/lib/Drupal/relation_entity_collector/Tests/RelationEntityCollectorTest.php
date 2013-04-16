@@ -54,8 +54,9 @@ class RelationEntityCollectorTest extends RelationTestBase {
     $link = l($relation_type, $path);
     // Rebuild the message using the known bundle and entity labels to make sure
     // the message contains those.
-    $node1_label = _relation_get_bundle_label('node', 'article') . ': ' . entity_label('node', $this->node1);
-    $node3_label = _relation_get_bundle_label('node', 'page') . ': ' . entity_label('node', $this->node3);
+    $bundles = entity_get_bundles('node');
+    $node1_label = $bundles['article']['label'] . ': ' . entity_label('node', $this->node1);
+    $node3_label = $bundles['page']['label'] . ': ' . entity_label('node', $this->node3);
     $items = array(
       $node1_label,
       $node3_label,

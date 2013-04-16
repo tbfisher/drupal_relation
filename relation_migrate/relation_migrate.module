@@ -54,16 +54,10 @@ function relation_migrate_configuration_form($form, &$form_state) {
         '#description' => t('Select fields of type %type, that should be migrated to relation entites.', array('%type' => $field_type_info['label'])),
       );
 
-      $types = relation_get_types();
-      $rel_types = array();
-      foreach ($types as $machine_name => $type) {
-        $rel_types[$machine_name] = check_plain($type->label);
-      }
-
       $form[$field_type_name]['relation_migrate_' . $field_type_name . '_relation_type'] = array(
         '#type' => 'select',
         '#title' => t('Relation type'),
-        '#options' => $rel_types,
+        '#options' => relation_get_relation_types_options(),
         '#default_value' => variable_get('relation_migrate_' . $field_type_name . '_relation_type', NULL),
         '#description' => t('Select relation type that should be used when migrating reference fields.'),
         '#element_validate' => array('_relation_migrate_validate_type'),
