@@ -475,16 +475,6 @@ function relation_load_multiple($rids, $conditions = array(), $reset = FALSE) {
   return entity_load('relation', $rids, $conditions, $reset);
 }
 
-/**
- * Relation display page. Currently only displays related entities.
- *
- * @TODO: implement directionality, possibly give more details on entities?
- */
-function relation_page($relation) {
-  $view_mode = 'full';
-  return relation_view($relation);
-}
-
 function relation_view($relation, $view_mode = 'full') {
   $entity_type = 'relation';
   $entity = $relation;
@@ -509,36 +499,6 @@ function relation_multiple_view($relations, $view_mode) {
     $build['relation'][$relation->rid] = relation_view($relation, $view_mode);
   }
   return $build;
-}
-
-/**
- * Relation type display/edit page title callback.
- */
-function relation_type_page_title($type) {
-  return $type->label;
-}
-
-/**
- * Relation edit form.
- */
-function relation_edit_form($form, &$form_state, $relation) {
-  $form_state['relation'] = $relation;
-  field_attach_form('relation', $relation, $form, $form_state);
-  $form['actions']['#weight'] = 100;
-  $form['actions']['save'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-  return $form;
-}
-
-function relation_edit_form_submit($form, &$form_state) {
-  $relation = $form_state['relation'];
-  entity_form_submit_build_entity('relation', $relation, $form, $form_state);
-  $rid = relation_save($relation);
-  if ($rid) {
-    $form_state['redirect'] = 'relation/' . $rid;
-  }
 }
 
 /**
@@ -764,36 +724,6 @@ function relation_delete_multiple($rids) {
     $endpoints = field_get_items('relation', $relation, 'endpoints');
     relation_clear_related_entities_cache($endpoints);
   }
-}
-
-/**
- * Menu callback: ask for confirmation of relation deletion.
- */
-function relation_delete_confirm($form, &$form_state, $relation) {
-  $form['#relation'] = $relation;
-  // Always provide entity id in the same form key as in the entity edit form.
-  $form['rid'] = array('#type' => 'value', '#value' => $relation->rid);
-  return confirm_form($form,
-    t('Are you sure you want to delete relation %rid?', array('%rid' => $relation->rid)),
-    'relation/' . $relation->rid,
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
-}
-
-/**
- * Executes relation deletion.
- */
-function relation_delete_confirm_submit($form, &$form_state) {
-  if ($form_state['values']['confirm']) {
-    $relation = $form['#relation'];
-    relation_delete($form_state['values']['rid']);
-    watchdog('relation', '@type: deleted %title.', array('@type' => $relation->relation_type, '%title' => $relation->rid));
-    drupal_set_message(t('@type %title has been deleted.', array('@type' => $relation->relation_type, '%title' => $relation->rid)));
-  }
-
-  $form_state['redirect'] = '<front>';
 }
 
 /**
