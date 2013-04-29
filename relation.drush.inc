@@ -69,7 +69,7 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
   $relation_types = entity_load_multiple('relation_type', $relation_types);
   if ($kill) {
     foreach ($relation_types as $relation_type) {
-      $relation_ids = entity_query('relation')
+      $relation_ids = Drupal::entityQuery('relation')
         ->condition('relation_type', $relation_type->id())
         ->execute();
       entity_delete_multiple('relation', $relation_ids);
@@ -97,7 +97,7 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
         $entity_type = array_rand($available_types[$direction]);
         $entity_info = entity_get_info($entity_type);
         $bundles = entity_get_bundles($entity_type);
-        $query = entity_query($entity_type);
+        $query = Drupal::entityQuery($entity_type);
 
         if (!in_array('*', $available_types[$direction][$entity_type])) {
           // Entities with a single bundle don't support EFQ bundle condition.

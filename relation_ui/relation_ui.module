@@ -5,8 +5,6 @@
  * Provide administration interface for relation type bundles.
  */
 
-use Drupal\Core\Entity\EntityInterface;
-
 /**
  * Implements hook_menu().
  */
@@ -253,7 +251,7 @@ function relation_ui_type_delete_confirm_submit($form, &$form_state) {
 /**
  * Menu callback: ask for confirmation of relation deletion.
  */
-function relation_ui_delete_confirm($form, &$form_state, EntityInterface $relation) {
+function relation_ui_delete_confirm($form, &$form_state, Drupal\relation\RelationInterface $relation) {
   $form['#relation'] = $relation;
   $uri = $relation->uri();
 
@@ -603,7 +601,7 @@ function relation_ui_page_title($relation) {
 /**
  * Relation type display/edit page title callback.
  */
-function relation_ui_type_page_title(EntityInterface $relation_type) {
+function relation_ui_type_page_title(Drupal\relation\RelationTypeInterface $relation_type) {
   return $relation_type->label();
 }
 

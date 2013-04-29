@@ -7,22 +7,25 @@
 
 namespace Drupal\relation\Plugin\Core\Entity;
 
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\Entity;
 use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\Annotation\EntityType;
 
 /**
  * Defines relation entity
  *
- * @Plugin(
+ * @EntityType(
  *   id = "relation",
  *   label = @Translation("Relation"),
  *   module = "relation",
- *   controller_class = "Drupal\relation\RelationStorageController",
- *   render_controller_class = "Drupal\Core\Entity\EntityRenderController",
- *   form_controller_class = {
- *     "default" = "Drupal\relation\RelationFormController"
+ *   controllers = {
+ *     "storage" = "Drupal\relation\RelationStorageController",
+ *     "render" = "Drupal\Core\Entity\EntityRenderController",
+ *     "form" = {
+ *       "default" = "Drupal\relation\RelationFormController"
+ *     }
  *   },
  *   base_table = "relation",
  *   revision_table = "relation_revision",
@@ -36,10 +39,11 @@ use Drupal\Core\Annotation\Translation;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   }
+ *   },
+ *   route_base_path = "admin/structure/relation/manage/{bundle}"
  * )
  */
-class Relation extends Entity implements ContentEntityInterface {
+class Relation extends Entity implements RelationInterface {
 
   /**
    * The relation ID.

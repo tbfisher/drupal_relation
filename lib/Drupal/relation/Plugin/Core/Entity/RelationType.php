@@ -7,10 +7,11 @@
 
 namespace Drupal\relation\Plugin\Core\Entity;
 
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Entity\Entity;
 use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\Annotation\EntityType;
 
 /**
  * Defines relation type entity
@@ -35,13 +36,16 @@ use Drupal\Core\Annotation\Translation;
  *    This is the same format as source_bundles, but is only used for
  *    directional relations.
  *
- * @Plugin(
+ * @EntityType(
  *   id = "relation_type",
  *   label = @Translation("Relation type"),
  *   module = "relation",
- *   controller_class = "Drupal\relation\RelationTypeStorageController",
- *   form_controller_class = {
- *     "default" = "Drupal\relation\RelationTypeFormController"
+ *   controllers = {
+ *     "storage" = "Drupal\relation\RelationTypeStorageController",
+ *     "render" = "Drupal\Core\Entity\EntityRenderController",
+ *     "form" = {
+ *       "default" = "Drupal\relation\RelationTypeFormController"
+ *     }
  *   },
  *   base_table = "relation_type",
  *   uri_callback = "relation_type_uri",
@@ -52,7 +56,7 @@ use Drupal\Core\Annotation\Translation;
  *   }
  * )
  */
-class RelationType extends Entity implements ContentEntityInterface {
+class RelationType extends Entity implements RelationTypeInterface {
 
   /**
    * The relation type ID.

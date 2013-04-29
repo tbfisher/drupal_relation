@@ -1,7 +1,5 @@
 <?php
 
-use Drupal\Core\Entity\EntityInterface;
-
 require_once dirname(__FILE__) . '/relation.rules.inc';
 if (module_exists('ctools')) {
   require_once dirname(__FILE__) . '/relation.ctools.inc';
@@ -27,9 +25,7 @@ function relation_entity_bundle_info() {
     $bundles['relation'][$relation_type->relation_type] = array(
       'label' => $relation_type->label,
       'admin' => array(
-        'path' => 'admin/structure/relation/manage/%relation_type',
         'real path' => 'admin/structure/relation/manage/' . $relation_type->relation_type,
-        'bundle argument' => 4,
       ),
     );
   }
@@ -259,7 +255,7 @@ function relation_load($rid) {
  *   Array of Relation ID's keyed by revision ID.
  */
 function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_direction = FALSE) {
-  $query = entity_query('relation');
+  $query = Drupal::entityQuery('relation');
   foreach ($endpoints as $r_index => $endpoint) {
     relation_query_add_related($query, $endpoint['entity_type'], $endpoint['entity_id'], $enforce_direction ? $r_index : NULL);
   }
@@ -348,7 +344,7 @@ function relation_insert($relation_type, $endpoints) {
  *
  * @see entity_uri()
  */
-function relation_uri(EntityInterface $relation) {
+function relation_uri(Drupal\relation\RelationInterface $relation) {
   return array('path' => 'relation/' . $relation->rid);
 }
 
@@ -357,7 +353,7 @@ function relation_uri(EntityInterface $relation) {
  *
  * @see entity_uri()
  */
-function relation_type_uri(EntityInterface $relation_type) {
+function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type) {
   return array('path' => 'admin/structure/relation/manage/' . $relation_type->relation_type);
 }
 
@@ -379,7 +375,7 @@ function relation_type_uri(EntityInterface $relation_type) {
  *   @todo deprecate this
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
-  $query = entity_query('relation');
+  $query = Drupal::entityQuery('relation');
   relation_query_add_related($query, $entity_type, $entity_id, $r_index);
   return $query;
 }
@@ -450,7 +446,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     $items[$cache_key] = $entities;
   }
   else {
-    $query = entity_query('relation');
+    $query = Drupal::entityQuery('relation');
     relation_query_add_related($query, $entity_type, $entity_id, $r_index)
       ->range(0, 1);
     if ($relation_type) {
@@ -533,7 +529,7 @@ function relation_get_available_relation_types($entity_type, $bundle, $endpoint 
 /**
  * Implements hook_entity_delete().
  */
-function relation_entity_delete(EntityInterface $entity) {
+function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
   if ($entity->entityType() == 'relation') {
     $endpoints = field_get_items($entity, 'endpoints');
     relation_clear_related_entities_cache($endpoints);

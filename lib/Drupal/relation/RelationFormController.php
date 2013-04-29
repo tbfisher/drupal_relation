@@ -7,7 +7,6 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
 
 /**
