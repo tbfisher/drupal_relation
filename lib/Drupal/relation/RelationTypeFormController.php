@@ -59,7 +59,7 @@ class RelationTypeFormController extends EntityFormController {
     $form['directional'] = array(
       '#type'           => 'checkbox',
       '#title'          => 'Directional',
-      '#description'   => t('A directional relation is one that does not imply the reverse relation. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
+      '#description'   => t('A directional relation is one that does not imply the same relation in the reverse direction. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
       '#default_value'  => $relation_type->directional,
       '#states' => array(
         'invisible' => array(   // action to take.
