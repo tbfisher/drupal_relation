@@ -138,9 +138,27 @@ class RelationTestCase extends DrupalWebTestCase {
       'max_arity' => 1,
       'source_bundles' => array('node:page'),
     );
+    $this->relation_types['relation_requires_field'] = array(
+      'relation_type' => 'relation_requires_field',
+      'label' => 'relation_requires_field',
+      'source_bundles' => array('node:*'),
+    );
     foreach ($this->relation_types as $relation_type) {
       relation_type_save($relation_type);
     }
+
+    // attach a field to the relation_requires_field relation type;
+    field_create_field(array(
+      'field_name' => 'field_required_integer',
+      'type' => 'number_integer'
+    ));
+    field_create_instance(array(
+      'label' => 'Required Integer Field',
+      'required' => TRUE,
+      'field_name' => 'field_required_integer',
+      'entity_type' => 'relation',
+      'bundle' => 'relation_requires_field',
+    ));
   }
 
   /**
@@ -403,6 +421,65 @@ class RelationAPITestCase extends RelationTestCase {
           ->execute()
           ->fetchAllAssoc('rid');
       $this->assertTrue(array_key_exists($rid, $revision), 'Relation revision created.');
+    }
+
+    // Relation save should fail if the relation type doesn't exist
+    try {
+      $rid = $this->saveRelation('non_existant_relation_type', $this->endpoints_entitydifferent);
+      $this->fail("Relation saved that shouldn't have been: non-existent relation type.");
+    }
+    catch (Exception $e) {
+      if ($e->getMessage() == 'Relation save failed: Relation type non_existant_relation_type does not exist.') {
+        $this->pass('Prevented creation of a relation with a non-existant relation type.');
+      } else {
+        $this->fail('Exception message: ' . $e->getMessage());
+      }
+    }
+
+    // Relation save should fail if relation endpoints are invalid.
+    try {
+      $rid = $this->saveRelation('directional_entitysame', $this->endpoints_entitydifferent);
+      $this->fail("Relation saved that shouldn't have been: endpoints invalid.");
+    }
+    catch (Exception $e) {
+      if ($e->getMessage() == 'Relation save failed: Relation type directional_entitysame does allow entities of type user:user as a source endpoint.') {
+        $this->pass('Prevented creation of a relation with the wrong endpoint types.');
+      } else {
+        $this->fail('Exception message: ' . $e->getMessage());
+      }
+    }
+
+    // Relation save should fail if there is no data present in a field which is
+    // required on the relation type.
+    // This should probably be handled by Field API, no? What will the error
+    // message be?
+    try {
+      $rid = $this->saveRelation('relation_requires_field', $this->endpoints_entitysame);
+      $this->fail("Relation saved that shouldn't have been: missing required field data.");
+    }
+    catch (Exception $e) {
+      if ($e->getMessage() == 'Relation save failed: There is no data in the field_required_integer field.') {
+        $this->pass('Prevented creation of a relation with missing data in a required field.');
+      } else {
+        $this->fail('Exception message: ' . $e->getMessage());
+      }
+    }
+
+    // Relation save should fail if there is invalid data present in a field.
+    // This should probably be handled by Field API, no? What will the error
+    // message be?
+    try {
+      $relation = relation_create('relation_requires_field', $this->endpoints_entitysame);
+      $relation->field_required_integer[LANGUAGE_NONE][0]['value'] = 'This should cause an error';
+      $rid = relation_save($relation);
+      $this->fail("Relation saved that shouldn't have been: field has bad data.");
+    }
+    catch (Exception $e) {
+      if ($e->getMessage() == 'Relation save failed: invalid values provided for field_required_integer.') {
+        $this->pass('Prevented creation of a relation with invalid data in a field.');
+      } else {
+        $this->fail('Exception message: ' . $e->getMessage());
+      }
     }
   }
 
