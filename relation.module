@@ -623,7 +623,7 @@ function relation_save($relation, $account = NULL) {
     field_attach_validate('relation', $relation);
   }
   catch (FieldValidationException $e) {
-    watchdog_exception('relation', $e, t('Field validation failed.'), NULL, 
+    watchdog_exception('relation', $e, t('Field validation failed.'), NULL,
       WATCHDOG_ERROR);
     return FALSE;
   }
@@ -925,8 +925,8 @@ function relation_entity_delete($entity, $entity_type) {
     }
   }
   if (!empty($relations_to_delete)) {
-    relation_delete_multiple($relations_to_delete);  
-    drupal_set_message(t('Relations @relations have been deleted.', 
+    relation_delete_multiple($relations_to_delete);
+    drupal_set_message(t('Relations @relations have been deleted.',
       array('@relations' => implode(', ', $relations_to_delete))));
   }
 }
