@@ -9,9 +9,8 @@ namespace Drupal\relation\Plugin\Core\Entity;
 
 use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\Entity;
-use Drupal\Component\Annotation\Plugin;
-use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
+use Drupal\Core\Annotation\Translation;
 
 /**
  * Defines relation entity
