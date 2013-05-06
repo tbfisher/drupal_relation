@@ -208,7 +208,7 @@ class RelationViewsTest extends RelationTestBase {
         // Second test: node that has no relations. The results should be that
         // no results are found for the required relation, and 6 / NULL
         // for the optional relation.
-        $view = $view->clone_view(); 
+        $view = $view->clone_view();
         $view->set_arguments(array($this->node6->nid));
         $view->execute();
 

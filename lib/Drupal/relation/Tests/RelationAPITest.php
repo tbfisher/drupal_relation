@@ -117,16 +117,16 @@ class RelationAPITest extends RelationTestBase {
       ->sort('created', 'DESC')
       ->execute();
     $this->assertEqual($relations, array($this->rid_octopus => $this->rid_octopus, $this->rid_directional => $this->rid_directional, $this->rid_symmetric => $this->rid_symmetric));
-    
+
     // Create 10 more symmetric relations and verify that the count works with
     // double digit counts as well.
-    for($i = 0; $i < 10; $i++) {
+    for ($i = 0; $i < 10; $i++) {
       $this->createRelationSymmetric();
     }
     $count = relation_query('node', $this->node4->nid)
       ->count()
       ->execute();
-    $this->assertEqual($count, 16);        
+    $this->assertEqual($count, 16);
   }
 
   /**
@@ -200,7 +200,7 @@ class RelationAPITest extends RelationTestBase {
    * Tests relation delete.
    */
   function testRelationDelete() {
-    // Invalid relations are deleted when any endpoint entity is deleted. 
+    // Invalid relations are deleted when any endpoint entity is deleted.
     // Octopus relation is valid with 3 endpoints, currently it has 4.
     node_delete($this->node1->nid);
     $this->assertTrue(relation_load($this->rid_octopus, NULL, TRUE), 'Relation is not deleted.');

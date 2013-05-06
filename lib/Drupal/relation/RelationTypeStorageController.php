@@ -30,7 +30,7 @@ class RelationTypeStorageController extends DatabaseStorageController {
       'source_bundles' => array(),
       'target_bundles' => array(),
       // required because relation_type is a non-auto incremementing primary.
-      // drupal_write_record assumes $relation_type is already saved because 
+      // drupal_write_record assumes $relation_type is already saved because
       // $this->relation_type is set.
       'enforceIsNew' => TRUE,
     );
@@ -96,3 +96,4 @@ class RelationTypeStorageController extends DatabaseStorageController {
     }
   }
 }
+

@@ -102,7 +102,7 @@ class RelationTypeFormController extends EntityFormController {
       '#description' => t('Minimum number of entities joined by relations of this type (e.g. three siblings in one relation). <em>In nearly all cases you will want to leave this set to 2</em>.'),
       '#default_value' => $relation_type->min_arity ? $relation_type->min_arity : 2,
     );
-    
+
     $options = array('1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '0' => t('Infinite'));
     $form['advanced']['max_arity'] = array(
       '#type' => 'select',

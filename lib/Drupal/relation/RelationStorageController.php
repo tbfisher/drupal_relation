@@ -13,7 +13,7 @@ use Drupal\Core\Entity\EntityInterface;
 /**
  * Relation controller class
  *
- * This extends the DatabaseStorageController class, adding required special 
+ * This extends the DatabaseStorageController class, adding required special
  * handling for relation revisions, very similar to what's being done with
  * nodes.
  */

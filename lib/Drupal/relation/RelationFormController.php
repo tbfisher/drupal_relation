@@ -21,8 +21,8 @@ class RelationFormController extends EntityFormController {
     $element['delete']['#access'] = user_access('delete relations');
     return $element;
   }
-  
-  function save(array $form, array &$form_state) {    
+
+  function save(array $form, array &$form_state) {
     $relation = $this->getEntity($form_state);
     $relation->save();
     $uri = $relation->uri();

@@ -244,7 +244,7 @@ function relation_load($rid) {
  * @endcode
  *
  * @param array $endpoints
- *   An array containing endpoints. Each endpoint is an array with keys 
+ *   An array containing endpoints. Each endpoint is an array with keys
  *   'entity_type' and 'entity_id'.
  * @param $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
@@ -371,7 +371,7 @@ function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type)
  *
  * @return RelationQuery
  *   The query object itself.
- *   
+ *
  *   @todo deprecate this
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
@@ -522,7 +522,7 @@ function relation_get_available_relation_types($entity_type, $bundle, $endpoint 
       $available_types[] = $relation_type;
     }
   }
-  
+
   return $available_types;
 }
 
@@ -559,7 +559,7 @@ function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
     }
   }
   if (!empty($relations_to_delete)) {
-    entity_delete_multiple('relation', $relations_to_delete);  
+    entity_delete_multiple('relation', $relations_to_delete);
     drupal_set_message(t('Relations @relations have been deleted.', array('@relations' => implode(', ', $relations_to_delete))));
   }
 }
