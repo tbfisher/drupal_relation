@@ -14,9 +14,15 @@ use Drupal\Core\Entity\EntityFormController;
  * Form controller for relation edit form.
  */
 class RelationTypeFormController extends EntityFormController {
-  public function form(array $form, array &$form_state, EntityInterface $relation_type) {
+
+  /**
+   * Overrides Drupal\Core\Entity\EntityFormController::form().
+   */
+  public function form(array $form, array &$form_state) {
+    $form = parent::form($form, $form_state);
+    $relation_type = $this->getEntity($form_state);
     $form['#attached']['css'] = array(
-      drupal_get_path('module', 'relation') . '/relation_ui.css',
+      drupal_get_path('module', 'relation_ui') . '/relation_ui.css',
     );
     $form['labels'] = array(
       '#type' => 'container',
@@ -157,6 +163,9 @@ class RelationTypeFormController extends EntityFormController {
     return parent::form($form, $form_state, $relation_type);
   }
 
+  /**
+   * Overrides Drupal\Core\Entity\EntityFormController::save().
+   */
   function save(array $form, array &$form_state) {
     $relation_type = $this->getEntity($form_state);
     $relation_type->label = $form_state['values']['name'];
