@@ -5,12 +5,24 @@
  * Views relationship support.
  */
 
-class relation_handler_relationship extends views_handler_relationship {
+namespace Drupal\relation\Plugin\views\relationship;
+
+use Drupal\views\Views;
+use Drupal\Component\Annotation\PluginID;
+use Drupal\views\Plugin\views\relationship\Standard as RelationshipStandard;
+use Drupal\views\Plugin\views\join\Standard as JoinStandard;
+
+/**
+ * Relate entities using a Relation endpoint.
+ *
+ * @PluginID("relation_relationship")
+ */
+class RelationRelationship extends RelationshipStandard {
   /**
    * Define r_index option.
    */
-  function option_definition() {
-    $options = parent::option_definition();
+  function defineOptions() {
+    $options = parent::defineOptions();
     $options['r_index'] = array('default' => -1);
     $options['entity_deduplication_left'] = array('default' => FALSE);
     $options['entity_deduplication_right'] = array('default' => FALSE);
@@ -20,8 +32,8 @@ class relation_handler_relationship extends views_handler_relationship {
   /**
    * Let the user choose r_index.
    */
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
+  function buildOptionsForm(&$form, &$form_state) {
+    parent::buildOptionsForm($form, $form_state);
 
     // Check if this relation is entity-to-entity or entity-to-relation / relation-to-entity.
     $endpoints_twice = isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']);
@@ -56,19 +68,23 @@ class relation_handler_relationship extends views_handler_relationship {
 
   function query() {
     $field = field_info_field('endpoints');
+
+    // Get how `endpoint` is stored in the database.
     $relation_data_table_name = _field_sql_storage_tablename($field);
     $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
     $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
     $r_index_field_name = _field_sql_storage_columnname('endpoints', 'r_index');
+
     $join_type = empty($this->options['required']) ? 'LEFT' : 'INNER';
     $endpoints_twice = isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']);
 
-    $this->ensure_my_table();
+    $this->ensureMyTable();
     // Join the left table with the entity type to the endpoints field data table.
-    $join = new views_join();
-    $join->definition = array(
-      'left_table' => $this->table_alias,
-      'left_field' => $this->real_field,
+
+    $manager = Views::pluginManager('join');
+    $configuration = array(
+      'left_table' => $this->tableAlias,
+      'left_field' => $this->realField,
       'table'      => $relation_data_table_name,
       'type'       => $join_type,
       'extra'      => array(
@@ -78,39 +94,41 @@ class relation_handler_relationship extends views_handler_relationship {
         ),
       ),
     );
+
     if (isset($this->definition['entity_type_left'])) {
       // The left table is an entity, not a relation.
-      $join->definition['field'] = $entity_id_field_name;
-      $this->ensure_no_duplicate_entities($join->definition['extra'], $this->options['entity_deduplication_left'], $this->definition['relation_type'], $this->definition['entity_type_left'], $this->table_alias, $this->real_field);
-      $join->definition['extra'][] = array(
+      $configuration['field'] = $entity_id_field_name;
+      $this->ensure_no_duplicate_entities($configuration['extra'], $this->options['entity_deduplication_left'], $this->definition['relation_type'], $this->definition['entity_type_left'], $this->tableAlias, $this->realField);
+      $configuration['extra'][] = array(
         'field' => $entity_type_field_name,
         'value' => $this->definition['entity_type_left'],
       );
     }
     else {
       // The left table is relation.
-      $join->definition['field'] = 'entity_id';
+      $configuration['field'] = 'entity_id';
     }
     if ($this->definition['directional'] && $this->options['r_index'] > -1) {
-      $join->definition['extra'][] = array(
+      $configuration['extra'][] = array(
         'field' => $r_index_field_name,
         'value' => $this->options['r_index'],
       );
     }
-    $join->construct();
+
+    $join = Views::pluginManager('join')->createInstance('standard', $configuration);
+
     $join->adjusted = TRUE;
     $l = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
 
     if ($endpoints_twice) {
       // Execute a self-join.
-      $join = new views_join();
-      $join->definition = array(
+      $configuration = array(
         'left_table' => $l,
         'left_field' => 'entity_id',
-        'table'      => $relation_data_table_name,
-        'field'      => 'entity_id',
-        'type'       => $join_type,
-        'extra'      => array(
+        'table' => $relation_data_table_name,
+        'field' => 'entity_id',
+        'type' => $join_type,
+        'extra' => array(
           array(
             'field' => $entity_type_field_name,
             'value' => $this->definition['entity_type_right'],
@@ -119,7 +137,7 @@ class relation_handler_relationship extends views_handler_relationship {
       );
 
       if ($this->definition['entity_type_left'] == $this->definition['entity_type_right']) {
-        $join->definition['extra'][] = array(
+        $configuration['extra'][] = array(
           // This definition is a bit funny but there's no other way to tell
           // Views to use an expression in join extra as it is.
           'field' => $r_index_field_name . ' !=  ' . $l . '.' . $r_index_field_name . ' AND 1',
@@ -127,15 +145,15 @@ class relation_handler_relationship extends views_handler_relationship {
         );
       }
 
-      $join->construct();
+      $join = Views::pluginManager('join')->createInstance('standard', $configuration);
       $join->adjusted = TRUE;
       $r = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
     }
     else {
       $r = $l;
     }
-    $join = new views_join();
-    $join->definition = array(
+
+    $configuration = array(
       'left_table' => $r,
       'table'      => $this->definition['base'],
       'field'      => $this->definition['base field'],
@@ -143,9 +161,9 @@ class relation_handler_relationship extends views_handler_relationship {
     );
     if (isset($this->definition['entity_type_right'])) {
       // We are finishing on an entity table.
-      $join->definition['left_field'] = $entity_id_field_name;
-      $this->ensure_no_duplicate_entities($join->definition['extra'], $this->options['entity_deduplication_right'], $this->definition['relation_type'], $this->definition['entity_type_right'], $r, $entity_id_field_name);
-      $join->definition['extra'][] = array(
+      $configuration['left_field'] = $entity_id_field_name;
+      $this->ensure_no_duplicate_entities($configuration['extra'], $this->options['entity_deduplication_right'], $this->definition['relation_type'], $this->definition['entity_type_right'], $r, $entity_id_field_name);
+      $configuration['extra'][] = array(
         'table' => $r,
         'field' => $entity_type_field_name,
         'value' => $this->definition['entity_type_right'],
@@ -153,10 +171,10 @@ class relation_handler_relationship extends views_handler_relationship {
     }
     else {
       // We are finishing on relation.
-      $join->definition['left_field'] = 'entity_id';
+      $configuration['left_field'] = 'entity_id';
     }
 
-    $join->construct();
+    $join = Views::pluginManager('join')->createInstance('standard', $configuration);
     $join->adjusted = TRUE;
     // use a short alias for this:
     $alias = $this->definition['base'] . '_' . $this->table;
