@@ -26,7 +26,7 @@ class RelationAPITest extends RelationTestBase {
   }
 
   function setUp() {
-    // This is necessary for the ->propertyOrderBy('created', 'DESC') test.
+    // This is necessary for the ->sort('created', 'DESC') test.
     $this->sleep = TRUE;
     parent::setUp();
   }

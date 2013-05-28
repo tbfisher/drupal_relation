@@ -27,7 +27,7 @@ class RelationUITest extends RelationTestBase {
   }
 
   function setUp() {
-    // This is necessary for the ->propertyOrderBy('created', 'DESC') test.
+    // This is necessary for the ->sort('created', 'DESC') test.
     $this->sleep = TRUE;
     parent::setUp();
   }
@@ -37,7 +37,7 @@ class RelationUITest extends RelationTestBase {
    */
   function testRelationDelete() {
     $relations = relation_query('node', $this->node1->nid)
-      ->propertyOrderBy('created', 'DESC')
+      ->sort('created', 'DESC')
       ->execute();
     $relation = $relations[$this->rid_directional];
 
