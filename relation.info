@@ -6,6 +6,7 @@ files[] = relation.database.inc
 files[] = tests/relation.test
 files[] = tests/relation.rules.test
 files[] = tests/relation.views.test
+files[] = tests/relation.ctools.test
 files[] = views/relation_handler_relationship.inc
 files[] = views/views_handler_field_relation_link.inc
 files[] = views/views_handler_field_relation_link_delete.inc

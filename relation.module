@@ -301,6 +301,7 @@ function relation_type_ensure_instance($type) {
       'bundle' => $type,
     );
     field_create_instance($instance);
+    field_read_instance('relation', 'endpoints', $type);
   }
 }
 
