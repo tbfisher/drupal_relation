@@ -45,7 +45,7 @@ class RelationUITest extends RelationTestBase {
     $arg = array(':rid' => $relation->rid);
     $this->assertFalse((bool) db_query_range('SELECT * FROM {relation} WHERE rid = :rid', 0, 1, $arg)->fetchField(), 'Nothing in relation table after delete.');
     $this->assertFalse((bool) db_query_range('SELECT * FROM {relation_revision} WHERE rid = :rid', 0, 1, $arg)->fetchField(), 'Nothing in relation revision table after delete.');
-    $skeleton_relation = entity_create_stub_entity('relation', array($relation->rid, $relation->vid, $relation->relation_type));
+    $skeleton_relation = entity_create('relation', array($relation->rid, $relation->vid, $relation->relation_type));
     field_attach_load('relation', array($relation->rid => $skeleton_relation));
     $this->assertIdentical($skeleton_relation->endpoints, array(), t('Field data not present after delete'));
 

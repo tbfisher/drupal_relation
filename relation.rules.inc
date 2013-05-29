@@ -5,6 +5,8 @@
  * Implements the Rules module API for Relation.
  */
 
+use Drupal\Core\Language\Language;
+
 /**
  * Implements hook_rules_event_info().
  */
@@ -118,14 +120,14 @@ function relation_rules_get_endpoints($relation, array $options, $property_name,
 function relation_rules_get_specific_endpoints($relation, array $options, $property_name, $entity_type, $info) {
   if ($info['endpoint_type'] == 'source') {
     if ($info['relation_directional']) {
-      $endpoints = array($relation->endpoints[LANGUAGE_NOT_SPECIFIED][0]);
+      $endpoints = array($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED][0]);
     }
     else {
-      $endpoints = $relation->endpoints[LANGUAGE_NOT_SPECIFIED];
+      $endpoints = $relation->endpoints[Language::LANGCODE_NOT_SPECIFIED];
     }
   }
   else {
-    $endpoints = array_slice($relation->endpoints[LANGUAGE_NOT_SPECIFIED], 1);
+    $endpoints = array_slice($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED], 1);
   }
 
   $array = array();
@@ -160,7 +162,7 @@ function relation_rules_set_endpoints(&$relation = NULL, $name = NULL, $entity_w
     $bundle_key = $entity_wrapper->entityKey('bundle');
 
     if (isset($entity->{$id_key})) {
-      $relation->endpoints[LANGUAGE_NOT_SPECIFIED][$i] = array(
+      $relation->endpoints[Language::LANGCODE_NOT_SPECIFIED][$i] = array(
         'entity_type' => $entity_wrapper->type(),
         'entity_id' => $entity->{$id_key},
         'entity_bundle' => isset($entity->{$bundle_key}) ? $entity->{$bundle_key} : $entity_type,
@@ -187,7 +189,7 @@ function relation_rules_get_related_entities($entity, array $options, $name, $ty
     return $entities_ids;
   }
   foreach (relation_load_multiple($rids) as $relation) {
-    foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
+    foreach ($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] as $endpoint) {
       if ($endpoint['entity_type'] == $info['target_type']) {
         $entities_ids[] = $endpoint['entity_id'];
       }

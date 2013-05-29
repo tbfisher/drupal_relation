@@ -10,6 +10,8 @@ if (module_exists('ctools')) {
  * Describes relations between entities.
  */
 
+use Drupal\Core\Language\Language;
+
 /**
  * Implements hook_entity_bundle_info().
  */
@@ -334,7 +336,7 @@ function relation_clear_related_entities_cache($endpoints) {
  */
 function relation_insert($relation_type, $endpoints) {
   $relation = entity_create('relation', array('relation_type' => $relation_type));
-  $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = $endpoints;
+  $relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] = $endpoints;
   $relation->save();
   return $relation;
 }
@@ -540,15 +542,15 @@ function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
   $relations_to_delete = array(); // ids of relations to delete
   foreach (entity_load_multiple('relation', $relation_ids) as $relation) {
     // Remove any endpoints pointing to entity
-    foreach ($relation->endpoints[LANGUAGE_NOT_SPECIFIED] as $key => $endpoint) {
+    foreach ($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] as $key => $endpoint) {
       if ($endpoint['entity_id'] == $entity->id()
         && $endpoint['entity_type'] == $entity->entityType()) {
-        unset($relation->endpoints[LANGUAGE_NOT_SPECIFIED][$key]);
+        unset($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED][$key]);
       }
     }
     // Check if relation remains valid with regards to arity
     $relation_type = relation_type_load($relation->relation_type);
-    $arity = count($relation->endpoints[LANGUAGE_NOT_SPECIFIED]);
+    $arity = count($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED]);
     if ($arity < $relation_type->min_arity) {
       // Not valid - delete
       array_push($relations_to_delete, $relation->id());

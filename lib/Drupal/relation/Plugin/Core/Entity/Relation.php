@@ -7,6 +7,7 @@
 
 namespace Drupal\relation\Plugin\Core\Entity;
 
+use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\Annotation\EntityType;
@@ -96,7 +97,7 @@ class Relation extends Entity implements RelationInterface {
    */
   function endpoints_load($entity_type = NULL) {
     $entities = array();
-    foreach ($this->endpoints[LANGUAGE_NOT_SPECIFIED] as $endpoint) {
+    foreach ($this->endpoints[Language::LANGCODE_NOT_SPECIFIED] as $endpoint) {
       if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
         continue;
       }

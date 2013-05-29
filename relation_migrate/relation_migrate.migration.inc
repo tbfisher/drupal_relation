@@ -5,6 +5,8 @@
  * Migration for entityreference fields.
  */
 
+use Drupal\Core\Language\Language;
+
 abstract class RelationMigrateReference extends Migration {
 
   /**
@@ -55,7 +57,7 @@ abstract class RelationMigrateReference extends Migration {
   }
 
   public function prepare(stdClass $relation, stdClass $source_row) {
-    $relation->endpoints[LANGUAGE_NOT_SPECIFIED] = array(
+    $relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] = array(
       array('entity_type' => $source_row->source_type, 'entity_id' => $source_row->source_id),
       array('entity_type' => $source_row->destination_type, 'entity_id' => $source_row->destination_id),
     );
