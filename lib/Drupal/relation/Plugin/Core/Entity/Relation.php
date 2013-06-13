@@ -39,8 +39,7 @@ use Drupal\Core\Annotation\Translation;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   },
- *   route_base_path = "admin/structure/relation/manage/{bundle}"
+ *   }
  * )
  */
 class Relation extends Entity implements RelationInterface {
