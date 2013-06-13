@@ -89,26 +89,37 @@ class Relation extends Entity implements RelationInterface {
   }
 
   /**
-   * Return endpoints as loaded entities.
+   * Filters endpoints by entity type.
    *
-   * @param $entity_type
-   *   (optional) Filter endpoints by entity type. Return all endpoint entities
-   *   if empty.
+   * Suitable for direct usage with entity_load_multiple().
+   *
+   * Example:
+   *
+   * @code
+   * $endpoints = $relation->endpoints();
+   * $users = entity_load_multiple('user', $endpoints['user']);
+   * @endcode
+   *
+   * Sample return value:
+   *
+   * @code
+   * array(
+   *   "node" => array(5),
+   *   "user" => array(2),
+   * );
+   * @endcode
+   *
+   * @return array
+   *   An array where keys are entity type, and values are arrays containing
+   *   entity IDs of endpoints.
    */
-  function endpoints_load($entity_type = NULL) {
+  function endpoints() {
     $entities = array();
-    foreach ($this->endpoints[Language::LANGCODE_NOT_SPECIFIED] as $endpoint) {
-      if (!empty($entity_type) && $endpoint['entity_type'] != $entity_type) {
-        continue;
-      }
-      $entities[$endpoint['entity_type']][] = $endpoint['entity_id'];
+  
+    foreach (field_get_items($this, 'endpoints') as $endpoint) {
+      $entities[$endpoint['entity_type']][$endpoint['entity_id']] = $endpoint['entity_id'];
     }
-    if (empty($entities)) {
-      return FALSE;
-    }
-    foreach ($entities as $entity_type => $ids) {
-      $entities[$entity_type] = entity_load_multiple($entity_type, $ids);
-    }
+  
     return $entities;
   }
 
