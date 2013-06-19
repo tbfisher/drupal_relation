@@ -22,7 +22,7 @@ class views_handler_field_relation_link_delete extends views_handler_field_relat
     }
 
     // Ensure user has access to delete this relation.
-    if (!user_access('delete relations')) {
+    if (!$relation->access('delete')) {
       return;
     }
 

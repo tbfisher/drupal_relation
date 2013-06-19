@@ -22,7 +22,7 @@ class views_handler_field_relation_link_edit extends views_handler_field_relatio
     }
 
     // Ensure user has access to edit this relation.
-    if (!user_access('edit relations')) {
+    if (!$relation->access('update')) {
       return;
     }
 

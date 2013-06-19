@@ -409,7 +409,7 @@ function relation_ui_filter_form_submit($form, $form_state) {
  * @param $query
  *   A SelectQuery to which the filters should be applied.
  */
-function relation_ui_build_filter_query(SelectQueryInterface $query) {
+function relation_ui_build_filter_query($query) {
   if (!empty($_SESSION['relation_filters'])) {
     $query->join('field_data_endpoints', 'e', 'e.entity_id = r.rid');
     $query->distinct();
@@ -447,12 +447,17 @@ function relation_ui_admin_content() {
   // Grab all relations.
   $query = db_select('relation', 'r')
     ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-    ->extend('Drupal\Core\Database\Query\TableSortExtender');
-  $query->fields('r', array('rid', 'relation_type'));
+    ->extend('Drupal\Core\Database\Query\TableSortExtender')
+    ->limit(50)
+    ->fields('r', array('rid', 'relation_type'))
+    ->orderByHeader($header);
   relation_ui_build_filter_query($query);
-  $query->limit(50)
-  ->orderByHeader($header);
-  $relations = $query->execute();
+  $result = $query->execute();
+  $relation_ids = array();
+  foreach ($result as $relation) {
+    $relation_ids[] = $relation->rid;
+  }
+  $relations = entity_load_multiple('relation', $relation_ids);
 
   $form = drupal_get_form('relation_ui_filter_form');
   $filter_form = drupal_render($form);
@@ -478,10 +483,8 @@ function theme_relation_ui_admin_content($variables) {
   }
   else {
     foreach ($relations as $relation) {
-      // Load the relation.
-      $r = relation_load($relation->rid);
       // Get the endpoints for this relation.
-      $endpoints = field_get_items($r, 'endpoints');
+      $endpoints = field_get_items($relation, 'endpoints');
 
       $relation_entities = array();
       if (!empty($endpoints)) {
@@ -521,7 +524,7 @@ function theme_relation_ui_admin_content($variables) {
       $endpoint_separator = ', ';
       $type_label = '';
       // Get the type for this relation
-      if ($relation_type = entity_load('relation_type', $r->relation_type)) {
+      if ($relation_type = entity_load('relation_type', $relation->bundle())) {
         $endpoint_separator = $relation_type->directional ? " → " : " ↔ ";
         $type_label = $relation_type->label();
       }
@@ -529,8 +532,8 @@ function theme_relation_ui_admin_content($variables) {
         l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
         $type_label,
         implode($endpoint_separator, $relation_column),
-        user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit', $options) : '',
-        user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete', $options) : '',
+        $relation->access('update') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit', $options) : '',
+        $relation->access('delete') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete', $options) : '',
       );
     }
   }

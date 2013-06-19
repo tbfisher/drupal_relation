@@ -43,7 +43,7 @@ class views_handler_field_relation_link extends views_handler_field_entity {
       return;
     }
 
-    if (user_access('view relations')) {
+    if (!$relation->access('view')) {
       $this->options['alter']['make_link'] = TRUE;
       $this->options['alter']['path'] = "relation/$relation->rid";
       $text = !empty($this->options['text']) ? $this->options['text'] : t('View');

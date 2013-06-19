@@ -161,7 +161,7 @@ function relation_permission() {
       'title' => t('Delete Relations'),
     ),
     'administer relations' => array(
-      'title' => t('Administer Relations'),
+      'title' => t('Administer all Relations'),
     ),
   );
 }

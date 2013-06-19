@@ -21,6 +21,7 @@ use Drupal\Core\Annotation\Translation;
  *   label = @Translation("Relation"),
  *   module = "relation",
  *   controllers = {
+ *     "access" = "\Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *     "form" = {
