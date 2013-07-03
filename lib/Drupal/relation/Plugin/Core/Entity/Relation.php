@@ -40,7 +40,8 @@ use Drupal\Core\Annotation\Translation;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   }
+ *   },
+ *   route_base_path = "admin/structure/relation/manage/{bundle}"
  * )
  */
 class Relation extends Entity implements RelationInterface {
@@ -115,11 +116,11 @@ class Relation extends Entity implements RelationInterface {
    */
   function endpoints() {
     $entities = array();
-  
+
     foreach (field_get_items($this, 'endpoints') as $endpoint) {
       $entities[$endpoint['entity_type']][$endpoint['entity_id']] = $endpoint['entity_id'];
     }
-  
+
     return $entities;
   }
 
