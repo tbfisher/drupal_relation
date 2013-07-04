@@ -56,7 +56,11 @@ class RelationTypeFormController extends EntityFormController {
       '#description'   => t('Reverse label of the relation type. This is used as the predicate by formatters of directional relations, when you need to display the reverse direction (ie. from the target entity to the source entity). If this is not supplied, the forward label is used.'),
       '#default_value' => $relation_type->reverse_label,
       '#states' => array(
-        'visible' => array(   // action to take.
+        'visible' => array(
+          ':input[name="directional"]' => array('checked' => TRUE),
+          ':input[name="advanced[max_arity]"]' => array('!value' => '1'),
+        ),
+        'required' => array(
           ':input[name="directional"]' => array('checked' => TRUE),
           ':input[name="advanced[max_arity]"]' => array('!value' => '1'),
         ),
@@ -68,7 +72,7 @@ class RelationTypeFormController extends EntityFormController {
       '#description'   => t('A directional relation is one that does not imply the same relation in the reverse direction. For example, a "likes" relation is directional (A likes B does not neccesarily mean B likes A), whereas a "similar to" relation is non-directional (A similar to B implies B similar to A. Non-directional relations are also known as symmetric relations.'),
       '#default_value'  => $relation_type->directional,
       '#states' => array(
-        'invisible' => array(   // action to take.
+        'invisible' => array(
           ':input[name="advanced[max_arity]"]' => array('value' => '1'),
         ),
       ),
@@ -88,7 +92,7 @@ class RelationTypeFormController extends EntityFormController {
       '#description'   => t('A transitive relation implies that the relation passes through intermediate entities (ie. A=>B and B=>C implies that A=>C). For example "Ancestor" is transitive: your ancestor\'s ancestor is also your ancestor. But a "Parent" relation is non-transitive: your parent\'s parent is not your parent, but your grand-parent.'),
       '#default_value'  => $relation_type->transitive,
       '#states' => array(
-        'invisible' => array(   // action to take.
+        'invisible' => array(
           ':input[name="advanced[max_arity]"]' => array('value' => '1'),
         ),
       ),
@@ -142,6 +146,7 @@ class RelationTypeFormController extends EntityFormController {
       '#size'          => max(12, $counter),
       '#default_value' => $relation_type->source_bundles,
       '#multiple'      => TRUE,
+      '#required'      => TRUE,
       '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple. Note that selecting all bundles also include bundles not yet created for that entity type.',
     );
     $form['endpoints']['target_bundles'] = array(
@@ -153,7 +158,11 @@ class RelationTypeFormController extends EntityFormController {
       '#multiple'      => TRUE,
       '#description'   => 'Bundles that are not selected will not be available as targets for directional relations. Ctrl+click to select multiple.',
       '#states' => array(
-        'visible' => array(   // action to take.
+        'visible' => array(
+          ':input[name="directional"]' => array('checked' => TRUE),
+          ':input[name="advanced[max_arity]"]' => array('!value' => '1'),
+        ),
+        'required' => array(
           ':input[name="directional"]' => array('checked' => TRUE),
           ':input[name="advanced[max_arity]"]' => array('!value' => '1'),
         ),
@@ -164,7 +173,19 @@ class RelationTypeFormController extends EntityFormController {
   }
 
   /**
-   * Overrides Drupal\Core\Entity\EntityFormController::save().
+   * Overrides \Drupal\Core\Entity\EntityFormController::validate().
+   */
+  function validate(array $form, array &$form_state) {
+    $max_arity = $form_state['values']['advanced']['max_arity'];
+    $min_arity = $form_state['values']['advanced']['min_arity'];
+    // Empty max arity indicates infinite arity
+    if ($max_arity && $min_arity > $max_arity) {
+      form_set_error('min_arity', t('Minimum arity must be less than or equal to maximum arity.'));
+    }
+  }
+
+  /**
+   * Overrides \Drupal\Core\Entity\EntityFormController::save().
    */
   function save(array $form, array &$form_state) {
     $relation_type = $this->getEntity($form_state);
