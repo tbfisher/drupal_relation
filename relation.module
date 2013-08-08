@@ -407,9 +407,7 @@ function _relation_get_types_bundles(&$relation_types) {
  *   relation_type.
  */
 function relation_list_types() {
-  $results = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label'))
-    ->execute()->fetchAllAssoc('relation_type');
+  $results = relation_get_types();
   $relation_types = array();
   foreach ($results as $type => $relation_type) {
     $relation_types[$type] = $relation_type->label . ' (' . $type . ')';
