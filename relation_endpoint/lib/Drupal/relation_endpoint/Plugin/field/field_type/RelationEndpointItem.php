@@ -88,4 +88,12 @@ class RelationEndpointItem extends ConfigFieldItemBase {
       ),
     );
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEmpty() {
+    $value = $this->get('entity_id')->getValue();
+    return $value === NULL || $value === '';
+  }
 }

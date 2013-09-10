@@ -54,12 +54,13 @@ class RelationEndpointFormatter extends FormatterBase {
    */
   public function viewElements(EntityInterface $entity, $langcode, FieldInterface $items) {
     $list_items = array();
-    foreach ($endpoints as $delta => $endpoint) {
-      $entity_info = entity_get_info($endpoint['entity_type']);
-      $entity = entity_load($endpoint['entity_type'], $endpoint['entity_id']);
-      $uri = $entity->uri();
-      $list_items[$delta] = array(l($entity->label(), $uri['path'], $uri['options']), $entity_info['label']);
-    }
+//     TODO: fixme
+//     foreach ($endpoints as $delta => $endpoint) {
+//       $entity_info = entity_get_info($endpoint['entity_type']);
+//       $entity = entity_load($endpoint['entity_type'], $endpoint['entity_id']);
+//       $uri = $entity->uri();
+//       $list_items[$delta] = array(l($entity->label(), $uri['path'], $uri['options']), $entity_info['label']);
+//     }
     $headers = array(
       array('data' => t('Entity')),
       array('data' => t('Entity type')),

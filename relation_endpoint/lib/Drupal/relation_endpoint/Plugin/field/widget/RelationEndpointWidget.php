@@ -3,6 +3,8 @@
 /**
  * @file
  * Definition of Drupal\relation_endpoint\Plugin\field\widget\RelationEndpointWidget.
+ *
+ * TODO: Figure out if there is easier way to say "no we don't have edit widget"
  */
 
 namespace Drupal\relation_endpoint\Plugin\field\widget;
