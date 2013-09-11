@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Contains \Drupal\relation_endpoint\Type\RelationField.
+ */
+namespace Drupal\relation_endpoint\Type;
+
+use Drupal\field\Plugin\Type\FieldType\ConfigField;
+
+class RelationField extends ConfigField {
+  public function preSave() {
+    // We need r_index here because EntityFieldQuery can't query on deltas.
+    if (isset($this->list)) {
+      foreach ($this->list as $delta => &$item) {
+        $item->r_index = $delta;
+      }
+    }
+  }
+}

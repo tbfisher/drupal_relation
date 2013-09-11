@@ -6,11 +6,48 @@ if (module_exists('ctools')) {
 }
 
 /**
+ * Use the following suffix on field names.
+ *
+ * Usage:
+ *
+ * @code
+ * // Create a relation field.
+ * $relation_field = entity_create('field_entity', array('entity_type' => $entity_type, 'name' => RELATION_FIELD_NAME));
+ *
+ * // Load a relation field.
+ * $relation_field = entity_load('field_entity', $entity_type . RELATION_FIELD_NAME);
+ * @endcode
+ */
+const RELATION_FIELD_NAME = 'endpoints';
+
+/**
  * @file
  * Describes relations between entities.
  */
 
 use Drupal\Core\Language\Language;
+
+/**
+ * Implements hook_entity_bundle_info().
+ */
+function relation_entity_bundle_info() {
+  $bundles = array();
+
+  // Cannot use entity_load* due to recursion.
+  $relation_types = db_select('relation_type', 'rt')
+    ->fields('rt', array('relation_type', 'label'))
+    ->execute();
+
+  foreach ($relation_types as $relation_type) {
+    $bundles['relation'][$relation_type->relation_type] = array(
+      'label' => $relation_type->label,
+      'admin' => array(
+        'real path' => 'admin/structure/relation/manage/' . $relation_type->relation_type,
+      ),
+    );
+  }
+  return $bundles;
+}
 
 /**
  * Implements hook_entity_property_info().
@@ -177,14 +214,8 @@ function relation_type_delete($relation_type) {
   db_delete('relation_type')->condition('relation_type', $relation_type)->execute();
   db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
 
-  if (field_read_instance('relation', 'endpoints', $relation_type)) {
-    $instance = array(
-      'field_name' => 'endpoints',
-      'entity_type' => 'relation',
-      'bundle' => $relation_type,
-    );
-    field_delete_instance($instance, FALSE);
-  }
+  $instance = entity_load('field_instance', 'relation' . '.' . $relation_type . '.' . RELATION_FIELD_NAME);
+  $instance->delete();
 }
 
 /**
@@ -306,7 +337,7 @@ function relation_clear_related_entities_cache($endpoints) {
  *   array(
  *     array('entity_type' => 'node', 'entity_id' => 1),
  *     array('entity_type' => 'user', 'entity_id' => 5),
- *   array);
+ *   );
  *   @endcode
  *
  * @return \Drupal\relation\Plugin\Core\Entity\Relation
@@ -314,7 +345,7 @@ function relation_clear_related_entities_cache($endpoints) {
  */
 function relation_insert($relation_type, $endpoints) {
   $relation = entity_create('relation', array('relation_type' => $relation_type));
-  $relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] = $endpoints;
+  $relation->set('endpoints', $endpoints);
   $relation->save();
   return $relation;
 }
@@ -552,4 +583,51 @@ function relation_views_api() {
     'api' => 3.0,
     'path' => drupal_get_path('module', 'relation') . '/views',
   );
+}
+
+/**
+ * Adds a endpoint field to a bundle.
+ *
+ * @param $entity_type
+ *   An entity type. Usually 'relation_type'.
+ *
+ * @return \Drupal\Core\Entity\EntityInterface
+ */
+function relation_add_endpoint_field($bundle) {
+  $field = \Drupal\field\Field::fieldInfo()->getField('relation', RELATION_FIELD_NAME);
+  $instance = \Drupal\field\Field::fieldInfo()->getInstance('relation', $bundle, RELATION_FIELD_NAME);
+
+  if (empty($field)) {
+    $field = entity_create('field_entity', array(
+      'entity_type' => 'relation',
+      'name' => RELATION_FIELD_NAME,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'type' => 'relation_endpoint',
+    ));
+    $field->save();
+  }
+
+  if (empty($instance)) {
+    $instance = entity_create('field_instance', array(
+      'field_name' => RELATION_FIELD_NAME,
+      'entity_type' => 'relation',
+      'bundle' => $bundle,
+      'label' => t('Endpoints'),
+      'settings' => array(),
+    ));
+    $instance->save();
+
+    entity_get_form_display('relation', $bundle, 'default')
+      ->setComponent(RELATION_FIELD_NAME, array(
+        'type' => 'relation_endpoint',
+      ))
+      ->save();
+
+    entity_get_display('relation' , $bundle, 'default')
+      ->setComponent(RELATION_FIELD_NAME, array(
+        'label' => 'hidden',
+        'type' => 'relation_endpoint',
+      ))
+      ->save();
+  }
 }

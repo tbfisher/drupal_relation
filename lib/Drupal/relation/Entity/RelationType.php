@@ -5,13 +5,15 @@
  * Contains \Drupal\relation\Plugin\Core\Entity\RelationType.
  */
 
-namespace Drupal\relation\Plugin\Core\Entity;
+namespace Drupal\relation\Entity;
 
 use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Entity\Entity;
 use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
+use Drupal\Core\Entity\EntityMalformedException;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation type entity
@@ -44,7 +46,8 @@ use Drupal\Core\Entity\Annotation\EntityType;
  *     "storage" = "Drupal\relation\RelationTypeStorageController",
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *     "form" = {
- *       "default" = "Drupal\relation\RelationTypeFormController"
+ *       "default" = "Drupal\relation\RelationTypeFormController",
+ *       "edit" = "Drupal\relation\RelationTypeFormController"
  *     }
  *   },
  *   base_table = "relation_type",
@@ -94,5 +97,57 @@ class RelationType extends Entity implements RelationTypeInterface {
    */
   public function label($langcode = NULL) {
     return $this->label;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageControllerInterface $storage_controller) {
+    if (!isset($this->relation_type)) {
+      throw new EntityMalformedException('Bundle property must be set on relation_type entities.');
+    }
+
+    if (empty($this->label)) {
+      $this->label = $this->relation_type;
+    }
+
+    // Directional relations should have a reverse label, but if they don't,
+    // or if they are symmetric:
+    if (empty($this->reverse_label)) {
+      $this->reverse_label = $this->label;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageControllerInterface $storage_controller, $update = TRUE) {
+    if ($update) {
+      // Remove all existing bundles from the relation type before re-adding.
+      db_delete('relation_bundles')
+        ->condition('relation_type', $this->relation_type)
+        ->execute();
+    }
+
+    $query = db_insert('relation_bundles')
+      ->fields(array('relation_type', 'entity_type', 'bundle', 'r_index'));
+
+    // Source bundles
+    foreach ($this->source_bundles as $entity_bundles) {
+      list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
+      $query->values(array($this->relation_type, $entity_type, $bundle, 0));
+    }
+
+    // Target Bundles
+    if ($this->directional) {
+      foreach ($this->target_bundles as $entity_bundles) {
+        list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
+        $query->values(array($this->relation_type, $entity_type, $bundle, 1));
+      }
+    }
+    $query->execute();
+
+    // Ensure endpoints field is attached to relation type.
+    relation_add_endpoint_field($this->id());
   }
 }

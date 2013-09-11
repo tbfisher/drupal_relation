@@ -5,13 +5,15 @@
  * Contains \Drupal\relation\Plugin\Core\Entity\Relation.
  */
 
-namespace Drupal\relation\Plugin\Core\Entity;
+namespace Drupal\relation\Entity;
 
 use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityNG;
 use Drupal\Core\Entity\Annotation\EntityType;
 use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation entity
@@ -21,7 +23,7 @@ use Drupal\Core\Annotation\Translation;
  *   label = @Translation("Relation"),
  *   module = "relation",
  *   controllers = {
- *     "access" = "\Drupal\relation\RelationAccessController",
+ *     "access" = "Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *     "form" = {
@@ -41,45 +43,26 @@ use Drupal\Core\Annotation\Translation;
  *   bundle_keys = {
  *     "bundle" = "relation_type"
  *   },
- *   route_base_path = "admin/structure/relation/manage/{bundle}"
+ *   route_base_path = "admin/structure/relation/manage/{bundle}",
+ *   links = {
+ *     "canonical" = "/relation/{relation}",
+ *     "edit-form" = "/relation/{relation}/edit"
+ *   }
  * )
  */
-class Relation extends Entity implements RelationInterface {
-
-  /**
-   * The relation ID.
-   */
-  public $rid;
-
-  /**
-   * The relation revision ID.
-   */
-  public $vid;
-
-  /**
-   * The relation type (bundle).
-   */
-  public $relation_type;
-
+class Relation extends EntityNG implements RelationInterface {
   /**
    * Implements Drupal\Core\Entity\EntityInterface::id().
    */
   public function id() {
-    return $this->rid;
+    return $this->get('rid')->value;
   }
 
   /**
    * Overrides Drupal\Core\Entity\Entity::getRevisionId().
    */
   public function getRevisionId() {
-    return $this->vid;
-  }
-
-  /**
-   * Overrides Drupal\Core\Entity\Entity::getRevisionId().
-   */
-  public function bundle() {
-    return $this->relation_type;
+    return $this->get('vid')->value;
   }
 
   /**
@@ -87,6 +70,60 @@ class Relation extends Entity implements RelationInterface {
    */
   public function label($langcode = NULL) {
     return t('Relation @id', array('@id' => $this->id()));
+  }
+
+  public static function baseFieldDefinitions($entity_type) {
+    $properties['rid'] = array(
+      'label' => t('Node ID'),
+      'description' => t('The node ID.'),
+      'type' => 'integer_field',
+      'read-only' => TRUE,
+    );
+    $properties['vid'] = array(
+      'label' => t('Revision ID'),
+      'description' => t('The relation revision ID.'),
+      'type' => 'integer_field',
+      'read-only' => TRUE,
+    );
+    $properties['relation_type'] = array(
+      'label' => t('Type'),
+      'description' => t('The relation type.'),
+      'type' => 'string_field',
+      'read-only' => TRUE,
+    );
+    $properties['uid'] = array(
+      'label' => t('User ID'),
+      'description' => t('The user ID of the relation author.'),
+      'type' => 'entity_reference_field',
+      'settings' => array(
+        'target_type' => 'user',
+        'default_value' => 0,
+      ),
+    );
+    $properties['created'] = array(
+      'label' => t('Created'),
+      'description' => t('The time that the relation was created.'),
+      'type' => 'integer_field',
+    );
+    $properties['changed'] = array(
+      'label' => t('Changed'),
+      'description' => t('The time that the relation was last changed.'),
+      'type' => 'integer_field',
+    );
+    $properties['arity'] = array(
+      'label' => t('Arity'),
+      'description' => t('Number of endpoints on the Relation.'),
+      'type' => 'integer_field',
+    );
+    return $properties;
+  }
+
+  /**
+   * Overrides Drupal\Core\Entity\DatabaseStorageController::preSave().
+   */
+  public function preSave(EntityStorageControllerInterface $storage_controller) {
+    $this->changed = REQUEST_TIME;
+    $this->arity = count($this->endpoints);
   }
 
   /**

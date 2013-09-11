@@ -200,7 +200,6 @@ class RelationTypeFormController extends EntityFormController {
       drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type->relation_type)));
       $uri = $relation_type->uri();
       $form_state['redirect'] = $uri['path'];
-      menu_router_rebuild();
     }
     else {
       drupal_set_message(t('Error saving relation type.', 'error'));

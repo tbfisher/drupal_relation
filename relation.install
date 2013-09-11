@@ -6,23 +6,6 @@
  */
 
 /**
- * Create our field.
- */
-function relation_install() {
-  $install = &drupal_static('relation_install');
-  $install = TRUE;
-  $field = array(
-    'field_name' => 'endpoints',
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'type' => 'relation_endpoint',
-  );
-  field_info_cache_clear();
-  field_create_field($field);
-  $install = FALSE;
-  entity_info_cache_clear();
-}
-
-/**
  * Implements hook_schema().
  */
 function relation_schema() {
@@ -236,16 +219,4 @@ function relation_schema() {
     ),
   );
   return $schema;
-}
-
-/**
- * Implements hook_uninstall().
- */
-function relation_uninstall() {
-  // Remove fields attached to relation type bundles.
-  $types = db_query("SELECT relation_type FROM {relation_type}")->fetchCol();
-  foreach ($types as $type) {
-    field_attach_delete_bundle('relation', $type);
-  }
-  field_delete_field('endpoints');
 }

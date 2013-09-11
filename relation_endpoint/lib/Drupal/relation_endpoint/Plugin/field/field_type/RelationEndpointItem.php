@@ -22,11 +22,12 @@ use Drupal\field\FieldInterface;
  *   instance_settings = {
  *   },
  *   default_widget = "relation_endpoint",
- *   default_formatter = "relation_endpoint"
+ *   default_formatter = "relation_endpoint",
+ *   list_class = "\Drupal\relation_endpoint\Type\RelationField",
+ *   no_ui = TRUE
  * )
  */
 class RelationEndpointItem extends ConfigFieldItemBase {
-
   /**
    * Definitions of the contained properties.
    *

@@ -209,8 +209,7 @@ function relation_views_data() {
  * Implements hook_views_data_alter().
  */
 function relation_views_data_alter(&$data) {
-  $entity_info = entity_get_info();
-  $field = field_info_field('endpoints');
+  $entity_info = Drupal::entityManager()->getDefinitions();
 
   // Build the relations between the different tables.
   foreach (entity_load_multiple('relation_type') as $relation_type) {
