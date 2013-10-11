@@ -7,11 +7,11 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
 /**
  * Provides an interface defining a Relation Type entity.
  */
-interface RelationTypeInterface extends ContentEntityInterface {
+interface RelationTypeInterface extends ConfigEntityInterface {
 
 }

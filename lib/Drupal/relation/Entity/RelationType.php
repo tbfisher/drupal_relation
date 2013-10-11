@@ -7,12 +7,10 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\relation\RelationTypeInterface;
-use Drupal\Core\Entity\Entity;
-use Drupal\Component\Annotation\Plugin;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
-use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
@@ -59,7 +57,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   }
  * )
  */
-class RelationType extends Entity implements RelationTypeInterface {
+class RelationType extends ConfigEntityBase implements RelationTypeInterface {
 
   /**
    * The relation type ID.
