@@ -6,6 +6,17 @@
  */
 
 /**
+ * Implements hook_entity_info_alter().
+ */
+function relation_ui_entity_info_alter(&$entity_info) {
+  $entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{bundle}";
+  $entity_info['relation']['links'] = array(
+    'canonical' => "admin/structure/relation/manage/{bundle}",
+    'edit-form' => "/relation/{relation}/edit"
+  );
+}
+
+/**
  * Implements hook_menu().
  */
 function relation_ui_menu() {
@@ -326,7 +337,7 @@ function relation_ui_generate_form($form, &$form_state) {
   return $form;
 }
 
-function relation_ui_generate_form_submit($form, &$form_state) {  
+function relation_ui_generate_form_submit($form, &$form_state) {
   $number = $form_state['values']['relation_number'];
   $relation_types = $form_state['values']['relation_types'];
   $kill = $form_state['values']['relation_kill'];

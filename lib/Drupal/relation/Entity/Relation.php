@@ -42,11 +42,6 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   },
- *   route_base_path = "admin/structure/relation/manage/{bundle}",
- *   links = {
- *     "canonical" = "/relation/{relation}",
- *     "edit-form" = "/relation/{relation}/edit"
  *   }
  * )
  */
