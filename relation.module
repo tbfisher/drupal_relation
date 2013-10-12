@@ -177,20 +177,6 @@ function relation_get_relation_types_options() {
 }
 
 /**
- * Deletes a relation type (bundle).
- *
- * @param $relation_type
- *   The machine name of the relation type (bundle) to be deleted.
- */
-function relation_type_delete($relation_type) {
-  db_delete('relation_type')->condition('relation_type', $relation_type)->execute();
-  db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
-
-  $instance = entity_load('field_instance', 'relation' . '.' . $relation_type . '.' . RELATION_FIELD_NAME);
-  $instance->delete();
-}
-
-/**
  * Loads a relation from a relation id.
  *
  * @param $rid

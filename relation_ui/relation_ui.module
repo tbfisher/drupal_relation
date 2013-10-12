@@ -72,11 +72,6 @@ function relation_ui_menu() {
     'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
     'route_name' => 'relation_ui.list',
   );
-//   $items['admin/structure/relation/list'] = array(
-//     'title' => 'List',
-//     'type' => MENU_DEFAULT_LOCAL_TASK,
-//     'weight' => -10,
-//   );
 //   $items['admin/structure/relation/manage/%relation_type'] = array(
 //     'title' => 'Edit relation type',
 //     'title callback' => 'relation_ui_type_page_title',
@@ -114,69 +109,6 @@ function relation_ui_menu() {
 //     'page callback' => 'relation_ui_endpoints_type_autocomplete',
 //   );
   return $items;
-}
-
-function relation_ui_relation_type_add() {
-  $relation_type = entity_create('relation_type', array(
-    'relation_type' => '',
-    'bundles' => array(),
-    'min_arity' => 2,
-    'max_arity' => 2,
-  ));
-  return entity_get_form($relation_type);
-}
-
-/**
- * List all relation_types (page callback).
- */
-function relation_ui_type_list() {
-  $relation_types = entity_load_multiple('relation_type');
-  $field_ui = module_exists('field_ui');
-  $headers = array(t('Name'), t('Operations'));
-  $rows = array();
-
-  foreach ($relation_types as $relation_type) {
-    $url = 'admin/structure/relation/manage/' . $relation_type->id();
-    $row = array(l($relation_type->label(), $url));
-    $links['edit'] = array(
-      'title' => t('edit'),
-      'href' => $url . '/edit',
-      'weight' => 0
-    );
-    if ($field_ui) {
-      $links['fields'] = array(
-        'title' => t('manage fields'),
-        'href' => $url . '/fields',
-        'weight' => 5
-      );
-      $links['display'] = array(
-        'title' => t('display fields'),
-        'href' => $url . '/display',
-        'weight' => 10
-      );
-    }
-    if (empty($relation_type->in_code_only)) {
-      $links['delete'] = array(
-        'title' => t('delete'),
-        'href' => $url . '/delete',
-        'weight' => 30
-      );
-    }
-    $row[] = array(
-      'data' => array(
-        '#type' => 'operations',
-        '#links' => $links,
-      ),
-    );
-    $rows[] = $row;
-  }
-  $output = array(
-    '#theme' => 'table',
-    '#header' => $headers,
-    '#rows' => $rows,
-    '#empty' => t('No relationship types available.', array('@link' => l(t('Add relationship type'), url('admin/structure/relation/add')))),
-  );
-  return $output;
 }
 
 /**
