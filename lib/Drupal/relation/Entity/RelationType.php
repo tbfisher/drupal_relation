@@ -41,16 +41,12 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   label = @Translation("Relation type"),
  *   module = "relation",
  *   controllers = {
- *     "storage" = "Drupal\relation\RelationTypeStorageController",
+ *     "storage" = "Drupal\Core\Config\Entity\ConfigStorageController",
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
- *     "form" = {
- *       "default" = "Drupal\relation\RelationTypeFormController",
- *       "edit" = "Drupal\relation\RelationTypeFormController"
- *     }
  *   },
- *   base_table = "relation_type",
- *   uri_callback = "relation_type_uri",
- *   fieldable = FALSE,
+ *   admin_permission = "administer relation types",
+ *   config_prefix = "reelation.type",
+ *   bundle_of = "relation",
  *   entity_keys = {
  *     "id" = "relation_type",
  *     "label" = "label"
@@ -60,28 +56,74 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
 class RelationType extends ConfigEntityBase implements RelationTypeInterface {
 
   /**
-   * The relation type ID.
+   * The machine name of this relation type.
+   *
+   * @var string
    */
   public $relation_type;
 
-  public function __construct(array $values) {
-    if (empty($this->in_code_only) && empty($this->bundles_loaded)) {
-      // If overridden or not exported at all, reset the bundles before
-      // loading from the database to avoid duplication.
-      $this->source_bundles = array();
-      $this->target_bundles = array();
-      foreach (db_query('SELECT relation_type, entity_type, bundle, r_index FROM {relation_bundles} WHERE relation_type = :relation_type', array(':relation_type' => $this->relation_type)) as $record) {
-        $endpoint = $record->r_index ? 'target_bundles' : 'source_bundles';
-        $this->{$endpoint}[] = "$record->entity_type:$record->bundle";
-      }
-      // Do not run this twice. ctools static caches the types but runs the
-      // subrecord callback on the whole cache, every already loaded relation
-      // type.
-      $this->bundles_loaded = TRUE;
-    }
+  /**
+   * The human-readable name of this type.
+   *
+   * @var string
+   */
+  public $label;
 
-    parent::__construct($values, 'relation_type');
-  }
+  /**
+   * The reverse human-readable name of this type. Only used for directional relations.
+   *
+   * @var string
+   */
+  public $reverse_label;
+
+  /**
+   * Whether this relation type is directional. If not, all indexes are ignored.
+   *
+   * @var bool
+   */
+  public $directional  = FALSE;
+
+  /**
+   * Whether this relation type is transitive.
+   *
+   * @var bool
+   */
+  public $transitive  = FALSE;
+
+  /**
+   * Whether relations of this type are unique.
+   *
+   * @var bool
+   */
+  public $r_unique  = FALSE;
+
+  /**
+   * The minimum number of rows that can make up a relation of this type.
+   *
+   * @var int
+   */
+  public $min_arity  = 2;
+
+  /**
+   * The maximum number of rows that can make up a relation of this type. Similar to field cardinality.
+   *
+   * @var int
+   */
+  public $max_arity  = 2;
+
+  /**
+   * List of entity bundles that can be used as relation sources.
+   *
+   * @var array
+   */
+  public $source_bundles;
+
+  /**
+   * List of entity bundles that can be used as relation targets.
+   *
+   * @var array
+   */
+  public $target_bundles;
 
   /**
    * Implements Drupal\Core\Entity\EntityInterface::id().
@@ -120,30 +162,7 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
    * {@inheritdoc}
    */
   public function postSave(EntityStorageControllerInterface $storage_controller, $update = TRUE) {
-    if ($update) {
-      // Remove all existing bundles from the relation type before re-adding.
-      db_delete('relation_bundles')
-        ->condition('relation_type', $this->relation_type)
-        ->execute();
-    }
-
-    $query = db_insert('relation_bundles')
-      ->fields(array('relation_type', 'entity_type', 'bundle', 'r_index'));
-
-    // Source bundles
-    foreach ($this->source_bundles as $entity_bundles) {
-      list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
-      $query->values(array($this->relation_type, $entity_type, $bundle, 0));
-    }
-
-    // Target Bundles
-    if ($this->directional) {
-      foreach ($this->target_bundles as $entity_bundles) {
-        list($entity_type, $bundle) = explode(':', $entity_bundles, 2);
-        $query->values(array($this->relation_type, $entity_type, $bundle, 1));
-      }
-    }
-    $query->execute();
+    parent::postSave($storage_controller, $update);
 
     // Ensure endpoints field is attached to relation type.
     relation_add_endpoint_field($this->id());

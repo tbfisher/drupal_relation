@@ -28,28 +28,6 @@ const RELATION_FIELD_NAME = 'endpoints';
 use Drupal\Core\Language\Language;
 
 /**
- * Implements hook_entity_bundle_info().
- */
-function relation_entity_bundle_info() {
-  $bundles = array();
-
-  // Cannot use entity_load* due to recursion.
-  $relation_types = db_select('relation_type', 'rt')
-    ->fields('rt', array('relation_type', 'label'))
-    ->execute();
-
-  foreach ($relation_types as $relation_type) {
-    $bundles['relation'][$relation_type->relation_type] = array(
-      'label' => $relation_type->label,
-      'admin' => array(
-        'real path' => 'admin/structure/relation/manage/' . $relation_type->relation_type,
-      ),
-    );
-  }
-  return $bundles;
-}
-
-/**
  * Implements hook_entity_property_info().
  */
 function relation_entity_property_info() {
