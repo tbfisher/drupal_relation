@@ -1,9 +1,6 @@
 <?php
 
 require_once dirname(__FILE__) . '/relation.rules.inc';
-if (module_exists('ctools')) {
-  require_once dirname(__FILE__) . '/relation.ctools.inc';
-}
 
 /**
  * Use the following suffix on field names.
@@ -136,9 +133,6 @@ function relation_permission() {
     'administer relation types' => array(
       'title' => t('Administer Relation types'),
       'description' => t('Create, edit, delete, and perform administration tasks for relation types.'),
-    ),
-    'export relation types' => array(
-      'title' => t('Export Relation types'),
     ),
     'access relations' => array(
       'title' => t('View Relations'),
