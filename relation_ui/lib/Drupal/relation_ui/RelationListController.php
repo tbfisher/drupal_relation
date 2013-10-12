@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\RelationTypeListController.
+ * Contains \Drupal\relation_ui\RelationListController.
  */
 
 namespace Drupal\relation_ui;
@@ -10,7 +10,7 @@ namespace Drupal\relation_ui;
 use Drupal\Component\Utility\String;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Config\Entity\ConfigEntityListController;
+use Drupal\Core\Entity\EntityListController;
 use Drupal\Core\Entity\EntityControllerInterface;
 use Drupal\Core\Entity\EntityStorageControllerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a listing of relation types.
  */
-class RelationTypeListController extends ConfigEntityListController implements EntityControllerInterface {
+class RelationListController extends EntityListController implements EntityControllerInterface {
 
   /**
    * The url generator service.
@@ -29,7 +29,7 @@ class RelationTypeListController extends ConfigEntityListController implements E
   protected $urlGenerator;
 
   /**
-   * Constructs a RelationTypeListController object.
+   * Constructs a RelationListController object.
    *
    * @param string $entity_type
    *   The type of entity to be listed.
@@ -63,7 +63,9 @@ class RelationTypeListController extends ConfigEntityListController implements E
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['title'] = t('Name');
+    $header['label'] = t('Title');
+    $header['type'] = t('Type');
+    $header['relation'] = t('Relation');
     return $header + parent::buildHeader();
   }
 
@@ -71,10 +73,7 @@ class RelationTypeListController extends ConfigEntityListController implements E
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['title'] = array(
-      'data' => $this->getLabel($entity),
-      'class' => array('menu-label'),
-    );
+    $row['label'] = t('Relation') . ' ' . $entity->rid;
     return $row + parent::buildRow($entity);
   }
 
@@ -96,9 +95,7 @@ class RelationTypeListController extends ConfigEntityListController implements E
    */
   public function render() {
     $build = parent::render();
-    $build['#empty'] = t('No relation types available. <a href="@link">Add relation type</a>.', array(
-      '@link' => $this->urlGenerator->generateFromPath('admin/structure/relation/add'),
-    ));
+    $build['#empty'] = t('No relations available.');
     return $build;
   }
 

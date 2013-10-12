@@ -2,4 +2,4 @@ relation_add_local_action:
   route_name: relation_ui.type_add
   title: 'Add relation type'
   appears_on:
-    - relation_ui.list
+    - relation_ui.type_list

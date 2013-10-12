@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationFormController.
+ * Definition of Drupal\relation_ui\RelationFormController.
  */
 
-namespace Drupal\relation;
+namespace Drupal\relation_ui;
 
 use Drupal\Core\Entity\EntityFormController;
 
@@ -17,7 +17,7 @@ class RelationFormController extends EntityFormController {
    * Overrides Drupal\Core\Entity\EntityFormController::actions().
    */
   protected function actions(array $form, array &$form_state) {
-    $relation = $form_state['build_info']['callback_object']->entity; 
+    $relation = $form_state['build_info']['callback_object']->entity;
     $element = parent::actions($form, $form_state);
     $element['delete']['#access'] = $relation->access('delete');
     return $element;

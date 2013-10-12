@@ -9,10 +9,7 @@ namespace Drupal\relation\Entity;
 
 use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
-use Drupal\Core\Entity\Entity;
-use Drupal\Core\Entity\EntityNG;
-use Drupal\Core\Entity\Annotation\EntityType;
-use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
@@ -21,14 +18,12 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  * @EntityType(
  *   id = "relation",
  *   label = @Translation("Relation"),
+ *   bundle_label = @Translation("Relation type"),
  *   module = "relation",
  *   controllers = {
  *     "access" = "Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
- *     "form" = {
- *       "default" = "Drupal\relation\RelationFormController"
- *     }
  *   },
  *   base_table = "relation",
  *   revision_table = "relation_revision",
@@ -42,10 +37,11 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
- *   }
+ *   },
+ *   permission_granularity = "bundle"
  * )
  */
-class Relation extends EntityNG implements RelationInterface {
+class Relation extends ContentEntityBase implements RelationInterface {
   /**
    * Implements Drupal\Core\Entity\EntityInterface::id().
    */

@@ -1,0 +1,4 @@
+relation_ui.relations_tab:
+  route_name: relation_ui.list
+  title: Relations
+  tab_root_id: node.content_overview

@@ -9,9 +9,22 @@
  * Implements hook_entity_info_alter().
  */
 function relation_ui_entity_info_alter(&$entity_info) {
-  #$entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{relation_type}";
+  $entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{bundle}";
+  $entity_info['relation']['controllers'] += array(
+    'list' => 'Drupal\relation_ui\RelationListController',
+    'form' => array(
+      'add' => 'Drupal\relation_ui\RelationTypeFormController',
+      'edit' => 'Drupal\relation_ui\RelationTypeFormController',
+      'delete' => 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm',
+    ),
+  );
+  $entity_info['relation']['links'] += array(
+    "canonical" => "/relation/{relation}",
+    "edit-form" => "/relation/{relation}/edit",
+    "version-history" => "/relation/{relation}/revisions"
+  );
   $entity_info['relation_type']['links'] += array(
-    'edit-form' => "admin/structure/relation/manage/{relation_type}"
+    "edit-form" => "admin/structure/relation/manage/{relation_type}",
   );
   $entity_info['relation_type']['controllers'] += array(
     'list' => 'Drupal\relation_ui\RelationTypeListController',
@@ -70,37 +83,24 @@ function relation_ui_menu() {
   $items['admin/structure/relation'] = array(
     'title' => 'Relation types',
     'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-    'route_name' => 'relation_ui.list',
+    'route_name' => 'relation_ui.type_list',
   );
-//   $items['admin/structure/relation/manage/%relation_type'] = array(
-//     'title' => 'Edit relation type',
-//     'title callback' => 'relation_ui_type_page_title',
-//     'title arguments' => array(4),
-//     'access arguments' => array('administer relation types'),
-//     'page callback' => 'entity_get_form',
-//     'page arguments' => array(4),
-//     'description' => 'Edit an existing relation type, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-//   );
-//   $items['admin/structure/relation/manage/%relation_type/edit'] = array(
-//     'title' => 'Edit',
-//     'type' => MENU_DEFAULT_LOCAL_TASK,
-//     'weight' => -10,
-//   );
+  $items['admin/structure/relation/manage/%relation_type'] = array(
+    'title' => 'Edit relation type',
+    'title callback' => 'relation_ui_type_page_title',
+    'title arguments' => array(4),
+    'route_name' => 'relation_ui.type_edit',
+  );
+  $items['admin/structure/relation/manage/%relation_type/edit'] = array(
+    'title' => 'Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
 //   $items['admin/config/development/generate/relation'] = array(
 //     'title' => 'Generate relations',
 //     'access arguments' => array('administer relation types'),
 //     'page callback' => 'drupal_get_form',
 //     'page arguments' => array('relation_ui_generate_form'),
 //     'description' => 'Generate relations for testing.',
-//   );
-//   // Relations listing.
-//   $items['admin/content/relation'] = array(
-//     'title' => 'Relations',
-//     'file' => 'relation_ui.module',
-//     'page callback' => 'relation_ui_admin_content',
-//     'access arguments' => array('administer relations'),
-//     'description' => 'View, edit and delete all the available relations on your site.',
-//     'type' => MENU_LOCAL_TASK,
 //   );
 //   $items['relation/endpoints_type/autocomplete'] = array(
 //     'type' => MENU_CALLBACK,

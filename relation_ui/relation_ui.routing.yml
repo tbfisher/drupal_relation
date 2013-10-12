@@ -1,4 +1,12 @@
 relation_ui.list:
+  path: '/admin/content/relation'
+  defaults:
+    _title: 'Relations'
+    _entity_list: 'relation'
+  requirements:
+    _permission: 'administer relations'
+
+relation_ui.type_list:
   path: '/admin/structure/relation'
   defaults:
     _entity_list: 'relation_type'

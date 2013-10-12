@@ -23,6 +23,7 @@ const RELATION_FIELD_NAME = 'endpoints';
  */
 
 use Drupal\Core\Language\Language;
+use Drupal\Core\Cache\CacheBackendInterface;
 
 /**
  * Implements hook_entity_property_info().
@@ -154,6 +155,19 @@ function relation_permission() {
 }
 
 /**
+ * Implements hook_entity_bundle_info().
+ */
+function relation_entity_bundle_info() {
+  $bundles = array();
+  // Bundles must provide a human readable name so we can create help and error
+  // messages.
+  foreach (relation_type_get_names() as $id => $label) {
+    $bundles['relation'][$id]['label'] = $label;
+  }
+  return $bundles;
+}
+
+/**
  * Loads a relation type entity.
  *
  * @param $relation_id
@@ -174,6 +188,32 @@ function relation_get_relation_types_options() {
     $options[$relation_type->id()] = $relation_type->label();
   }
   return $options;
+}
+
+/**
+ * Returns a list of available relation type names.
+ *
+ * This list can include types that are queued for addition or deletion.
+ *
+ * @return array
+ *   An array of relation type labels, keyed by the relation type name.
+ */
+function relation_type_get_names() {
+  $cid = 'relation_type:names:' . language(Language::TYPE_INTERFACE)->id;
+  if ($cache = cache()->get($cid)) {
+    return $cache->data;
+  }
+  $config_names = config_get_storage_names_with_prefix('relation.type.');
+  $names = array();
+  foreach ($config_names as $config_name) {
+    $config = \Drupal::config($config_name);
+    $names[$config->get('relation_type')] = $config->get('label');
+  }
+  cache()->set($cid, $names, CacheBackendInterface::CACHE_PERMANENT, array(
+    'relation_type' => array_keys($names),
+    'relation_types' => TRUE,
+  ));
+  return $names;
 }
 
 /**

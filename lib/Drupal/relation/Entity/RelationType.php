@@ -45,7 +45,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *   },
  *   admin_permission = "administer relation types",
- *   config_prefix = "reelation.type",
+ *   config_prefix = "relation.type",
  *   bundle_of = "relation",
  *   entity_keys = {
  *     "id" = "relation_type",
