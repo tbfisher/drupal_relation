@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationTypeFormController.
+ * Definition of Drupal\relation_ui\RelationTypeFormController.
  */
 
-namespace Drupal\relation;
+namespace Drupal\relation_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
@@ -20,7 +20,8 @@ class RelationTypeFormController extends EntityFormController {
    */
   public function form(array $form, array &$form_state) {
     $form = parent::form($form, $form_state);
-    $relation_type = $this->getEntity($form_state);
+
+    $relation_type = $this->entity;
     $form['#attached']['css'] = array(
       drupal_get_path('module', 'relation_ui') . '/relation_ui.css',
     );
@@ -188,13 +189,7 @@ class RelationTypeFormController extends EntityFormController {
    * Overrides \Drupal\Core\Entity\EntityFormController::save().
    */
   function save(array $form, array &$form_state) {
-    $relation_type = $this->getEntity($form_state);
-    $relation_type->label = $form_state['values']['name'];
-    $relation_type->reverse_label = $form_state['values']['reverse_label'];
-    $relation_type->transitive = $form_state['values']['advanced']['transitive'];
-    $relation_type->r_unique = $form_state['values']['advanced']['r_unique'];
-    $relation_type->min_arity = $form_state['values']['advanced']['min_arity'];
-    $relation_type->max_arity = $form_state['values']['advanced']['max_arity'];
+    $relation_type = $this->entity;
 
     if ($relation_type->save()) {
       drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type->relation_type)));

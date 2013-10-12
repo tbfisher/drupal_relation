@@ -9,10 +9,17 @@
  * Implements hook_entity_info_alter().
  */
 function relation_ui_entity_info_alter(&$entity_info) {
-  $entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{bundle}";
-  $entity_info['relation']['links'] = array(
-    'canonical' => "admin/structure/relation/manage/{bundle}",
-    'edit-form' => "/relation/{relation}/edit"
+  #$entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{relation_type}";
+  $entity_info['relation_type']['links'] += array(
+    'edit-form' => "admin/structure/relation/manage/{relation_type}"
+  );
+  $entity_info['relation_type']['controllers'] += array(
+    'list' => 'Drupal\relation_ui\RelationTypeListController',
+    'form' => array(
+      'add' => 'Drupal\relation_ui\RelationTypeFormController',
+      'edit' => 'Drupal\relation_ui\RelationTypeFormController',
+      'delete' => 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm',
+    ),
   );
 }
 
@@ -20,128 +27,111 @@ function relation_ui_entity_info_alter(&$entity_info) {
  * Implements hook_menu().
  */
 function relation_ui_menu() {
-  $items['relation/%relation'] = array(
-    'title callback' => 'relation_ui_page_title',
-    'title arguments' => array(1),
-    'access arguments' => array('access relations'),
-    'page callback' => 'entity_view',
-    'page arguments' => array(1, 'full'),
-  );
-  $items['relation/%relation/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['relation/%relation/edit'] = array(
-    'title' => 'Edit',
-    'access arguments' => array('edit relations'),
-    'page callback' => 'entity_get_form',
-    'page arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['relation/%relation/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_ui_delete_confirm', 1),
-    'access arguments' => array('delete relations'),
-    'weight' => 10,
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_INLINE,
-  );
-  if (module_exists('devel')) {
-    $items['relation/%relation/devel'] = array(
-      'title' => 'Devel',
-      'page callback' => 'devel_load_object',
-      'page arguments' => array('relation', 1),
-      'access arguments' => array('access devel information'),
-      'type' => MENU_LOCAL_TASK,
-      'file path' => drupal_get_path('module', 'devel') . '/',
-      'file' => 'devel.pages.inc',
-      'weight' => 100,
-    );
-  }
+//   $items['relation/%relation'] = array(
+//     'title callback' => 'relation_ui_page_title',
+//     'title arguments' => array(1),
+//     'access arguments' => array('access relations'),
+//     'page callback' => 'entity_view',
+//     'page arguments' => array(1, 'full'),
+//   );
+//   $items['relation/%relation/view'] = array(
+//     'title' => 'View',
+//     'type' => MENU_DEFAULT_LOCAL_TASK,
+//     'weight' => -10,
+//   );
+//   $items['relation/%relation/edit'] = array(
+//     'title' => 'Edit',
+//     'access arguments' => array('edit relations'),
+//     'page callback' => 'entity_get_form',
+//     'page arguments' => array(1),
+//     'type' => MENU_LOCAL_TASK,
+//   );
+//   $items['relation/%relation/delete'] = array(
+//     'title' => 'Delete',
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('relation_ui_delete_confirm', 1),
+//     'access arguments' => array('delete relations'),
+//     'weight' => 10,
+//     'type' => MENU_LOCAL_TASK,
+//     'context' => MENU_CONTEXT_INLINE,
+//   );
+//   if (module_exists('devel')) {
+//     $items['relation/%relation/devel'] = array(
+//       'title' => 'Devel',
+//       'page callback' => 'devel_load_object',
+//       'page arguments' => array('relation', 1),
+//       'access arguments' => array('access devel information'),
+//       'type' => MENU_LOCAL_TASK,
+//       'file path' => drupal_get_path('module', 'devel') . '/',
+//       'file' => 'devel.pages.inc',
+//       'weight' => 100,
+//     );
+//   }
   $items['admin/structure/relation'] = array(
     'title' => 'Relation types',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'relation_ui_type_list',
     'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
+    'route_name' => 'relation_ui.list',
   );
-  $items['admin/structure/relation/list'] = array(
-    'title' => 'List',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['admin/structure/relation/add'] = array(
-    'title' => 'Add relation type',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'relation_ui_relation_type_add',
-    'type' => MENU_LOCAL_ACTION,
-    'description' => 'Add new relation types.',
-  );
-  $items['admin/structure/relation/import'] = array(
-    'title' => 'Import  relation type',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_ui_type_import'),
-    'type' => MENU_LOCAL_ACTION,
-    'description' => 'Import existing relation types.',
-  );
-  $items['admin/structure/relation/manage/%relation_type'] = array(
-    'title' => 'Edit relation type',
-    'title callback' => 'relation_ui_type_page_title',
-    'title arguments' => array(4),
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'entity_get_form',
-    'page arguments' => array(4),
-    'description' => 'Edit an existing relation type, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-  );
-  $items['admin/structure/relation/manage/%relation_type/edit'] = array(
-    'title' => 'Edit',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['admin/structure/relation/manage/%relation_type/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_ui_type_delete_confirm', 4),
-    'access arguments' => array('administer relation types'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 20,
-    'description' => 'Delete an existing relation type.',
-  );
-  if (module_exists('ctools')) {
-    $items['admin/structure/relation/manage/%relation_type/export'] = array(
-      'title' => 'Export',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('relation_export_relation_type', 4),
-      'access arguments' => array('export relation types'),
-      'type' => MENU_LOCAL_TASK,
-      'file' => 'relation.ctools.inc',
-      'weight' => 10,
-    );
-  }
-  $items['admin/config/development/generate/relation'] = array(
-    'title' => 'Generate relations',
-    'access arguments' => array('administer relation types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('relation_ui_generate_form'),
-    'description' => 'Generate relations for testing.',
-  );
-  // Relations listing.
-  $items['admin/content/relation'] = array(
-    'title' => 'Relations',
-    'file' => 'relation_ui.module',
-    'page callback' => 'relation_ui_admin_content',
-    'access arguments' => array('administer relations'),
-    'description' => 'View, edit and delete all the available relations on your site.',
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['relation/endpoints_type/autocomplete'] = array(
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer relations'),
-    'file' => 'relation_ui.module',
-    'page callback' => 'relation_ui_endpoints_type_autocomplete',
-  );
+//   $items['admin/structure/relation/list'] = array(
+//     'title' => 'List',
+//     'type' => MENU_DEFAULT_LOCAL_TASK,
+//     'weight' => -10,
+//   );
+//   $items['admin/structure/relation/import'] = array(
+//     'title' => 'Import  relation type',
+//     'access arguments' => array('administer relation types'),
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('relation_ui_type_import'),
+//     'type' => MENU_LOCAL_ACTION,
+//     'description' => 'Import existing relation types.',
+//   );
+//   $items['admin/structure/relation/manage/%relation_type'] = array(
+//     'title' => 'Edit relation type',
+//     'title callback' => 'relation_ui_type_page_title',
+//     'title arguments' => array(4),
+//     'access arguments' => array('administer relation types'),
+//     'page callback' => 'entity_get_form',
+//     'page arguments' => array(4),
+//     'description' => 'Edit an existing relation type, including relation properties (directionality, transitivity etc), available bundles, and fields.',
+//   );
+//   $items['admin/structure/relation/manage/%relation_type/edit'] = array(
+//     'title' => 'Edit',
+//     'type' => MENU_DEFAULT_LOCAL_TASK,
+//     'weight' => -10,
+//   );
+//   if (module_exists('ctools')) {
+//     $items['admin/structure/relation/manage/%relation_type/export'] = array(
+//       'title' => 'Export',
+//       'page callback' => 'drupal_get_form',
+//       'page arguments' => array('relation_export_relation_type', 4),
+//       'access arguments' => array('export relation types'),
+//       'type' => MENU_LOCAL_TASK,
+//       'file' => 'relation.ctools.inc',
+//       'weight' => 10,
+//     );
+//   }
+//   $items['admin/config/development/generate/relation'] = array(
+//     'title' => 'Generate relations',
+//     'access arguments' => array('administer relation types'),
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('relation_ui_generate_form'),
+//     'description' => 'Generate relations for testing.',
+//   );
+//   // Relations listing.
+//   $items['admin/content/relation'] = array(
+//     'title' => 'Relations',
+//     'file' => 'relation_ui.module',
+//     'page callback' => 'relation_ui_admin_content',
+//     'access arguments' => array('administer relations'),
+//     'description' => 'View, edit and delete all the available relations on your site.',
+//     'type' => MENU_LOCAL_TASK,
+//   );
+//   $items['relation/endpoints_type/autocomplete'] = array(
+//     'type' => MENU_CALLBACK,
+//     'access arguments' => array('administer relations'),
+//     'file' => 'relation_ui.module',
+//     'page callback' => 'relation_ui_endpoints_type_autocomplete',
+//   );
   return $items;
 }
 
@@ -214,49 +204,6 @@ function relation_ui_type_list() {
     '#empty' => t('No relationship types available.', array('@link' => l(t('Add relationship type'), url('admin/structure/relation/add')))),
   );
   return $output;
-}
-
-/**
- * Menu callback; deletes a single relation type.
- */
-function relation_ui_type_delete_confirm($form, &$form_state, $relation_type) {
-  $form['relation_type'] = array('#type' => 'value', '#value' => $relation_type->relation_type);
-  $form['label'] = array('#type' => 'value', '#value' => $relation_type->label);
-
-  $message = t('Are you sure you want to delete the %label relation type?', array('%label' => $relation_type->label));
-  $caption = '';
-
-  $num_relations = relation_query()
-    ->condition('relation_type', $relation_type->relation_type)
-    ->count()
-    ->execute();
-  if ($num_relations) {
-    $caption .= '<p>' . format_plural($num_relations,
-      'The %label relation type is used by 1 relation on your site. If you remove this relation type, you will not be able to edit  %label relations and they may not display correctly.',
-      'The %label relation type is used by @count relations on your site. If you remove %label, you will not be able to edit %label relations and they may not display correctly.',
-      array('%label' => $relation_type->label, '@count' => $num_relations)) . '</p>';
-  }
-
-  $caption .= '<p>' . t('This action cannot be undone.') . '</p>';
-
-  return confirm_form($form, $message, 'admin/structure/relation', $caption, t('Delete'));
-}
-
-/**
- * Process relation type delete confirm submissions.
- */
-function relation_ui_type_delete_confirm_submit($form, &$form_state) {
-  relation_type_delete($form_state['values']['relation_type']);
-
-  $t_args = array('%label' => $form_state['values']['label']);
-  drupal_set_message(t('The %label relation type has been deleted.', $t_args));
-  watchdog('relation', 'Deleted the %label relation type.', $t_args, WATCHDOG_NOTICE);
-
-  // @TODO: relation_types_rebuild() ?;
-  menu_router_rebuild();
-
-  $form_state['redirect'] = 'admin/structure/relation';
-  return;
 }
 
 /**
