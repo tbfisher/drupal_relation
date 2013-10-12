@@ -1,4 +1,5 @@
+# TODO: tab_root_id does not exist yet
 relation_ui.relations_tab:
   route_name: relation_ui.list
   title: Relations
-  tab_root_id: node.content_overview
+  tab_root_id: content_overview

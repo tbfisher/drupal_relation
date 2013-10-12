@@ -170,4 +170,12 @@ class Relation extends ContentEntityBase implements RelationInterface {
       return ($relation_type->directional && $reverse) ? $relation_type->reverse_label : $relation_type->label;
     }
   }
+
+  /**
+   * Overrides ContentEntityBase::uuid().
+   */
+  public function uuid() {
+    // We don't have uuid (yet at least)
+    return NULL;
+  }
 }

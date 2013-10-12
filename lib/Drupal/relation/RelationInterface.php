@@ -13,5 +13,4 @@ use Drupal\Core\Entity\ContentEntityInterface;
  * Provides an interface defining a Relation entity.
  */
 interface RelationInterface extends ContentEntityInterface {
-
 }

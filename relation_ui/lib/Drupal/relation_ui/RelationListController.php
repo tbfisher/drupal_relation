@@ -18,6 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a listing of relation types.
+ *
+ * @todo: add filters
  */
 class RelationListController extends EntityListController implements EntityControllerInterface {
 
@@ -73,7 +75,21 @@ class RelationListController extends EntityListController implements EntityContr
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['label'] = t('Relation') . ' ' . $entity->rid;
+    $row['label'] = l(t('Relation') . ' ' . $entity->get('rid')->value, 'relation/' . $entity->get('rid')->value);
+    $row['type'] = $entity->get('relation_type')->value;
+    // Sort entities by their type
+    foreach ($entity->get('endpoints')->getValue() as $endpoint) {
+      $entities[$endpoint['entity_type']][] = $endpoint['entity_id'];
+    }
+    foreach ($entities as $type => $ids) {
+      foreach (entity_load_multiple($type, $ids) as $endpoint_entity) {
+        $uri = $endpoint_entity->uri();
+        $relation_entities[] = l($endpoint_entity->label(), $uri['path']);
+      }
+    }
+    $relation_type = relation_type_load($entity->get('relation_type')->value);
+    $endpoint_separator = $relation_type->directional ? " → " : " ↔ ";
+    $row['relation'] = implode($endpoint_separator, $relation_entities);
     return $row + parent::buildRow($entity);
   }
 
