@@ -30,6 +30,16 @@ class RelationFormController extends EntityFormController {
     $form_state['redirect'] = $uri['path'];
   }
 
+  public function form(array $form, array &$form_state) {
+    $relation = $this->entity;
+
+    if ($this->operation == 'edit') {
+      drupal_set_title(t('<em>Editing</em> @label', array('@label' => $relation->label())), PASS_THROUGH);
+    }
+
+    return parent::form($form, $form_state, $relation);
+  }
+
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::delete().
    */

@@ -19,11 +19,9 @@ function relation_ui_entity_info_alter(&$entity_info) {
       'delete' => 'Drupal\relation_ui\Form\RelationDeleteConfirm',
     ),
   );
-  $entity_info['relation']['links'] += array(
-    "canonical" => "/relation/{relation}",
-    "edit-form" => "/relation/{relation}/edit",
-    "version-history" => "/relation/{relation}/revisions"
-  );
+  $entity_info['relation']['links']['canonical'] = '/relation/{relation}';
+  $entity_info['relation']['links']['edit-form'] = '/relation/{relation}/edit';
+  $entity_info['relation']['links']['version-history'] = '/relation/{relation}/revisions';
 
   // Relation type entities
   $entity_info['relation_type']['links'] += array(
@@ -50,13 +48,12 @@ function relation_ui_menu() {
      'title' => 'View',
      'type' => MENU_DEFAULT_LOCAL_TASK,
    );
-//   $items['relation/%relation/edit'] = array(
-//     'title' => 'Edit',
-//     'access arguments' => array('edit relations'),
-//     'page callback' => 'entity_get_form',
-//     'page arguments' => array(1),
-//     'type' => MENU_LOCAL_TASK,
-//   );
+   $items['relation/%relation/edit'] = array(
+     'title' => 'Edit',
+     'route_name' => 'relation_ui.edit',
+     'type' => MENU_LOCAL_TASK,
+     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+   );
    $items['relation/%relation/delete'] = array(
      'title' => 'Delete',
      'route_name' => 'relation_ui.delete_confirm',

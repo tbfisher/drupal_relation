@@ -108,6 +108,12 @@ class Relation extends ContentEntityBase implements RelationInterface {
       'description' => t('Number of endpoints on the Relation.'),
       'type' => 'integer_field',
     );
+    // Langcode here so edit form saves properly.
+    $properties['langcode'] = array(
+      'label' => t('Language code'),
+      'description' => t('The relation dummy language code.'),
+      'type' => 'language_field',
+    );
     return $properties;
   }
 

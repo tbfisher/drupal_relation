@@ -6,6 +6,13 @@ relation_ui.view:
   requirements:
     _entity_access: 'relation.view'
 
+relation_ui.edit:
+  path: '/relation/{relation}/edit'
+  defaults:
+    _entity_form: 'relation.edit'
+  requirements:
+    _entity_access: 'relation.update'
+
 relation_ui.delete_confirm:
   path: '/relation/{relation}/delete'
   defaults:

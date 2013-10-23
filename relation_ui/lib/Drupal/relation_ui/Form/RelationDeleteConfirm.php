@@ -7,14 +7,14 @@
 
 namespace Drupal\relation_ui\Form;
 
-use Drupal\Core\Entity\EntityConfirmFormBase;
+use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for relation deletion.
  */
-class RelationDeleteConfirm extends EntityConfirmFormBase {
+class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
 
   /**
    * The database connection.
