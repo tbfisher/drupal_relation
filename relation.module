@@ -173,7 +173,7 @@ function relation_entity_bundle_info() {
  * @param $relation_id
  *   The machine name of the relation type (bundle) to be loaded.
  *
- * @return \Drupal\relation\Plugin\Core\Entity\RelationType
+ * @return \Drupal\relation\Entity\RelationType
  */
 function relation_type_load($relation_id) {
   return entity_load('relation_type', $relation_id);
@@ -338,7 +338,7 @@ function relation_clear_related_entities_cache($endpoints) {
  *   );
  *   @endcode
  *
- * @return \Drupal\relation\Plugin\Core\Entity\Relation
+ * @return \Drupal\relation\Entity\Relation
  *   A saved relation.
  */
 function relation_insert($relation_type, $endpoints) {

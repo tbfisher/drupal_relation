@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation\Plugin\Core\Entity\Relation.
+ * Contains \Drupal\relation\Entity\Relation.
  */
 
 namespace Drupal\relation\Entity;
@@ -14,6 +14,8 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation entity
+ *
+ * See relation_ui_entity_info_alter() for any controllers introducing UI.
  *
  * @EntityType(
  *   id = "relation",

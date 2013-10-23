@@ -72,7 +72,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
     $num_relations = $this->database->query("SELECT COUNT(*) FROM {relation} WHERE relation_type = :type", array(':type' => $this->entity->id()))->fetchField();
     if ($num_relations) {
       drupal_set_title($this->getQuestion(), PASS_THROUGH);
-      $caption = '<p>' . format_plural($num_nodes, '%type is used by 1 relation on your site. You can not remove this relation type until you have removed all of the %type relations.', '%type is used by @count relations on your site. You may not remove %type until you have removed all of the %type relations.', array('%type' => $this->entity->label())) . '</p>';
+      $caption = '<p>' . format_plural($num_relations, '%type is used by 1 relation on your site. You cannot remove this relation type until you have removed all of the %type relations.', '%type is used by @count relations on your site. You may not remove %type until you have removed all of the %type relations.', array('%type' => $this->entity->label())) . '</p>';
       $form['description'] = array('#markup' => $caption);
       return $form;
     }

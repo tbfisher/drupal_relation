@@ -7,11 +7,9 @@
 
 namespace Drupal\relation_endpoint\Plugin\field\formatter;
 
-use Drupal\field\Annotation\FieldFormatter;
 use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\Field\FieldInterface;
-use Drupal\Core\Entity\Field\FieldItemInterface;
+use Drupal\Core\Entity\Field\FieldItemListInterface;
 use Drupal\field\Plugin\Type\Formatter\FormatterBase;
 
 /**
@@ -28,47 +26,38 @@ use Drupal\field\Plugin\Type\Formatter\FormatterBase;
  * )
  */
 class RelationEndpointFormatter extends FormatterBase {
-
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, array &$form_state) {
-    $elements = parent::settingsForm($form, $form_state);
+  public function viewElements(FieldItemListInterface $items) {
+    $rows = array();
 
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $view_modes_settings = $instance['display'][$view_mode]['settings']['view_modes'];
-    foreach (_relation_endpoint_get_endpoint_entity_types($instance) as $endpoint_entity_type => $v) {
-      $items[] = "$endpoint_entity_type: " . $view_modes_settings[$endpoint_entity_type];
-    }
-    return theme('item_list', array('items' => $items));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function viewElements(EntityInterface $entity, $langcode, FieldInterface $items) {
-    $list_items = array();
-//     TODO: fixme
-//     foreach ($endpoints as $delta => $endpoint) {
-//       $entity_info = entity_get_info($endpoint['entity_type']);
-//       $entity = entity_load($endpoint['entity_type'], $endpoint['entity_id']);
-//       $uri = $entity->uri();
-//       $list_items[$delta] = array(l($entity->label(), $uri['path'], $uri['options']), $entity_info['label']);
-//     }
-    $headers = array(
-      array('data' => t('Entity')),
+    $header = array(
       array('data' => t('Entity type')),
+      array('data' => t('Entity ID')),
+      array('data' => t('Label')),
     );
+
+    foreach ($items as $item) {
+      $t = array('@entity_type' => $item->entity_type, '@entity_id' => $item->entity_id);
+      $entity_info = \Drupal::entityManager()->getDefinition($item->entity_type);
+      if ($entity_info && $entity = entity_load($item->entity_type, $item->entity_id)) {
+        $label = $entity->label();
+        $uri = $entity->uri();
+
+        $label = (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t);
+        $label = $uri['path'] ? l($label, $uri['path']) : $label;
+      } else {
+        $label = t('Deleted');
+      }
+
+      $rows[] = array($item->entity_type, $item->entity_id, $label);
+    }
+
     return array(
       '#theme' => 'table',
-      '#header' => $headers,
-      '#rows' => $list_items,
+      '#header' => $header,
+      '#rows' => $rows,
     );
   }
 }

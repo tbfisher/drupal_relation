@@ -1,3 +1,18 @@
+relation_ui.view:
+  path: '/relation/{relation}'
+  defaults:
+    _content: '\Drupal\relation_ui\Controller\RelationUIController::page'
+    _title_callback: '\Drupal\relation_ui\Controller\RelationUIController::pageTitle'
+  requirements:
+    _entity_access: 'relation.view'
+
+relation_ui.delete_confirm:
+  path: '/relation/{relation}/delete'
+  defaults:
+    _entity_form: 'relation.delete'
+  requirements:
+    _entity_access: 'relation.delete'
+
 relation_ui.list:
   path: '/admin/content/relation'
   defaults:

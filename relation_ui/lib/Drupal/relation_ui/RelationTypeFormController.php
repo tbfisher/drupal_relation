@@ -200,4 +200,11 @@ class RelationTypeFormController extends EntityFormController {
       drupal_set_message(t('Error saving relation type.', 'error'));
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete(array $form, array &$form_state) {
+    $form_state['redirect'] = 'admin/structure/relation/manage/' . $this->entity->id() . '/delete';
+  }
 }

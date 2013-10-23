@@ -114,19 +114,6 @@ function relation_endpoint_field_presave(EntityInterface $entity, $field, $insta
 }
 
 /**
- * Helper getting endpoint entity types for the bundle specified in $instance.
- */
-function _relation_endpoint_get_endpoint_entity_types($instance) {
-  $relation_type = relation_type_load($instance['bundle']);
-  $bundles = $relation_type->source_bundles + $relation_type->target_bundles;
-  foreach ($bundles as $bundle_key) {
-    list($endpoint_entity_type) = explode(':', $bundle_key);
-    $endpoint_entity_types[$endpoint_entity_type] = TRUE;
-  }
-  return $endpoint_entity_types;
-}
-
-/**
  * Implements hook_form_field_ui_field_overview_form_alter().
  */
 function relation_endpoint_form_field_ui_field_overview_form_alter(&$form, $form_state) {

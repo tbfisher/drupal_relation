@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation\Plugin\Core\Entity\RelationType.
+ * Contains \Drupal\relation\Entity\RelationType.
  */
 
 namespace Drupal\relation\Entity;
@@ -15,6 +15,10 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation type entity
+ *
+ * See relation_ui_entity_info_alter() for any controllers introducing UI.
+ *
+ * Properties
  *
  *  - relation_type (required): Relation type machine name (string).
  *  - label: Relation type human-readable name (string). Defaults to

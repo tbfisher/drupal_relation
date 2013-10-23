@@ -9,13 +9,14 @@
  * Implements hook_entity_info_alter().
  */
 function relation_ui_entity_info_alter(&$entity_info) {
+  // Relation entities
   $entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{bundle}";
   $entity_info['relation']['controllers'] += array(
     'list' => 'Drupal\relation_ui\RelationListController',
     'form' => array(
-      'add' => 'Drupal\relation_ui\RelationTypeFormController',
-      'edit' => 'Drupal\relation_ui\RelationTypeFormController',
-      'delete' => 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm',
+      'add' => 'Drupal\relation_ui\RelationFormController',
+      'edit' => 'Drupal\relation_ui\RelationFormController',
+      'delete' => 'Drupal\relation_ui\Form\RelationDeleteConfirm',
     ),
   );
   $entity_info['relation']['links'] += array(
@@ -23,6 +24,8 @@ function relation_ui_entity_info_alter(&$entity_info) {
     "edit-form" => "/relation/{relation}/edit",
     "version-history" => "/relation/{relation}/revisions"
   );
+
+  // Relation type entities
   $entity_info['relation_type']['links'] += array(
     "edit-form" => "admin/structure/relation/manage/{relation_type}",
   );
@@ -40,18 +43,13 @@ function relation_ui_entity_info_alter(&$entity_info) {
  * Implements hook_menu().
  */
 function relation_ui_menu() {
-//   $items['relation/%relation'] = array(
-//     'title callback' => 'relation_ui_page_title',
-//     'title arguments' => array(1),
-//     'access arguments' => array('access relations'),
-//     'page callback' => 'entity_view',
-//     'page arguments' => array(1, 'full'),
-//   );
-//   $items['relation/%relation/view'] = array(
-//     'title' => 'View',
-//     'type' => MENU_DEFAULT_LOCAL_TASK,
-//     'weight' => -10,
-//   );
+   $items['relation/%relation'] = array(
+     'route_name' => 'relation_ui.view',
+   );
+   $items['relation/%relation/view'] = array(
+     'title' => 'View',
+     'type' => MENU_DEFAULT_LOCAL_TASK,
+   );
 //   $items['relation/%relation/edit'] = array(
 //     'title' => 'Edit',
 //     'access arguments' => array('edit relations'),
@@ -59,15 +57,13 @@ function relation_ui_menu() {
 //     'page arguments' => array(1),
 //     'type' => MENU_LOCAL_TASK,
 //   );
-//   $items['relation/%relation/delete'] = array(
-//     'title' => 'Delete',
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('relation_ui_delete_confirm', 1),
-//     'access arguments' => array('delete relations'),
-//     'weight' => 10,
-//     'type' => MENU_LOCAL_TASK,
-//     'context' => MENU_CONTEXT_INLINE,
-//   );
+   $items['relation/%relation/delete'] = array(
+     'title' => 'Delete',
+     'route_name' => 'relation_ui.delete_confirm',
+     'weight' => 10,
+     'type' => MENU_LOCAL_TASK,
+   );
+
 //   if (module_exists('devel')) {
 //     $items['relation/%relation/devel'] = array(
 //       'title' => 'Devel',
@@ -296,13 +292,6 @@ function relation_ui_build_filter_query($query) {
 }
 
 /**
- * Relation display page title callback.
- */
-function relation_ui_page_title($relation) {
-  return 'Relation ' . $relation->rid;
-}
-
-/**
  * Relation type display/edit page title callback.
  */
 function relation_ui_type_page_title(Drupal\relation\RelationTypeInterface $relation_type) {
@@ -314,11 +303,29 @@ function relation_ui_type_page_title(Drupal\relation\RelationTypeInterface $rela
  */
 function relation_ui_theme() {
   $theme = array(
+    'relation' => array(
+      'render element' => 'elements',
+      'template' => 'relation',
+    ),
     'relation_ui_admin_content' => array(
       'variables' => array('relations' => NULL)
     ),
   );
   return $theme;
+}
+
+/**
+ * Prepares variables for relation templates.
+ *
+ * Default template: relation.html.twig.
+ */
+function template_preprocess_relation(&$variables) {
+  $variables['relation'] = $variables['elements']['#relation'];
+
+  $variables += array('content' => array());
+  foreach (element_children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
 }
 
 /**
