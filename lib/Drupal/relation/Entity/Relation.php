@@ -153,8 +153,8 @@ class Relation extends ContentEntityBase implements RelationInterface {
   function endpoints() {
     $entities = array();
 
-    foreach (field_get_items($this, 'endpoints') as $endpoint) {
-      $entities[$endpoint['entity_type']][$endpoint['entity_id']] = $endpoint['entity_id'];
+    foreach ($this->endpoints as $endpoint) {
+      $entities[$endpoint->entity_type][$endpoint->entity_id] = $endpoint->entity_type;
     }
 
     return $entities;

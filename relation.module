@@ -466,11 +466,11 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
 
     if ($relation_id) {
       $relation = entity_load('relation', $relation_id);
-      if ($relation->arity == 1) {
+      if ($relation->arity->value == 1) {
         $entities = FALSE;
       }
       else {
-        $entities = field_get_items($relation, 'endpoints');
+        $entities = $relation->endpoints;
       }
     }
     else {
@@ -480,17 +480,16 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
 
     $items[$cache_key] = $entities;
   }
-
   if ($entities) {
-    $first_entity_key = $entities[0]['entity_type'] . ':' . $entities[0]['entity_id'];
+    $first_entity_key = $entities[0]->entity_type . ':' . $entities[0]->entity_id;
     if (isset($r_index)) {
       $request_key = $request_key . ':' . $r_index;
-      $first_entity_key = $first_entity_key . ':' . $entities[0]['r_index'];
+      $first_entity_key = $first_entity_key . ':' . $entities[0]->r_index;
     }
     if ($request_key == $first_entity_key) {
-      return entity_load($entities[1]['entity_type'], $entities[1]['entity_id']);
+      return entity_load($entities[1]->entity_type, $entities[1]->entity_id);
     }
-    return entity_load($entities[0]['entity_type'], $entities[0]['entity_id']);
+    return entity_load($entities[0]->entity_type, $entities[0]->entity_id);
   }
 
   return FALSE;
@@ -549,16 +548,16 @@ function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
   $relations_to_delete = array(); // ids of relations to delete
   foreach (entity_load_multiple('relation', $relation_ids) as $relation) {
     // Remove any endpoints pointing to entity
-    foreach ($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED] as $key => $endpoint) {
-      if ($endpoint['entity_id'] == $entity->id()
-        && $endpoint['entity_type'] == $entity->entityType()) {
-        unset($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED][$key]);
+    foreach ($relation->endpoints as $key => $endpoint) {
+      if ($endpoint->entity_id == $entity->id() && $endpoint->entity_type == $entity->entityType()) {
+        unset($relation->endpoints[$key]);
       }
     }
+
     // Check if relation remains valid with regards to arity
-    $relation_type = relation_type_load($relation->relation_type);
-    $arity = count($relation->endpoints[Language::LANGCODE_NOT_SPECIFIED]);
-    if ($arity < $relation_type->min_arity) {
+    $relation_type = entity_load('relation_type', $relation->bundle());
+    $arity = count($relation->endpoints);
+    if ($relation_type && ($arity < $relation_type->min_arity)) {
       // Not valid - delete
       array_push($relations_to_delete, $relation->id());
     }
@@ -569,7 +568,7 @@ function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
   }
   if (!empty($relations_to_delete)) {
     entity_delete_multiple('relation', $relations_to_delete);
-    drupal_set_message(t('Relations @relations have been deleted.', array('@relations' => implode(', ', $relations_to_delete))));
+    watchdog('relation', t('Relations @relations have been deleted.', array('@relations' => implode(', ', $relations_to_delete))));
   }
 }
 

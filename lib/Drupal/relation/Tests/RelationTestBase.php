@@ -75,25 +75,25 @@ abstract class RelationTestBase extends WebTestBase {
    */
   function createRelationEndPoints() {
     $this->endpoints = array(
-      array('entity_type' => 'node', 'entity_id' => $this->node1->nid),
-      array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node1->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node4->id()),
     );
     $this->endpoints_4 = array(
-      array('entity_type' => 'node', 'entity_id' => $this->node1->nid),
-      array('entity_type' => 'node', 'entity_id' => $this->node2->nid),
-      array('entity_type' => 'node', 'entity_id' => $this->node3->nid),
-      array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node1->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node2->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node3->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node4->id()),
     );
     $this->endpoints_entitysame = array(
-      array('entity_type' => 'node', 'entity_id' => $this->node3->nid),
-      array('entity_type' => 'node', 'entity_id' => $this->node4->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node3->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node4->id()),
     );
     $this->endpoints_entitydifferent = array(
-      array('entity_type' => 'user', 'entity_id' => $this->user1->uid),
-      array('entity_type' => 'node', 'entity_id' => $this->node3->nid),
+      array('entity_type' => 'user', 'entity_id' => $this->user1->id()),
+      array('entity_type' => 'node', 'entity_id' => $this->node3->id()),
     );
     $this->endpoints_unary = array(
-      array('entity_type' => 'node', 'entity_id' => $this->node5->nid),
+      array('entity_type' => 'node', 'entity_id' => $this->node5->id()),
     );
   }
 
@@ -161,13 +161,13 @@ abstract class RelationTestBase extends WebTestBase {
    */
   function createRelationDirectional() {
     // Article 1 --> Page 3
-    $this->endpoints[1]['entity_id'] = $this->node3->nid;
+    $this->endpoints[1]['entity_id'] = $this->node3->id();
     $this->endpoints[1]['r_index'] = 1;
     $this->relation_type_directional = $this->relation_types['directional']['relation_type'];
     $this->rid_directional = $this->saveRelation($this->relation_type_directional, $this->endpoints);
     // Page 3 --> Page 4
-    $this->endpoints[0]['entity_id'] = $this->node3->nid;
-    $this->endpoints[1]['entity_id'] = $this->node4->nid;
+    $this->endpoints[0]['entity_id'] = $this->node3->id();
+    $this->endpoints[1]['entity_id'] = $this->node4->id();
     $this->saveRelation($this->relation_type_directional, $this->endpoints);
 
     // Page 3 --> Page 4
@@ -175,11 +175,11 @@ abstract class RelationTestBase extends WebTestBase {
     $this->relation_type_directional_entitysame = $this->relation_types['directional_entitysame']['relation_type'];
     $this->saveRelation($this->relation_type_directional_entitysame, $this->endpoints_entitysame);
     // Page 3 --> Page 5
-    $this->endpoints_entitysame[1]['entity_id'] = $this->node5->nid;
+    $this->endpoints_entitysame[1]['entity_id'] = $this->node5->id();
     $this->saveRelation($this->relation_type_directional_entitysame, $this->endpoints_entitysame);
     // Page 4 --> Page 3
-    $this->endpoints_entitysame[0]['entity_id'] = $this->node4->nid;
-    $this->endpoints_entitysame[1]['entity_id'] = $this->node3->nid;
+    $this->endpoints_entitysame[0]['entity_id'] = $this->node4->id();
+    $this->endpoints_entitysame[1]['entity_id'] = $this->node3->id();
     $this->saveRelation($this->relation_type_directional_entitysame, $this->endpoints_entitysame);
 
     // User 1 --> Page 3
@@ -187,7 +187,7 @@ abstract class RelationTestBase extends WebTestBase {
     $this->relation_type_directional_entitydifferent = $this->relation_types['directional_entitydifferent']['relation_type'];
     $this->saveRelation($this->relation_type_directional_entitydifferent, $this->endpoints_entitydifferent);
     // User 1 --> Page 4
-    $this->endpoints_entitydifferent[1]['entity_id'] = $this->node4->nid;
+    $this->endpoints_entitydifferent[1]['entity_id'] = $this->node4->id();
     $this->saveRelation($this->relation_type_directional_entitydifferent, $this->endpoints_entitydifferent);
   }
 
