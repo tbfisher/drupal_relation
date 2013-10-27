@@ -190,6 +190,7 @@ class RelationTypeFormController extends EntityFormController {
    */
   function save(array $form, array &$form_state) {
     $relation_type = $this->entity;
+    $relation_type->label = $form_state['values']['name'];
 
     if ($relation_type->save()) {
       drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type->relation_type)));

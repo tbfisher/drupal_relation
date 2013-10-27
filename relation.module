@@ -159,6 +159,7 @@ function relation_permission() {
  */
 function relation_entity_bundle_info() {
   $bundles = array();
+
   // Bundles must provide a human readable name so we can create help and error
   // messages.
   foreach (relation_type_get_names() as $id => $label) {
@@ -204,6 +205,7 @@ function relation_type_get_names() {
     return $cache->data;
   }
   $config_names = config_get_storage_names_with_prefix('relation.type.');
+
   $names = array();
   foreach ($config_names as $config_name) {
     $config = \Drupal::config($config_name);

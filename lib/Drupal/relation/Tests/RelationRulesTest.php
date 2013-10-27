@@ -111,14 +111,14 @@ class RelationRulesTest extends RelationTestBase {
         'settings[name]' => 'similar',
         'event' => 'node_view',
       );
-      $this->drupalPost(NULL, $post, t('Save'));
+      $this->drupalPostForm(NULL, $post, t('Save'));
 
       // Adds action.
       $this->clickLink(t('Add action'));
       $post = array(
         'element_name' => 'relation_rules_load_related',
       );
-      $this->drupalPost(NULL, $post, t('Continue'));
+      $this->drupalPostForm(NULL, $post, t('Continue'));
       $this->assertText('node:relation-directional-node-reverse:0', t('The created relation porperties\' are found.'));
     }
   }

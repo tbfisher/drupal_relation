@@ -13,6 +13,7 @@ use Drupal\relation\Tests\RelationTestBase;
  * Functional test of Relation's integration with the Entity Collector.
  */
 class RelationEntityCollectorTest extends RelationTestBase {
+  public static $modules = array('relation', 'relation_ui', 'relation_entity_collector');
 
   public static function getInfo() {
     return array(
@@ -22,30 +23,25 @@ class RelationEntityCollectorTest extends RelationTestBase {
     );
   }
 
-  function setUp() {
-    parent::setUp('relation', 'relation_ui', 'relation_entity_collector');
-    $this->drupalLogin($this->web_user);
-  }
-
   /**
    * Add relations to Node 1 and to Node 3 and then check that they are related.
    */
   function testEntityCollector() {
-    $node1key = 'node:' . $this->node1->nid;
-    $node3key = 'node:' . $this->node3->nid;
+    $node1key = 'node:' . $this->node1->id();
+    $node3key = 'node:' . $this->node3->id();
 
     $relation_type = $this->relation_types['symmetric']['relation_type'];
     $edit = array(
       "relation_type" => $relation_type,
       "entity_key" => $node1key,
     );
-    $this->drupalPost('node', $edit, t('Pick'));
+    $this->drupalPostForm('node', $edit, t('Pick'));
     $edit = array(
       "relation_type" => $relation_type,
       "entity_key" => $node3key,
     );
-    $this->drupalPost('node', $edit, t('Pick'));
-    $this->drupalPost('node', array(), t('Save relation'));
+    $this->drupalPostForm('node', $edit, t('Pick'));
+    $this->drupalPostForm('node', array(), t('Save relation'));
     // Now figure out the new rid.
     $result = array_keys(relation_query('node', $this->node3->nid)
       ->condition('relation_type', $relation_type)
@@ -55,8 +51,8 @@ class RelationEntityCollectorTest extends RelationTestBase {
     // Rebuild the message using the known bundle and entity labels to make sure
     // the message contains those.
     $bundles = entity_get_bundles('node');
-    $node1_label = $bundles['article']['label'] . ': ' . entity_label('node', $this->node1);
-    $node3_label = $bundles['page']['label'] . ': ' . entity_label('node', $this->node3);
+    $node1_label = $bundles['article']['label'] . ': ' . $this->node1->label();
+    $node3_label = $bundles['page']['label'] . ': ' . $this->node3->label();
     $items = array(
       $node1_label,
       $node3_label,
@@ -69,9 +65,9 @@ class RelationEntityCollectorTest extends RelationTestBase {
     $message = t('Created new !link from !list', array('!link' => $link, '!list' => $list));
     $this->assertRaw($message, 'Created a new relation.');
     $this->drupalGet($path);
-    $node1_uri = entity_uri('node', $this->node1);
-    $node3_uri = entity_uri('node', $this->node3);
-    $this->assertRaw(l(entity_label('node', $this->node1), $node1_uri['path'], $node1_uri['options']), 'Node1 link found');
-    $this->assertRaw(l(entity_label('node', $this->node3), $node3_uri['path'], $node3_uri['options']), 'Node1 link found');
+    $node1_uri = $this->node1->uri();
+    $node3_uri = $this->node3->uri();
+    $this->assertRaw(l($this->node1->label(), $node1_uri['path'], $node1_uri['options']), 'Node1 link found');
+    $this->assertRaw(l($this->node3->label(), $node3_uri['path'], $node3_uri['options']), 'Node1 link found');
   }
 }

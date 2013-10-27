@@ -169,6 +169,19 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
     parent::postSave($storage_controller, $update);
 
     // Ensure endpoints field is attached to relation type.
-    relation_add_endpoint_field($this->id());
+
+    if (!$update) {
+      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
+      entity_invoke_bundle_hook('create', 'relation', $this->id());
+
+      relation_add_endpoint_field($this->id());
+    }
+    elseif ($this->getOriginalID() != $this->id()) {
+      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
+      entity_invoke_bundle_hook('rename', 'relation', $this->getOriginalID(), $this->id());
+    }
+    else {
+      cache()->invalidateTags(array('relation_type' => $this->id()));
+    }
   }
 }
