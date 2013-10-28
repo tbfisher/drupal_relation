@@ -23,6 +23,26 @@ class RelationEntityCollectorTest extends RelationTestBase {
     );
   }
 
+  function setUp() {
+    parent::setUp();
+
+    // Defines users and permissions.
+    $permissions = array(
+      // Node
+      'create article content',
+      'create page content',
+      // Relation
+      'administer relation types',
+      'administer relations',
+      'access relations',
+      'create relations',
+      'edit relations',
+      'delete relations',
+    );
+    $this->web_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->web_user);
+  }
+
   /**
    * Add relations to Node 1 and to Node 3 and then check that they are related.
    */

@@ -17,7 +17,7 @@ use Drupal\Core\Language\Language;
  */
 class RelationAPITest extends RelationTestBase {
 
-  public static $modules = array('relation', 'node', 'field');
+  public static $modules = array('node');
 
   public static function getInfo() {
     return array(
@@ -31,6 +31,22 @@ class RelationAPITest extends RelationTestBase {
     // This is necessary for the ->sort('created', 'DESC') test.
     $this->sleep = TRUE;
     parent::setUp();
+
+    // Defines users and permissions.
+    $permissions = array(
+      // Node
+      'create article content',
+      'create page content',
+      // Relation
+      'administer relation types',
+      'administer relations',
+      'access relations',
+      'create relations',
+      'edit relations',
+      'delete relations',
+    );
+    $this->web_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->web_user);
   }
 
   /**

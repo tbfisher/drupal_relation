@@ -13,6 +13,8 @@ use Drupal\simpletest\WebTestBase;
  * Provides common helper methods for Taxonomy module tests.
  */
 abstract class RelationTestBase extends WebTestBase {
+  public static $modules = array('relation');
+
   protected $sleep = FALSE;
 
   function setUp() {
@@ -22,26 +24,6 @@ abstract class RelationTestBase extends WebTestBase {
       $this->drupalCreateContentType(array('type' => 'page', 'name' => 'Basic page'));
       $this->drupalCreateContentType(array('type' => 'article', 'name' => 'Article'));
     }
-
-    // Defines users and permissions.
-    $permissions = array(
-      // Node
-      'create article content',
-      'create page content',
-      // Relation
-      'administer relation types',
-      'administer relations',
-      'access relations',
-      'create relations',
-      'edit relations',
-      'delete relations',
-      // Field UI
-      'administer relation fields',
-      'administer relation form display',
-      'administer relation display',
-    );
-    $this->web_user = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($this->web_user);
 
     // Defines entities.
     $this->createRelationNodes();

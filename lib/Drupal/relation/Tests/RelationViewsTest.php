@@ -12,7 +12,7 @@ namespace Drupal\relation\Tests;
  */
 class RelationViewsTest extends RelationTestBase {
 
-  public static $modules = array('relation', 'node', 'views');
+  public static $modules = array('node', 'views');
 
   public static function getInfo() {
     return array(
@@ -23,9 +23,25 @@ class RelationViewsTest extends RelationTestBase {
   }
 
   function setUp() {
-    parent::setUp('relation', 'relation_entity_collector');
+    parent::setUp();
     // While setUp fails for non-existing modules, module_enable() doesn't.
     module_enable(array('views'));
+
+    // Defines users and permissions.
+    $permissions = array(
+      // Node
+      'create article content',
+      'create page content',
+      // Relation
+      'administer relation types',
+      'administer relations',
+      'access relations',
+      'create relations',
+      'edit relations',
+      'delete relations',
+    );
+    $this->web_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->web_user);
   }
 
   /**

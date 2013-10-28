@@ -16,7 +16,7 @@ use Drupal\relation\Tests\RelationTestBase;
  */
 class RelationUITest extends RelationTestBase {
 
-  public static $modules = array('relation', 'relation_ui', 'node', 'field_ui');
+  public static $modules = array('relation_ui', 'field_ui');
 
   public static function getInfo() {
     return array(
@@ -30,6 +30,19 @@ class RelationUITest extends RelationTestBase {
     // This is necessary for the ->sort('created', 'DESC') test.
     $this->sleep = TRUE;
     parent::setUp();
+
+    // Defines users and permissions.
+    $permissions = array(
+      // Relation
+      'administer relation types',
+      'administer relations',
+      // Field UI
+      'administer relation fields',
+      'administer relation form display',
+      'administer relation display',
+    );
+    $this->web_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->web_user);
   }
 
   /**
