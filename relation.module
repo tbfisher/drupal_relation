@@ -256,10 +256,11 @@ function relation_load($rid) {
  *
  * @param array $endpoints
  *   An array containing endpoints. Each endpoint is an array with keys
- *   'entity_type' and 'entity_id'.
+ *   'entity_type' and 'entity_id'. The keys of each endpoint correspond to
+ *   'r_index' if $enforce_direction is TRUE.
  * @param $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
- * @param $enforce_direction
+ * @param bool $enforce_direction
  *   (Optional) Whether to enforce direction as specified in $endpoints.
  *
  * @return array
@@ -274,8 +275,7 @@ function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_di
     $query->condition('relation_type', $relation_type);
   }
   $query->condition('arity', count($endpoints));
-  // Avoid Node Access restrictions when checking for a relation
-  $query->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
+
   // If direction of the relation is not forced make sure the each endpoint
   // is counted just once.
   if (!$enforce_direction) {
@@ -290,6 +290,18 @@ function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_di
  * Adds conditions to query to ensure different r_index for each endpoint.
  */
 function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  $endpoints_table_name = &drupal_static(__FUNCTION__ . '.endpoints_table_name', NULL);
+
+  if (!isset($endpoints_table_name)) {
+    $field = \Drupal\field\Field::fieldInfo()->getField('relation', RELATION_FIELD_NAME);
+    if ($field) {
+      $endpoints_table_name = \Drupal::entityManager()->getStorageController('relation')->_fieldTableName($field);
+    }
+    else {
+      throw Exception('Could not get information about relation field.');
+    }
+  }
+
   // Get arity of the query
   foreach ($query->conditions() as $condition) {
     if ($condition['field'] == 'relation.arity') {
@@ -305,8 +317,8 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
       // conditions between even numbers.
       $left_suffix = !$i ? '' : '_' . $i*2;
       $right_suffix = !$k ? '' : '_' . $k*2;
-      $column_left = 'field_data_endpoints' . $left_suffix . '.endpoints_r_index';
-      $column_right = 'field_data_endpoints' . $right_suffix . '.endpoints_r_index';
+      $column_left = $endpoints_table_name . $left_suffix . '.endpoints_r_index';
+      $column_right = $endpoints_table_name . $right_suffix . '.endpoints_r_index';
       $query->where("$column_left != $column_right");
     }
   }
@@ -387,7 +399,9 @@ function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type)
  */
 function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
   $query = Drupal::entityQuery('relation');
-  relation_query_add_related($query, $entity_type, $entity_id, $r_index);
+  if ($entity_type) {
+    relation_query_add_related($query, $entity_type, $entity_id, $r_index);
+  }
   return $query;
 }
 

@@ -49,22 +49,51 @@ class RelationAPITest extends RelationTestBase {
     $this->drupalLogin($this->web_user);
   }
 
+  function testRelationHelpers() {
+    // ## Test relation_relation_exists()
+
+    // Where relation type is set.
+    $exists = relation_relation_exists($this->endpoints, $this->relation_type_symmetric);
+    $this->verbose(print_r($exists, TRUE));
+    $this->assertTrue(isset($exists[$this->rid_symmetric]), 'Relation exists.');
+
+    // Where relation type is not set
+    $exists = relation_relation_exists($this->endpoints_4);
+    $this->assertTrue(isset($exists[$this->rid_octopus]), 'Relation exists.');
+
+    // Where endpoints does not exist.
+    $endpoints_do_not_exist = $this->endpoints;
+    $endpoints_do_not_exist[1]['entity_type'] = $this->randomName();
+    $this->assertEqual(array(), relation_relation_exists($endpoints_do_not_exist, $this->relation_type_symmetric), 'Relation with non-existant endpoint not found.');
+
+    // Where there are too many endpoints
+    $endpoints_excessive = $this->endpoints;
+    $endpoints_excessive[] = array('entity_type' => $this->randomName(), 'entity_id' => 1000);
+    $this->assertEqual(array(), relation_relation_exists($endpoints_do_not_exist, $this->relation_type_symmetric), 'Relation with too many endpoints not found.');
+
+    // Where relation type is invalid
+    $this->assertEqual(array(), relation_relation_exists($this->endpoints, $this->randomName()), 'Relation with invalid relation type not found.');
+
+  }
+
   /**
    * Tests all available methods in RelationQuery.
    * Creates some nodes, add some relations and checks if they are related.
-   *//*
+   */
   function testRelationQuery() {
-    return;//@todo reimplement
     $relations = entity_load_multiple('relation', array_keys(relation_query('node', $this->node1->id())->execute()));
 
     // Check that symmetric relation is correctly related to node 4.
-    $this->assertEqual($relations[$this->rid_symmetric]->endpoints[Language::LANGCODE_NOT_SPECIFIED][1]['entity_id'], $this->node4->id(), 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[Language::LANGCODE_NOT_SPECIFIED][1]['entity_id'] . '==' . $this->node4->id());
+    $this->assertEqual($relations[$this->rid_symmetric]->endpoints[1]->entity_id, $this->node4->id(), 'Correct entity is related: ' . $relations[$this->rid_symmetric]->endpoints[1]->entity_id . '==' . $this->node4->id());
+
     // Symmetric relation is Article 1 <--> Page 4
+    // @see https://drupal.org/node/1760026
     $endpoints = array(
       array('entity_type' => 'node', 'entity_id' => $this->node4->id()),
       array('entity_type' => 'node', 'entity_id' => $this->node4->id()),
     );
-    $this->assertFalse(relation_relation_exists($endpoints, 'symmetric'), 'node4 is not related to node4.');
+    $exists = relation_relation_exists($endpoints, 'symmetric');
+    $this->assertTrue(empty($exists), 'node4 is not related to node4.');
 
     // Get relations for node 1, should return 3 relations.
     $count = count($relations);
