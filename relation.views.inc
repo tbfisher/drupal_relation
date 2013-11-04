@@ -251,7 +251,7 @@ function relation_views_data_alter(&$data) {
 
         $placeholders['@right'] = $target_entity_type;
         // Provide forward relationships
-        if ($source_table) {
+        if ($source_table && $target_table) {
           $data[$source_table]['relation_' . $type . '_' . $target_entity_type] = array(
             'title' => t('Relation: @relation_type_label (@left @arrow @right)', $placeholders),
             'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $placeholders),
