@@ -366,7 +366,10 @@ function relation_ui_type_form($form, &$form_state, $relation_type = array(), $o
  * Validate relation type form.
  */
 function relation_ui_type_form_validate($form, &$form_state) {
-  if ($form_state['values']['advanced']['min_arity'] > $form_state['values']['advanced']['max_arity']) {
+  $max_arity = $form_state['values']['advanced']['max_arity'];
+  $min_arity = $form_state['values']['advanced']['min_arity'];
+  // Empty max arity indicates infinite arity
+  if ($max_arity && $min_arity > $max_arity) {
     form_set_error('min_arity', t('Minmum arity must be less than or equal to maximum arity.'));
   }
 }
