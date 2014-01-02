@@ -34,7 +34,7 @@ function relation_migrate_configuration_form($form, &$form_state) {
 
   foreach ($field_types as $field_type_name) {
     $field_type_info = field_info_field_types($field_type_name);
-    $fields = field_read_fields(array('type' => $field_type_name));
+    $fields = field_info_fields(array('type' => $field_type_name));
     if (!empty($field_type_info) && !empty($fields)) {
       $form[$field_type_name] = array(
         '#type' => 'fieldset',

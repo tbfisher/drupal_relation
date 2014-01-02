@@ -294,14 +294,14 @@ function relation_type_save($relation_type, $write_record_keys = array(), $rebui
  * Make sure the instance exists for this type.
  */
 function relation_type_ensure_instance($type) {
-  if (!drupal_static('relation_install') && !field_read_instance('relation', 'endpoints', $type)) {
+  if (!drupal_static('relation_install') && !field_info_instance('relation', 'endpoints', $type)) {
     $instance = array(
       'field_name' => 'endpoints',
       'entity_type' => 'relation',
       'bundle' => $type,
     );
     field_create_instance($instance);
-    field_read_instance('relation', 'endpoints', $type);
+    field_info_instance('relation', 'endpoints', $type);
   }
 }
 
@@ -425,7 +425,7 @@ function relation_type_delete($relation_type) {
   db_delete('relation_type')->condition('relation_type', $relation_type)->execute();
   db_delete('relation_bundles')->condition('relation_type', $relation_type)->execute();
 
-  if (field_read_instance('relation', 'endpoints', $relation_type)) {
+  if (field_info_instance('relation', 'endpoints', $relation_type)) {
     $instance = array(
       'field_name' => 'endpoints',
       'entity_type' => 'relation',

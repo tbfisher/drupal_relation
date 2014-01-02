@@ -84,7 +84,7 @@ abstract class MigrateSourceReference extends MigrateSource {
 
     // Load data for each field and merge all records in result array.
     foreach ($this->fields as $field_name) {
-      $field_info = field_read_field($field_name);
+      $field_info = field_info_field($field_name);
       $columns = array_keys($field_info['columns']);
 
       if (!empty($field_info) && $field_info['type'] == $this->field_type) {
@@ -105,7 +105,7 @@ abstract class MigrateSourceReference extends MigrateSource {
    * @param string $field_name Field's machine name.
    */
   protected function _constructRow(stdClass $item, $destination_type, $field_name) {
-    $field_info = field_read_field($field_name);
+    $field_info = field_info_field($field_name);
     $columns = array_keys($field_info['columns']);
     $id_key = $field_name . '_' . $columns[0];
 
@@ -143,7 +143,7 @@ class MigrateSourceEntityReference extends MigrateSourceReference {
   public function getNextRow() {
     if (!empty($this->result[$this->next_row])) {
       $item = $this->result[$this->next_row];
-      $dest_type = field_read_field($item->field_name);
+      $dest_type = field_info_field($item->field_name);
       $this->next_row++;
 
       return $this->_constructRow($item, $dest_type['settings']['target_type'], $item->field_name);
