@@ -74,60 +74,40 @@ class RelationFeedsProcessor extends FeedsProcessor {
     static $sources;
     if (!isset($sources)) {
       foreach ($this->config['mappings'] as $map) {
-        // Each target can have multiple sources.
-        $sources[$map['target']][] = $map['source'];
+        $sources[$map['target']] = $map['source'];
       }
     }
+    $parser = feeds_importer($this->id)->parser;
+
     $type = $this->getTypeInfo();
-    if ($type->directional) {
-      $endpoint_types = array('source_bundles', 'target_bundles');
-    }
-    else {
-      $endpoint_types = array('source_bundles');
-    }
-    $item = $result->currentItem();
-    foreach ($endpoint_types as $endpoint_type) {
+    $r_index = 0;
+    foreach (array('source_bundles', 'target_bundles') as $endpoint_type) {
       foreach ($type->{$endpoint_type} as $endpoint) {
         $endpoint = explode(':', $endpoint);
         // We're using GUID
         if (isset($sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':guid'])) {
-          $endpoint_sources = $sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':guid'];
-          $guids = array();
-          foreach ($endpoint_sources as $endpoint_source) {
-            if (empty($item[$endpoint_source])) {
-              throw new FeedsValidationException(t('Missing GUID at source @source.', array(
-                '@source' => $endpoint_source
-              )));
-            }
-            $guids[] = $item[$endpoint_source];
-          }
-          $entity_feeds = db_select('feeds_item', 'f')
-            ->condition('guid', $guids)
-            ->condition('entity_type', $endpoint[0])
-            ->fields('f', array('guid', 'entity_id', 'entity_type'))
-            ->execute()
-            ->fetchAllAssoc('guid');
-          foreach ($guids as $guid) {
-            if (!isset($entity_feeds[$guid])) {
-              throw new FeedsValidationException(t('GUID @guid was not found.', array(
-                '@guid' => $guid
-              )));
-            }
-            $field[] = array('entity_type' => $entity_feeds[$guid]->entity_type, 'entity_id' => $entity_feeds[$guid]->entity_id);
+          $entity_feed = db_select('feeds_item', 'f')
+               ->condition('guid', $parser->getSourceElement($source, $result, $sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':guid']))
+               ->condition('entity_type', $endpoint[0])
+               ->fields('f', array('entity_id', 'entity_type'))
+               ->execute()
+               ->fetchAssoc();
+          if (!empty($entity_feed['entity_type']) && !empty($entity_feed['entity_id'])) {
+            $field[] = array('entity_type' => $entity_feed['entity_type'],
+                            'entity_id' => $entity_feed['entity_id'],
+                            'r_index' => $r_index);
           }
         }
         // We're using entity ID
         if (isset($sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':entity_id'])) {
-          $endpoint_sources = $sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':entity_id'];
-          foreach ($endpoint_sources as $endpoint_source) {
-            if (empty($item[$endpoint_source])) {
-              throw new FeedsValidationException(t('Missing entity id at source @source.', array(
-                '@entity_id' => $endpoint_source
-              )));
-            }
-            $field[] = array('entity_type' => $endpoint[0], 'entity_id' => $item[$endpoint_source]);
+          $entity_id = $parser->getSourceElement($source, $result, $sources[$endpoint_type . ':' . $endpoint[0] . ':' . $endpoint[1] . ':entity_id']);
+          if (!empty($entity_id) && !empty($endpoint[0])) {
+            $field[] = array('entity_type' => $endpoint[0],
+                              'entity_id' => $entity_id,
+                              'r_index' => $r_index);
           }
         }
+        $r_index++;
       }
     }
     return $field;
@@ -139,18 +119,6 @@ class RelationFeedsProcessor extends FeedsProcessor {
   protected function getTypeInfo() {
     $types = relation_get_types();
     return $types[$this->config['bundle']];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function entityValidate($entity) {
-    try {
-      field_attach_validate('relation', $entity);
-    }
-    catch (FieldValidationException $e) {
-      throw new FeedsValidationException(t('Relation validation failed.'));
-    }
   }
 
   /**
@@ -289,11 +257,12 @@ class RelationFeedsProcessor extends FeedsProcessor {
    * {@inheritdoc}
    */
   public function getMappingTargets() {
+    $type = $this->getTypeInfo();
     $targets = parent::getMappingTargets();
 
     $targets['rid'] = array(
       'name' => t('Relation ID'),
-      'description' => t('The rid of the relation. NOTE: use this feature with care, relation ids are usually assigned by Drupal.'),
+      'description' => t('The rid of the relatior. NOTE: use this feature with care, relation ids are usually assigned by Drupal.'),
       'optional_unique' => TRUE,
     );
     $targets['uid'] = array(
@@ -304,14 +273,7 @@ class RelationFeedsProcessor extends FeedsProcessor {
       'name' => t('Published date'),
       'description' => t('The UNIX time when a relation has been published.'),
     );
-    $type = $this->getTypeInfo();
-    if ($type->directional) {
-      $endpoint_types = array('source_bundles' => t('Source'), 'target_bundles' => t('Target'));
-    }
-    else {
-      $endpoint_types = array('source_bundles' => t('Endpoint'));
-    }
-    foreach ($endpoint_types as $endpoint_type => $endpoint_label) {
+    foreach (array('source_bundles' => t('Source'), 'target_bundles' => t('Target')) as $endpoint_type => $endpoint_label) {
       foreach ($type->{$endpoint_type} as $endpoint) {
         $endpoint = explode(':', $endpoint);
         $entity = entity_get_info($endpoint[0]);
@@ -341,9 +303,8 @@ class RelationFeedsProcessor extends FeedsProcessor {
 
     // Let other modules expose mapping targets.
     self::loadMappers();
-    $entity_type = $this->entityType();
-    $bundle = $this->bundle();
-    drupal_alter('feeds_processor_targets', $targets, $entity_type, $bundle);
+    feeds_alter('feeds_processor_targets', $targets, 'relation', $this->config['bundle']);
+
     return $targets;
   }
 
@@ -376,12 +337,7 @@ class RelationFeedsProcessor extends FeedsProcessor {
     // If other unique targets didn't match this relation check if endpoints
     // are unique.
     if ($this->config['unique_enpoints']) {
-      try {
-        $endpoints = $this->mapEndpoints($source, $result);
-      }
-      catch (FeedsValidationException $f) {
-        return 0;
-      }
+      $endpoints = $this->mapEndpoints($source, $result);
       $relations = relation_relation_exists($endpoints, $this->config['bundle']);
       if ($relations) {
         return key($relations);
