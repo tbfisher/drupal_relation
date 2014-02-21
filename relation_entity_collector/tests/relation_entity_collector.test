@@ -37,7 +37,7 @@ class RelationEntityCollectorTestCase extends RelationTestCase {
     );
     $this->drupalPost('node', $edit, t('Pick'));
     $edit = array(
-      "relation_type" => $relation_type,
+      //"relation_type" => $relation_type, // First pick will disable this field
       "entity_key" => $node3key,
     );
     $this->drupalPost('node', $edit, t('Pick'));
