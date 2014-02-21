@@ -39,10 +39,15 @@ class FeedsCSVtoRelationsTest extends FeedsWebTestCase {
     $mappings = array(
       0 => array(
         'source' => 'name',
-        'target' => 'name',
+        'target' => 'guid',
         'unique' => TRUE,
       ),
       1 => array(
+        'source' => 'name',
+        'target' => 'name',
+        'unique' => TRUE,
+      ),
+      2 => array(
         'source' => 'mail',
         'target' => 'mail',
         'unique' => FALSE,
@@ -68,14 +73,20 @@ class FeedsCSVtoRelationsTest extends FeedsWebTestCase {
     $this->setPlugin('relation_import', 'FeedsCSVParser');
     $this->setPlugin('relation_import', 'RelationFeedsProcessor');
 
+    // 'no_headers' setting would suit well for relation endpoint testing but,
+    // thats not working atm because of https://drupal.org/node/1984962.
+    // As a workaround columns are now named user1,user2...
+    $this->setSettings('relation_import', 'FeedsCSVParser', array(
+      'no_headers' => FALSE
+    ));
     // Go to mapping page and create a couple of mappings.
     $mappings = array(
       0 => array(
-        'source' => 'source_user',
+        'source' => 'user1',
         'target' => 'source_bundles:user:*:guid',
       ),
       1 => array(
-        'source' => 'target_user',
+        'source' => 'user2',
         'target' => 'source_bundles:user:*:guid',
       ),
     );
@@ -87,8 +98,9 @@ class FeedsCSVtoRelationsTest extends FeedsWebTestCase {
     // Import CSV file creating 'loves' relations between users.
     $this->importFile('relation_import', $this->absolutePath() . '/tests/feeds/user_relations.csv');
 
-    // Assert result.
+    // Assert results.
     $this->assertText('Created 3 relations');
+    $this->assertText('Failed importing 2 relations');
   }
 
   /**
