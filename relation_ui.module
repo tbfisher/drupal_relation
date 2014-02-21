@@ -682,12 +682,13 @@ function theme_relation_ui_admin_content($variables) {
         $endpoint_separator = $type->directional ? " → " : " ↔ ";
         $type_label = $relation->relation_type;
       }
+      $relation_uri = entity_uri('relation', $relation);
       $rows[] = array(
-        l(t('Relation') . ' ' . $relation->rid, 'relation/' . $relation->rid),
+        l(t('Relation') . ' ' . $relation->rid, $relation_uri['path']),
         $type_label,
         implode($endpoint_separator, $relation_column),
-        user_access('edit relations') ? l(t('Edit'), 'relation/' . $relation->rid . '/edit', $options) : '',
-        user_access('delete relations') ? l(t('Delete'), 'relation/' . $relation->rid . '/delete', $options) : '',
+        user_access('edit relations') ? l(t('Edit'), $relation_uri['path'] . '/edit', $options) : '',
+        user_access('delete relations') ? l(t('Delete'), $relation_uri['path'] . '/delete', $options) : '',
       );
     }
   }
@@ -782,8 +783,9 @@ function relation_ui_edit_form_submit($form, &$form_state) {
   $relation = $form_state['relation'];
   entity_form_submit_build_entity('relation', $relation, $form, $form_state);
   $rid = relation_save($relation);
+  $relation_uri = entity_uri('relation', $relation);
   if ($rid) {
-    $form_state['redirect'] = 'relation/' . $rid;
+    $form_state['redirect'] = $relation_uri['path'];
   }
 }
 
@@ -794,9 +796,10 @@ function relation_ui_delete_confirm($form, &$form_state, $relation) {
   $form['#relation'] = $relation;
   // Always provide entity id in the same form key as in the entity edit form.
   $form['rid'] = array('#type' => 'value', '#value' => $relation->rid);
+  $relation_uri = entity_uri('relation', $relation);
   return confirm_form($form,
     t('Are you sure you want to delete relation %rid?', array('%rid' => $relation->rid)),
-    'relation/' . $relation->rid,
+    $relation_uri['path'],
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
