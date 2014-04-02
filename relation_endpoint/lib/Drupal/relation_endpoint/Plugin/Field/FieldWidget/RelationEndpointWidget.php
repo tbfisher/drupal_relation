@@ -2,17 +2,15 @@
 
 /**
  * @file
- * Definition of Drupal\relation_endpoint\Plugin\field\widget\RelationEndpointWidget.
+ * Contains \Drupal\relation_endpoint\Plugin\Field\FieldWidget\RelationEndpointWidget
  *
  * TODO: Figure out if there is easier way to say "no we don't have edit widget"
  */
 
-namespace Drupal\relation_endpoint\Plugin\field\widget;
+namespace Drupal\relation_endpoint\Plugin\Field\FieldWidget;
 
-use Drupal\field\Annotation\FieldWidget;
-use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\Field\FieldItemListInterface;
-use Drupal\field\Plugin\Type\Widget\WidgetBase;
+use Drupal\Core\Field\WidgetBase;
+use Drupal\Core\Field\FieldItemListInterface;
 
 /**
  * Plugin implementation of the 'relation_endpoint' widget.

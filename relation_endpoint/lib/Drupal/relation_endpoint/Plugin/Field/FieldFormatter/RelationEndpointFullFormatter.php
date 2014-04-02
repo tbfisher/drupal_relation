@@ -2,15 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\relation_endpoint\Plugin\field\formatter\RelationEndpointFullFormatter.
+ * Contains \Drupal\relation_endpoint\Plugin\Field\FieldFormatter\RelationEndpointFullFormatter
  */
 
-namespace Drupal\relation_endpoint\Plugin\field\formatter;
+namespace Drupal\relation_endpoint\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\Field\FieldInterface;
-use Drupal\field\Plugin\Type\Formatter\FormatterBase;
-use Drupal\Core\Entity\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Field\FieldItemListInterface;
 
 /**
  * Plugin implementation of the 'link' formatter.

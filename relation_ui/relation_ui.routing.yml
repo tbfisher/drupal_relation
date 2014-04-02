@@ -31,7 +31,8 @@ relation_ui.list:
 relation_ui.type_list:
   path: '/admin/structure/relation'
   defaults:
-    _entity_list: 'relation_type'
+    _content: '\Drupal\Core\Entity\Controller\EntityListController::listing'
+    entity_type: 'relation_type'
     _title: 'Relation types'
   requirements:
     _permission: 'administer relation types'
@@ -40,6 +41,7 @@ relation_ui.type_add:
   path: '/admin/structure/relation/add'
   defaults:
     _entity_form: 'relation_type.add'
+    _title: 'Add relation type'
   requirements:
     _permission: 'administer relation types'
 

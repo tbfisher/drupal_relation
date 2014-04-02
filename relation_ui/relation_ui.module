@@ -6,133 +6,38 @@
  */
 
 /**
- * Implements hook_entity_info_alter().
+ * Implements hook_entity_type_alter().
  */
-function relation_ui_entity_info_alter(&$entity_info) {
-  // Relation entities
-  $entity_info['relation']['route_base_path'] = "admin/structure/relation/manage/{bundle}";
-  $entity_info['relation']['controllers'] += array(
-    'list' => 'Drupal\relation_ui\RelationListController',
-    'form' => array(
-      'add' => 'Drupal\relation_ui\RelationFormController',
-      'edit' => 'Drupal\relation_ui\RelationFormController',
-      'delete' => 'Drupal\relation_ui\Form\RelationDeleteConfirm',
-    ),
-  );
-  $entity_info['relation']['links']['canonical'] = '/relation/{relation}';
-  $entity_info['relation']['links']['edit-form'] = '/relation/{relation}/edit';
-  $entity_info['relation']['links']['version-history'] = '/relation/{relation}/revisions';
+function relation_ui_entity_type_alter(array &$entity_types) {
+  $entity_types['relation']->setViewBuilderClass('Drupal\Core\Entity\EntityViewBuilder');
+  $entity_types['relation']->setListClass('Drupal\relation_ui\RelationListController');
+  $entity_types['relation']->setFormClass('default', 'Drupal\relation_ui\RelationFormController');
+  $entity_types['relation']->setFormClass('edit', 'Drupal\relation_ui\RelationFormController');
+  $entity_types['relation']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationFormController');
+  $entity_types['relation']->setLinkTemplate('admin-form', 'relation_ui.type_edit');
+  $entity_types['relation']->setLinkTemplate('edit-form', 'relation_ui.edit');
+  $entity_types['relation']->setLinkTemplate('delete-form', 'relation_ui.delete_confirm');
 
-  // Relation type entities
-  $entity_info['relation_type']['links'] += array(
-    "edit-form" => "admin/structure/relation/manage/{relation_type}",
-  );
-  $entity_info['relation_type']['controllers'] += array(
-    'list' => 'Drupal\relation_ui\RelationTypeListController',
-    'form' => array(
-      'add' => 'Drupal\relation_ui\RelationTypeFormController',
-      'edit' => 'Drupal\relation_ui\RelationTypeFormController',
-      'delete' => 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm',
-    ),
-  );
+  $entity_types['relation_type']->setListClass('Drupal\relation_ui\RelationTypeListController');
+  $entity_types['relation_type']->setFormClass('add', 'Drupal\relation_ui\RelationTypeFormController');
+  $entity_types['relation_type']->setFormClass('edit', 'Drupal\relation_ui\RelationTypeFormController');
+  $entity_types['relation_type']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm');
+  $entity_types['relation_type']->setLinkTemplate('add-form', 'relation_ui.type_edit');
+  $entity_types['relation_type']->setLinkTemplate('edit-form', 'relation_ui.type_edit');
+  $entity_types['relation_type']->setLinkTemplate('delete-form', 'relation_ui.type_delete');
 }
 
 /**
- * Implements hook_menu().
+ * Implements hook_menu_link_defaults().
  */
-function relation_ui_menu() {
-   $items['relation/%relation'] = array(
-     'route_name' => 'relation_ui.view',
-   );
-   $items['relation/%relation/view'] = array(
-     'title' => 'View',
-     'type' => MENU_DEFAULT_LOCAL_TASK,
-   );
-   $items['relation/%relation/edit'] = array(
-     'title' => 'Edit',
-     'route_name' => 'relation_ui.edit',
-     'type' => MENU_LOCAL_TASK,
-     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-   );
-   $items['relation/%relation/delete'] = array(
-     'title' => 'Delete',
-     'route_name' => 'relation_ui.delete_confirm',
-     'weight' => 10,
-     'type' => MENU_LOCAL_TASK,
-   );
-
-//   if (module_exists('devel')) {
-//     $items['relation/%relation/devel'] = array(
-//       'title' => 'Devel',
-//       'page callback' => 'devel_load_object',
-//       'page arguments' => array('relation', 1),
-//       'access arguments' => array('access devel information'),
-//       'type' => MENU_LOCAL_TASK,
-//       'file path' => drupal_get_path('module', 'devel') . '/',
-//       'file' => 'devel.pages.inc',
-//       'weight' => 100,
-//     );
-//   }
-  $items['admin/structure/relation'] = array(
-    'title' => 'Relation types',
+function relation_ui_menu_link_defaults() {
+  $links['admin/structure/relation'] = array(
+    'link_title' => 'Relation types',
+    'parent' => 'system.admin.structure',
     'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
     'route_name' => 'relation_ui.type_list',
   );
-  $items['admin/structure/relation/manage/%relation_type'] = array(
-    'title' => 'Edit relation type',
-    'title callback' => 'relation_ui_type_page_title',
-    'title arguments' => array(4),
-    'route_name' => 'relation_ui.type_edit',
-  );
-  $items['admin/structure/relation/manage/%relation_type/edit'] = array(
-    'title' => 'Edit',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-//   $items['admin/config/development/generate/relation'] = array(
-//     'title' => 'Generate relations',
-//     'access arguments' => array('administer relation types'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('relation_ui_generate_form'),
-//     'description' => 'Generate relations for testing.',
-//   );
-//   $items['relation/endpoints_type/autocomplete'] = array(
-//     'type' => MENU_CALLBACK,
-//     'access arguments' => array('administer relations'),
-//     'file' => 'relation_ui.module',
-//     'page callback' => 'relation_ui_endpoints_type_autocomplete',
-//   );
-  return $items;
-}
-
-/**
- * Menu callback: ask for confirmation of relation deletion.
- */
-function relation_ui_delete_confirm($form, &$form_state, Drupal\relation\RelationInterface $relation) {
-  $form['#relation'] = $relation;
-  $uri = $relation->uri();
-
-  return confirm_form($form,
-    t('Are you sure you want to delete relation %id?', array('%id' => $relation->id())),
-    $uri['path'],
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
-}
-
-/**
- * Executes relation deletion.
- */
-function relation_ui_delete_confirm_submit($form, &$form_state) {
-  if ($form_state['values']['confirm']) {
-    $relation = $form['#relation'];
-    $relation->delete();
-    $replacements = array('@bundle' => $relation->bundle(), '%id' => $relation->id());
-    watchdog('relation', '@bundle: deleted %id.', $replacements);
-    drupal_set_message(t('@bundle %id has been deleted.', $replacements));
-  }
-
-  $form_state['redirect'] = '<front>';
+  return $links;
 }
 
 /**
@@ -193,73 +98,6 @@ function relation_ui_generate_form_submit($form, &$form_state) {
 }
 
 /**
- * Filter form for relation administration list.
- */
-function relation_ui_filter_form($form, $form_state) {
-  if (isset($_SESSION['relation_filters'])) {
-    foreach($_SESSION['relation_filters'] as $filter => $values) {
-      $$filter = $values;
-    }
-  }
-  $bundles = array();
-  foreach (entity_load_multiple('relation_type') as $relation_type) {
-    $bundles[$relation_type->id()] = $relation_type->label();
-  }
-
-  $form['filters'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Show only items where'),
-    '#theme' => 'exposed_filters__relation',
-  );
-  $form['filters']['bundle'] = array(
-    '#title' => t('relation type'),
-    '#type' => 'select',
-    '#default_value' => isset($bundle) ? array_keys($bundle) : NULL,
-    '#multiple' => TRUE,
-    '#options' => $bundles,
-    '#size' => (count($bundles) < 10) ? count($bundles) : 10,
-  );
-  $form['filters']['endpoints_entity_type'] = array(
-    '#title' => t('endpoint type'),
-    '#type' => 'textfield',
-    '#default_value' => isset($endpoints_entity_type) ? $endpoints_entity_type : NULL,
-    '#autocomplete_path' => 'relation/endpoints_type/autocomplete'
-  );
-  $form['filters']['endpoints_entity_id'] = array(
-    '#title' => t('endpoint ID'),
-    '#type' => 'textfield',
-    '#default_value' => isset($endpoints_entity_id) ? $endpoints_entity_id : NULL,
-  );
-  $form['filters']['actions'] = array(
-    '#type' => 'actions',
-    '#attributes' => array('class' => array('container-inline')),
-  );
-  $form['filters']['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Filter'),
-  );
-  $form['filters']['actions']['reset'] = array(
-    '#type' => 'submit',
-    '#value' => t('Reset'),
-  );
-  $form['#submit'] = array('relation_ui_filter_form_submit');
-  return $form;
-}
-
-/**
- * Submit handler for filter form
- */
-function relation_ui_filter_form_submit($form, $form_state) {
-  form_state_values_clean($form_state);
-  if ($form_state['triggering_element']['#value'] == t('Reset')) {
-    unset($_SESSION['relation_filters']);
-  }
-  else {
-    $_SESSION['relation_filters'] = $form_state['values'];
-  }
-}
-
-/**
  * Apply filters for relation administration filters based on session.
  *
  * @param $query
@@ -286,13 +124,6 @@ function relation_ui_build_filter_query($query) {
       }
     }
   }
-}
-
-/**
- * Relation type display/edit page title callback.
- */
-function relation_ui_type_page_title(Drupal\relation\RelationTypeInterface $relation_type) {
-  return $relation_type->label();
 }
 
 /**
@@ -323,16 +154,4 @@ function template_preprocess_relation(&$variables) {
   foreach (element_children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
-}
-
-/**
- * Autocomplete function for endpoint type filter.
- */
-function relation_ui_endpoints_type_autocomplete($string = '') {
-  $result = db_query("SELECT distinct endpoints_entity_type FROM {field_data_endpoints} WHERE endpoints_entity_type LIKE :string", array(":string" => db_like($string) . '%'));
-  $matches = array();
-  while ($res = $result->fetchObject()) {
-    $matches[$res->endpoints_entity_type] = $res->endpoints_entity_type;
-  }
-  drupal_json_output($matches);
 }

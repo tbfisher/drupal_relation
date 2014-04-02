@@ -1,5 +1,26 @@
-# TODO: tab_root_id does not exist yet
-relation_ui.relations_tab:
-  route_name: relation_ui.list
+relation_ui.type_edit:
+  title: 'Edit'
+  route_name: relation_ui.type_edit
+  base_route: relation_ui.type_edit
+
+relation_ui.view:
+  title: 'View'
+  route_name: relation_ui.view
+  base_route: relation_ui.view
+
+relation_ui.edit:
+  title: 'Edit'
+  route_name: relation_ui.edit
+  base_route: relation_ui.view
+  weight: 10
+
+relation_ui.delete_confirm:
+  title: 'Delete'
+  route_name: relation_ui.delete_confirm
+  base_route: relation_ui.view
+  weight: 20
+
+relation_ui.list:
   title: Relations
-  tab_root_id: content_overview
+  route_name: relation_ui.list
+  base_route: node.content_overview

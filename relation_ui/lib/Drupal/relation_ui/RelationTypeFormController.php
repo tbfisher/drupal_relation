@@ -9,6 +9,7 @@ namespace Drupal\relation_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
+use Drupal\Component\Utility\String;
 
 /**
  * Form controller for relation edit form.
@@ -22,6 +23,13 @@ class RelationTypeFormController extends EntityFormController {
     $form = parent::form($form, $form_state);
 
     $relation_type = $this->entity;
+    if ($this->operation == 'add') {
+      $form['#title'] = String::checkPlain($this->t('Add relation type'));
+    }
+    elseif ($this->operation == 'edit') {
+      $form['#title'] = $this->t('Edit %label relation type', array('%label' => $relation_type->label()));
+    }
+
     $form['#attached']['css'] = array(
       drupal_get_path('module', 'relation_ui') . '/relation_ui.css',
     );
@@ -122,11 +130,13 @@ class RelationTypeFormController extends EntityFormController {
       '#description' => t('Maximum number of entities joined by relations of this type. <em>In nearly all cases you will want to leave this set to 2</em>.'),
       '#default_value' => isset($relation_type->max_arity) ? $relation_type->max_arity : 2,
     );
+
+    $options_bundles = array();
     $counter = 0;
-    $entity_info = entity_get_info();
+    $entity_info = \Drupal::entityManager()->getDefinitions();
     foreach (entity_get_bundles() as $entity_type => $bundles) {
       $counter += 2;
-      $entity_label = $entity_info[$entity_type]['label'];
+      $entity_label = $entity_info[$entity_type]->getLabel();
       $options_bundles[$entity_label]["$entity_type:*"] = 'all ' . $entity_label . ' bundles';
       foreach ($bundles as $bundle_id => $bundle) {
         $options_bundles[$entity_label]["$entity_type:$bundle_id"] = $bundle['label'];
@@ -194,18 +204,10 @@ class RelationTypeFormController extends EntityFormController {
 
     if ($relation_type->save()) {
       drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type->relation_type)));
-      $uri = $relation_type->uri();
-      $form_state['redirect'] = $uri['path'];
+      $form_state['redirect_route'] = $relation_type->urlInfo();
     }
     else {
       drupal_set_message(t('Error saving relation type.', 'error'));
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete(array $form, array &$form_state) {
-    $form_state['redirect'] = 'admin/structure/relation/manage/' . $this->entity->id() . '/delete';
   }
 }

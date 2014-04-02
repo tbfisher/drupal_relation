@@ -71,8 +71,8 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
   public function buildForm(array $form, array &$form_state) {
     $num_relations = $this->database->query("SELECT COUNT(*) FROM {relation} WHERE relation_type = :type", array(':type' => $this->entity->id()))->fetchField();
     if ($num_relations) {
-      drupal_set_title($this->getQuestion(), PASS_THROUGH);
-      $caption = '<p>' . format_plural($num_relations, '%type is used by @count relation on your site. You may not remove %type until you have removed the %type relation.', '%type is used by @count relations on your site. You may not remove %type until you have removed all of the %type relations.', array('%type' => $this->entity->label())) . '</p>';
+      $form['#title'] = $this->getQuestion();
+      $caption = '<p>' . t('%type is used by @count relations on your site. You may not remove %type until you have removed all existing relations.', array('@count' => $num_relations, '%type' => $this->entity->label())) . '</p>';
       $form['description'] = array('#markup' => $caption);
       return $form;
     }
@@ -88,8 +88,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
     $t_args = array('%name' => $this->entity->label());
     drupal_set_message(t('The relation type %name has been deleted.', $t_args));
     watchdog('relation', 'Deleted relation type %name.', $t_args, WATCHDOG_NOTICE);
-
-    $form_state['redirect'] = 'admin/structure/relation';
+    $form_state['redirect_route']['route_name'] = 'relation_ui.type_list';
   }
 
 }

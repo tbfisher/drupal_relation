@@ -2,15 +2,14 @@
 
 /**
  * @file
- * Contains \Drupal\relation_endpoint\Plugin\field\field_type\RelationEndpointItem.
+ * Contains \Drupal\relation_endpoint\Plugin\Field\FieldType\RelationEndpointItem
  */
 
-namespace Drupal\relation_endpoint\Plugin\field\field_type;
+namespace Drupal\relation_endpoint\Plugin\Field\FieldType;
 
-use Drupal\Core\Entity\Annotation\FieldType;
-use Drupal\Core\Annotation\Translation;
-use Drupal\field\Plugin\Type\FieldType\ConfigFieldItemBase;
-use Drupal\field\FieldInterface;
+use Drupal\Core\Field\FieldItemBase;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'relation_endpoint' field type.
@@ -27,39 +26,27 @@ use Drupal\field\FieldInterface;
  *   no_ui = TRUE
  * )
  */
-class RelationEndpointItem extends ConfigFieldItemBase {
-  /**
-   * Definitions of the contained properties.
-   *
-   * @var array
-   */
-  static $propertyDefinitions;
-
+class RelationEndpointItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    if (!isset(static::$propertyDefinitions)) {
-      static::$propertyDefinitions['entity_type'] = array(
-        'type' => 'string',
-        'label' => t('Entity_type of this relation end-point.'),
-      );
-      static::$propertyDefinitions['entity_id'] = array(
-        'type' => 'integer',
-        'label' => t('Entity_id of this relation end-point.'),
-      );
-      static::$propertyDefinitions['r_index'] = array(
-        'type' => 'integer',
-        'label' => t('The index of this row in this relation.'),
-      );
-    }
-    return static::$propertyDefinitions;
+  public static function propertyDefinitions(FieldDefinitionInterface $field_definition) {
+    $properties['entity_type'] = DataDefinition::create('string')
+      ->setLabel(t('Entity_type of this relation end-point.'));
+
+    $properties['entity_id'] = DataDefinition::create('integer')
+      ->setLabel(t('Entity_id of this relation end-point.'));
+
+    $properties['r_index'] = DataDefinition::create('integer')
+      ->setLabel(t('The index of this row in this relation.'));
+
+    return $properties;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldInterface $field) {
+  public static function schema(FieldDefinitionInterface $field_definition) {
     return array(
       'columns' => array(
         'entity_type' => array(

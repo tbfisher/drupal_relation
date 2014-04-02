@@ -217,7 +217,7 @@ function relation_views_data_alter(&$data) {
     $target_index = $relation_type->directional ? 'target_bundles' : 'source_bundles';
     foreach ($relation_type->source_bundles as $source_bundle) {
       list($source_entity_type) = explode(':', $source_bundle, 2);
-      $source_table = isset($entity_info[$source_entity_type]['base_table']) ? $entity_info[$source_entity_type]['base_table']: NULL;
+      $source_table = $entity_info[$source_entity_type]->getBaseTable();
 
       // Translatable
       $placeholders = array(
@@ -236,7 +236,7 @@ function relation_views_data_alter(&$data) {
             'label' => check_plain($relation_type->label),
             'base' => 'relation',
             'base field' => 'rid',
-            'relationship field' => $entity_info[$source_entity_type]['entity_keys']['id'],
+            'relationship field' => $entity_info[$source_entity_type]->getKey('id'),
             'id' => 'relation_relationship',
             'relation_type' => $type,
             'entity_type_left' => $source_entity_type,
@@ -247,7 +247,7 @@ function relation_views_data_alter(&$data) {
 
       foreach ($relation_type->$target_index as $target_bundle) {
         list($target_entity_type) = explode(':', $target_bundle, 2);
-        $target_table = isset($entity_info[$target_entity_type]['base_table']) ? $entity_info[$target_entity_type]['base_table'] : NULL;;
+        $target_table = $entity_info[$target_entity_type]->getBaseTable();
 
         $placeholders['@right'] = $target_entity_type;
         // Provide forward relationships
@@ -259,8 +259,8 @@ function relation_views_data_alter(&$data) {
               // relation_handler_relationship::options_form() relies on this check_plain().
               'label' => check_plain($relation_type->label),
               'base' => $target_table,
-              'base field' => $entity_info[$target_entity_type]['entity_keys']['id'],
-              'relationship field' => $entity_info[$source_entity_type]['entity_keys']['id'],
+              'base field' => $entity_info[$target_entity_type]->getKey('id'),
+              'relationship field' => $entity_info[$source_entity_type]->getKey('id'),
               'id' => 'relation_relationship',
               'relation_type' => $type,
               'entity_type_left' => $source_entity_type,
@@ -278,7 +278,7 @@ function relation_views_data_alter(&$data) {
               // relation_handler_relationship::options_form() relies on this check_plain().
               'label' => check_plain($relation_type->label),
               'base' => $target_table,
-              'base field' => $entity_info[$target_entity_type]['entity_keys']['id'],
+              'base field' => $entity_info[$target_entity_type]->getKey('id'),
               'relationship field' => 'rid',
               'id' => 'relation_relationship',
               'relation_type' => $type,
@@ -298,8 +298,8 @@ function relation_views_data_alter(&$data) {
                 // relation_handler_relationship::options_form() relies on this check_plain().
                 'label' => check_plain($relation_type->reverse_label),
                 'base' => $source_table,
-                'base field' => $entity_info[$source_entity_type]['entity_keys']['id'],
-                'relationship field' => $entity_info[$target_entity_type]['entity_keys']['id'],
+                'base field' => $entity_info[$source_entity_type]->getKey('id'),
+                'relationship field' => $entity_info[$target_entity_type]->getKey('id'),
                 'id' => 'relation_relationship',
                 'relation_type' => $type,
                 'entity_type_left' => $target_entity_type,
@@ -318,7 +318,7 @@ function relation_views_data_alter(&$data) {
                 'label' => check_plain($relation_type->reverse_label),
                 'base' => 'relation',
                 'base field' => 'rid',
-                'relationship field' => $entity_info[$target_entity_type]['entity_keys']['id'],
+                'relationship field' => $entity_info[$target_entity_type]->getKey('id'),
                 'id' => 'relation_relationship',
                 'relation_type' => $type,
                 'entity_type_right' => $target_entity_type,
@@ -335,7 +335,7 @@ function relation_views_data_alter(&$data) {
                 // relation_handler_relationship::options_form() relies on this check_plain().
                 'label' => check_plain($relation_type->reverse_label),
                 'base' => $source_table,
-                'base field' => $entity_info[$source_entity_type]['entity_keys']['id'],
+                'base field' => $entity_info[$source_entity_type]->getKey('id'),
                 'relationship field' => 'rid',
                 'id' => 'relation_relationship',
                 'relation_type' => $type,

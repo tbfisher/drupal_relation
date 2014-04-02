@@ -7,10 +7,12 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageControllerInterface;
+use Drupal\Core\Field\FieldDefinition;
 
 /**
  * Defines relation entity
@@ -25,7 +27,6 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   controllers = {
  *     "access" = "Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
- *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *   },
  *   base_table = "relation",
  *   revision_table = "relation_revision",
@@ -40,6 +41,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   bundle_keys = {
  *     "bundle" = "relation_type"
  *   },
+ *   bundle_entity_type = "relation_type",
  *   permission_granularity = "bundle"
  * )
  */
@@ -65,56 +67,49 @@ class Relation extends ContentEntityBase implements RelationInterface {
     return t('Relation @id', array('@id' => $this->id()));
   }
 
-  public static function baseFieldDefinitions($entity_type) {
-    $properties['rid'] = array(
-      'label' => t('Node ID'),
-      'description' => t('The node ID.'),
-      'type' => 'integer_field',
-      'read-only' => TRUE,
-    );
-    $properties['vid'] = array(
-      'label' => t('Revision ID'),
-      'description' => t('The relation revision ID.'),
-      'type' => 'integer_field',
-      'read-only' => TRUE,
-    );
-    $properties['relation_type'] = array(
-      'label' => t('Type'),
-      'description' => t('The relation type.'),
-      'type' => 'string_field',
-      'read-only' => TRUE,
-    );
-    $properties['uid'] = array(
-      'label' => t('User ID'),
-      'description' => t('The user ID of the relation author.'),
-      'type' => 'entity_reference_field',
-      'settings' => array(
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    $fields['rid'] = FieldDefinition::create('integer')
+      ->setLabel(t('Relation ID'))
+      ->setDescription(t('The relation ID.'))
+      ->setReadOnly(TRUE);
+
+    $fields['vid'] = FieldDefinition::create('integer')
+      ->setLabel(t('Revision ID'))
+      ->setDescription(t('The relation revision ID.'))
+      ->setReadOnly(TRUE);
+
+    $fields['relation_type'] = FieldDefinition::create('entity_reference')
+      ->setLabel(t('Type'))
+      ->setDescription(t('The relation type.'))
+      ->setSetting('target_type', 'relation_type')
+      ->setReadOnly(TRUE);
+
+    $fields['uid'] = FieldDefinition::create('entity_reference')
+      ->setLabel(t('User ID'))
+      ->setDescription(t('The user ID of the relation author.'))
+      ->setSettings(array(
         'target_type' => 'user',
         'default_value' => 0,
-      ),
-    );
-    $properties['created'] = array(
-      'label' => t('Created'),
-      'description' => t('The time that the relation was created.'),
-      'type' => 'integer_field',
-    );
-    $properties['changed'] = array(
-      'label' => t('Changed'),
-      'description' => t('The time that the relation was last changed.'),
-      'type' => 'integer_field',
-    );
-    $properties['arity'] = array(
-      'label' => t('Arity'),
-      'description' => t('Number of endpoints on the Relation.'),
-      'type' => 'integer_field',
-    );
+      ));
+
+    $fields['created'] = FieldDefinition::create('created')
+      ->setLabel(t('Created'))
+      ->setDescription(t('The time that the relation was created.'));
+
+    $fields['changed'] = FieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The time that the relation was last edited.'));
+
+    $fields['arity'] = FieldDefinition::create('integer')
+      ->setLabel(t('ArityD'))
+      ->setDescription(t('Number of endpoints on the Relation.'));
+
     // Langcode here so edit form saves properly.
-    $properties['langcode'] = array(
-      'label' => t('Language code'),
-      'description' => t('The relation dummy language code.'),
-      'type' => 'language_field',
-    );
-    return $properties;
+    $fields['langcode'] = FieldDefinition::create('language')
+      ->setLabel(t('Language code'))
+      ->setDescription(t('The relation dummy language code.'));
+
+    return $fields;
   }
 
   /**

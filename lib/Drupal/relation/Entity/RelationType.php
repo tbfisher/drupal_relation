@@ -40,7 +40,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *    This is the same format as source_bundles, but is only used for
  *    directional relations.
  *
- * @EntityType(
+ * @ConfigEntityType(
  *   id = "relation_type",
  *   label = @Translation("Relation type"),
  *   module = "relation",
@@ -49,7 +49,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *     "render" = "Drupal\Core\Entity\EntityRenderController",
  *   },
  *   admin_permission = "administer relation types",
- *   config_prefix = "relation.type",
+ *   config_prefix = "type",
  *   bundle_of = "relation",
  *   entity_keys = {
  *     "id" = "relation_type",
@@ -181,7 +181,7 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
       entity_invoke_bundle_hook('rename', 'relation', $this->getOriginalID(), $this->id());
     }
     else {
-      cache()->invalidateTags(array('relation_type' => $this->id()));
+      \Drupal::cache()->invalidateTags(array('relation_type' => $this->id()));
     }
   }
 }

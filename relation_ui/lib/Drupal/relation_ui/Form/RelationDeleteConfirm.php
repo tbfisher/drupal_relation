@@ -15,30 +15,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a form for relation deletion.
  */
 class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
-   * Constructs a new RelationDeleteConfirm object.
-   *
-   * @param \Drupal\Core\Database\Connection $database
-   *   The database connection.
-   */
-  public function __construct(Connection $database) {
-    $this->database = $database;
-  }
-
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('database')
+      $container->get('entity.manager'),
+      $container->get('url_generator')
     );
   }
 

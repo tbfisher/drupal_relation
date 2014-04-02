@@ -25,7 +25,7 @@ class RelationUIController extends ControllerBase {
    *   An array suitable for drupal_render().
    */
   public function page(RelationInterface $relation) {
-    return $this->entityManager()->getRenderController('relation')->view($relation);
+    return $this->entityManager()->getViewBuilder('relation')->view($relation);
   }
 
   /**

@@ -16,7 +16,7 @@ use Drupal\relation\Tests\RelationTestBase;
  */
 class RelationUITest extends RelationTestBase {
 
-  public static $modules = array('relation_ui', 'field_ui');
+  public static $modules = array('node', 'relation_ui', 'field_ui');
 
   public static function getInfo() {
     return array(
@@ -64,7 +64,10 @@ class RelationUITest extends RelationTestBase {
     $num_relations = 1;
 
     // See RelationTypeDeleteConfirm buildForm
-    $this->assertRaw(format_plural($num_relations, '%type is used by @count relation on your site. You may not remove %type until you have removed the %type relation.', '%type is used by @count relations on your site. You may not remove %type until you have removed all of the %type relations.', array('%type' => $this->relation_types['symmetric']['label'])), 'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.');
+    $this->assertRaw(
+      t('%type is used by @count relations on your site. You may not remove %type until you have removed all existing relations.', array('@count' => $num_relations, '%type' => $this->relation_types['symmetric']['label'])),
+      'Correct number of relations found (1) for ' . $this->relation_types['symmetric']['label'] . ' relation type.'
+    );
   }
 
   /**

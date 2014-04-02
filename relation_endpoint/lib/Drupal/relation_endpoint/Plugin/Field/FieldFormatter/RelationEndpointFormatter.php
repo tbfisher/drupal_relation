@@ -2,15 +2,15 @@
 
 /**
  * @file
- * Contains \Drupal\relation_endpoint\Plugin\field\formatter\RelationEndpointFormatter.
+ * Contains \Drupal\relation_endpoint\Plugin\Field\FieldFormatter\RelationEndpointFormatter
  */
 
-namespace Drupal\relation_endpoint\Plugin\field\formatter;
+namespace Drupal\relation_endpoint\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\Field\FieldInterface;
-use Drupal\Core\Entity\Field\FieldItemListInterface;
-use Drupal\field\Plugin\Type\Formatter\FormatterBase;
+use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Utility\LinkGenerator;
+use Drupal\Core\Url;
 
 /**
  * Plugin implementation of the 'link' formatter.
@@ -43,10 +43,9 @@ class RelationEndpointFormatter extends FormatterBase {
       $entity_info = \Drupal::entityManager()->getDefinition($item->entity_type);
       if ($entity_info && $entity = entity_load($item->entity_type, $item->entity_id)) {
         $label = $entity->label();
-        $uri = $entity->uri();
-
+        $url = $entity->urlInfo();
         $label = (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t);
-        $label = $uri['path'] ? l($label, $uri['path']) : $label;
+        $label = \Drupal::l($label, $url['route_name'], $url['route_parameters'], $url['options']);
       } else {
         $label = t('Deleted');
       }

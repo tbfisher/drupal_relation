@@ -18,7 +18,7 @@ use Drupal\Core\Entity\FieldableDatabaseStorageController;
  */
 
 class RelationStorageController extends FieldableDatabaseStorageController {
-  public function create(array $values) {
+  public function create(array $values = array()) {
     $account = \Drupal::currentUser();
     $values += array(
       'created' => REQUEST_TIME,

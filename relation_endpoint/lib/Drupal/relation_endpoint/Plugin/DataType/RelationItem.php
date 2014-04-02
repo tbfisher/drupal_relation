@@ -9,7 +9,7 @@ namespace Drupal\Core\Entity\Plugin\DataType;
 
 use Drupal\Core\TypedData\Annotation\DataType;
 use Drupal\Core\Annotation\Translation;
-use Drupal\Core\Entity\Field\FieldItemBase;
+use Drupal\Core\Field\FieldItemBase;
 
 /**
  * Defines the 'relation' entity field item.

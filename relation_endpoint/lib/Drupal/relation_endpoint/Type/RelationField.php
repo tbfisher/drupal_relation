@@ -6,9 +6,9 @@
  */
 namespace Drupal\relation_endpoint\Type;
 
-use Drupal\field\Plugin\Type\FieldType\ConfigFieldItemList;
+use Drupal\Core\Field\FieldItemList;
 
-class RelationField extends ConfigFieldItemList {
+class RelationField extends FieldItemList {
   public function preSave() {
     // We need r_index here because EntityFieldQuery can't query on deltas.
     if (isset($this->list)) {

@@ -1,7 +1,5 @@
 <?php
 
-require_once dirname(__FILE__) . '/relation.rules.inc';
-
 /**
  * Use the following suffix on field names.
  *
@@ -24,6 +22,7 @@ const RELATION_FIELD_NAME = 'endpoints';
 
 use Drupal\Core\Language\Language;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
  * Implements hook_entity_property_info().
@@ -200,18 +199,18 @@ function relation_get_relation_types_options() {
  *   An array of relation type labels, keyed by the relation type name.
  */
 function relation_type_get_names() {
-  $cid = 'relation_type:names:' . language(Language::TYPE_INTERFACE)->id;
-  if ($cache = cache()->get($cid)) {
+  $cid = 'relation_type:names:' . \Drupal::languageManager()->getCurrentLanguage()->id;
+  if ($cache = \Drupal::cache()->get($cid)) {
     return $cache->data;
   }
-  $config_names = config_get_storage_names_with_prefix('relation.type.');
+  $config_names = \Drupal::configFactory()->listAll('relation.type.');
 
   $names = array();
   foreach ($config_names as $config_name) {
     $config = \Drupal::config($config_name);
     $names[$config->get('relation_type')] = $config->get('label');
   }
-  cache()->set($cid, $names, CacheBackendInterface::CACHE_PERMANENT, array(
+  \Drupal::cache()->set($cid, $names, CacheBackendInterface::CACHE_PERMANENT, array(
     'relation_type' => array_keys($names),
     'relation_types' => TRUE,
   ));
@@ -333,7 +332,7 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
 function relation_clear_related_entities_cache($endpoints) {
   drupal_static_reset('relation_get_related_entity');
   foreach ($endpoints as $endpoint) {
-    cache()->delete('relation:' . $endpoint['entity_type'] . ':' . $endpoint['entity_id'], 'cache', TRUE);
+    \Drupal::cache()->delete('relation:' . $endpoint->entity_type . ':' . $endpoint->entity_id, 'cache', TRUE);
   }
 }
 
@@ -357,7 +356,7 @@ function relation_clear_related_entities_cache($endpoints) {
  */
 function relation_insert($relation_type, $endpoints) {
   $relation = entity_create('relation', array('relation_type' => $relation_type));
-  $relation->set('endpoints', $endpoints);
+  $relation->endpoints = $endpoints;
   $relation->save();
   return $relation;
 }
@@ -368,7 +367,12 @@ function relation_insert($relation_type, $endpoints) {
  * @see entity_uri()
  */
 function relation_uri(Drupal\relation\RelationInterface $relation) {
-  return array('path' => 'relation/' . $relation->rid);
+  return array(
+    'route_name' => 'relation_ui.view',
+    'route_parameters' => array(
+      'relation' => $relation->id(),
+    ),
+  );
 }
 
 /**
@@ -377,7 +381,12 @@ function relation_uri(Drupal\relation\RelationInterface $relation) {
  * @see entity_uri()
  */
 function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type) {
-  return array('path' => 'admin/structure/relation/manage/' . $relation_type->relation_type);
+  return array(
+    'route_name' => 'relation_ui.type_edit',
+    'route_parameters' => array(
+      'relation' => $relation_type->id(),
+    ),
+  );
 }
 
 /**
@@ -466,7 +475,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   if (isset($items[$cache_key])) {
     $entities = $items[$cache_key];
   }
-  elseif ($cached = cache()->get("relation:$cache_key")) {
+  elseif ($cached = \Drupal::cache()->get("relation:$cache_key")) {
     $entities = $cached->data;
     $items[$cache_key] = $entities;
   }
@@ -492,7 +501,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
     else {
       $entities = FALSE;
     }
-    cache()->set("relation:$cache_key", $entities);
+    \Drupal::cache()->set("relation:$cache_key", $entities);
 
     $items[$cache_key] = $entities;
   }
@@ -554,18 +563,17 @@ function relation_get_available_relation_types($entity_type, $bundle, $endpoint 
  * Implements hook_entity_delete().
  */
 function relation_entity_delete(Drupal\Core\Entity\EntityInterface $entity) {
-  if ($entity->entityType() == 'relation') {
-    $endpoints = field_get_items($entity, 'endpoints');
-    relation_clear_related_entities_cache($endpoints);
+  if ($entity->getEntityTypeId() == 'relation' && $entity->endpoints) {
+    relation_clear_related_entities_cache($entity->endpoints);
   }
 
   // Delete relations to this entity.
-  $relation_ids = relation_query($entity->entityType(), $entity->id())->execute();
+  $relation_ids = relation_query($entity->getEntityTypeId(), $entity->id())->execute();
   $relations_to_delete = array(); // ids of relations to delete
   foreach (entity_load_multiple('relation', $relation_ids) as $relation) {
-    // Remove any endpoints pointing to entity
+    // Remove any endpoints pointing to entity`
     foreach ($relation->endpoints as $key => $endpoint) {
-      if ($endpoint->entity_id == $entity->id() && $endpoint->entity_type == $entity->entityType()) {
+      if ($endpoint->entity_id == $entity->id() && $endpoint->entity_type == $entity->getEntityTypeId()) {
         unset($relation->endpoints[$key]);
       }
     }
@@ -611,17 +619,17 @@ function relation_add_endpoint_field($bundle) {
   $instance = \Drupal\field\Field::fieldInfo()->getInstance('relation', $bundle, RELATION_FIELD_NAME);
 
   if (empty($field)) {
-    $field = entity_create('field_entity', array(
+    $field = entity_create('field_config', array(
       'entity_type' => 'relation',
       'name' => RELATION_FIELD_NAME,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'cardinality' => FieldDefinitionInterface::CARDINALITY_UNLIMITED,
       'type' => 'relation_endpoint',
     ));
     $field->save();
   }
 
   if (empty($instance)) {
-    $instance = entity_create('field_instance', array(
+    $instance = entity_create('field_instance_config', array(
       'field_name' => RELATION_FIELD_NAME,
       'entity_type' => 'relation',
       'bundle' => $bundle,
