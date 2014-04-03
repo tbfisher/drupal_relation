@@ -23,6 +23,7 @@ const RELATION_FIELD_NAME = 'endpoints';
 use Drupal\Core\Language\Language;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Render\Element;
 
 /**
  * Implements hook_entity_property_info().
@@ -257,7 +258,7 @@ function relation_load($rid) {
  *   An array containing endpoints. Each endpoint is an array with keys
  *   'entity_type' and 'entity_id'. The keys of each endpoint correspond to
  *   'r_index' if $enforce_direction is TRUE.
- * @param $relation_type
+ * @param string $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
  * @param bool $enforce_direction
  *   (Optional) Whether to enforce direction as specified in $endpoints.
@@ -289,6 +290,7 @@ function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_di
  * Adds conditions to query to ensure different r_index for each endpoint.
  */
 function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
+  $arity = 0;
   $endpoints_table_name = &drupal_static(__FUNCTION__ . '.endpoints_table_name', NULL);
 
   if (!isset($endpoints_table_name)) {
@@ -302,7 +304,9 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
   }
 
   // Get arity of the query
-  foreach ($query->conditions() as $condition) {
+  $conditions = $query->conditions();
+  foreach (Element::children($conditions) as $c) {
+    $condition = $conditions[$c];
     if ($condition['field'] == 'relation.arity') {
       $arity = $condition['value'];
       break;
@@ -314,8 +318,8 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
       // @see http://drupal.org/node/1859084, http://drupal.org/node/1760026
       // For now each endpoint condition adds 2 joins to the query. Add
       // conditions between even numbers.
-      $left_suffix = !$i ? '' : '_' . $i*2;
-      $right_suffix = !$k ? '' : '_' . $k*2;
+      $left_suffix = !$i ? '' : '_' . ($i + 1);
+      $right_suffix = !$k  ? '' : '_' . ($k + 1);
       $column_left = $endpoints_table_name . $left_suffix . '.endpoints_r_index';
       $column_right = $endpoints_table_name . $right_suffix . '.endpoints_r_index';
       $query->where("$column_left != $column_right");

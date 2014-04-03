@@ -13,7 +13,7 @@ function relation_ui_entity_type_alter(array &$entity_types) {
   $entity_types['relation']->setListClass('Drupal\relation_ui\RelationListController');
   $entity_types['relation']->setFormClass('default', 'Drupal\relation_ui\RelationFormController');
   $entity_types['relation']->setFormClass('edit', 'Drupal\relation_ui\RelationFormController');
-  $entity_types['relation']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationFormController');
+  $entity_types['relation']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationDeleteConfirm');
   $entity_types['relation']->setLinkTemplate('admin-form', 'relation_ui.type_edit');
   $entity_types['relation']->setLinkTemplate('edit-form', 'relation_ui.edit');
   $entity_types['relation']->setLinkTemplate('delete-form', 'relation_ui.delete_confirm');

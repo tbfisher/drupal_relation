@@ -17,7 +17,7 @@ use Drupal\Core\Language\Language;
  */
 class RelationAPITest extends RelationTestBase {
 
-  //public static $modules = array('node');
+  public static $modules = array('node');
 
   public static function getInfo() {
     return array(

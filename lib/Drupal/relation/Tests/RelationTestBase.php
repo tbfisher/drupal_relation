@@ -152,14 +152,17 @@ abstract class RelationTestBase extends WebTestBase {
    */
   function createRelationDirectional() {
     // Article 1 --> Page 3
-    $this->endpoints[1]['entity_id'] = $this->node3->id();
-    $this->endpoints[1]['r_index'] = 1;
+    $this->endpoints_directional = $this->endpoints;
+    $this->endpoints_directional[1]['entity_id'] = $this->node3->id();
+    $this->endpoints_directional[1]['r_index'] = 1;
     $this->relation_type_directional = $this->relation_types['directional']['relation_type'];
-    $this->rid_directional = $this->saveRelation($this->relation_type_directional, $this->endpoints);
+    $this->rid_directional = $this->saveRelation($this->relation_type_directional, $this->endpoints_directional);
+
     // Page 3 --> Page 4
-    $this->endpoints[0]['entity_id'] = $this->node3->id();
-    $this->endpoints[1]['entity_id'] = $this->node4->id();
-    $this->saveRelation($this->relation_type_directional, $this->endpoints);
+    $this->endpoints_directional2 = $this->endpoints;
+    $this->endpoints_directional2[0]['entity_id'] = $this->node3->id();
+    $this->endpoints_directional2[1]['entity_id'] = $this->node4->id();
+    $this->saveRelation($this->relation_type_directional, $this->endpoints_directional2);
 
     // Page 3 --> Page 4
     $this->endpoints_entitysame[1]['r_index'] = 1;
