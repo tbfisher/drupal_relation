@@ -42,6 +42,7 @@ use Drupal\Core\Field\FieldDefinition;
  *     "bundle" = "relation_type"
  *   },
  *   bundle_entity_type = "relation_type",
+ *   admin_permission = "administer relations",
  *   permission_granularity = "bundle"
  * )
  */

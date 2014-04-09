@@ -137,19 +137,24 @@ function relation_permission() {
     ),
     'access relations' => array(
       'title' => t('View Relations'),
-      'description' => t('Grant access to view the endpoints of Relations.'),
+      'description' => t('View Relations of any Relation Type.'),
+      'restrict access' => TRUE,
     ),
     'create relations' => array(
-      'title' => t('Create Relations'),
+      'title' => t('Create Relations of any Relation Type'),
+      'restrict access' => TRUE,
     ),
     'edit relations' => array(
-      'title' => t('Edit Relations'),
+      'title' => t('Edit Relations of any Relation Type'),
+      'restrict access' => TRUE,
     ),
     'delete relations' => array(
-      'title' => t('Delete Relations'),
+      'title' => t('Delete Relations of any Relation Type'),
+      'restrict access' => TRUE,
     ),
     'administer relations' => array(
       'title' => t('Administer all Relations'),
+      'restrict access' => TRUE,
     ),
   );
 }
