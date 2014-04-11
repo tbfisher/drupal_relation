@@ -155,7 +155,7 @@ class RelationTypeFormController extends EntityFormController {
       '#title'         => t('Available source bundles'),
       '#options'       => $options_bundles,
       '#size'          => max(12, $counter),
-      '#default_value' => $relation_type->source_bundles,
+      '#default_value' => $relation_type->getBundles('source'),
       '#multiple'      => TRUE,
       '#required'      => TRUE,
       '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple. Note that selecting all bundles also include bundles not yet created for that entity type.',
@@ -165,7 +165,7 @@ class RelationTypeFormController extends EntityFormController {
       '#title'         => t('Available target bundles'),
       '#options'       => $options_bundles,
       '#size'          => max(12, $counter),
-      '#default_value' => $relation_type->target_bundles,
+      '#default_value' => $relation_type->getBundles('target'),
       '#multiple'      => TRUE,
       '#description'   => 'Bundles that are not selected will not be available as targets for directional relations. Ctrl+click to select multiple.',
       '#states' => array(

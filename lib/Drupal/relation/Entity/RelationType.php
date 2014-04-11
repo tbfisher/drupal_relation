@@ -184,4 +184,33 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
       \Drupal::cache()->invalidateTags(array('relation_type' => $this->id()));
     }
   }
+
+  /**
+   * Get valid entity/bundle pairs that can be associated with this type
+   * of Relation.
+   *
+   * @param NULL|string $direction
+   *   Bundle direction. Leave as NULL to get all.
+   *
+   * @return array
+   *   An array containing bundles as key/value pairs, keyed by entity type.
+   */
+  public function getBundles($direction = NULL) {
+    $pairs = array();
+
+    if ((!$direction || $direction == 'source') && is_array($this->source_bundles)) {
+      $pairs += $this->source_bundles;
+    }
+
+    if ((!$direction || $direction == 'target') && is_array($this->target_bundles)) {
+      $pairs += $this->target_bundles;
+    }
+
+    $bundles = array();
+    foreach ($pairs as $pair) {
+      list($entity_type_id, $bundle) = explode(':', $pair, 2);
+      $bundles[$entity_type_id][$bundle] = $bundle;
+    }
+    return $bundles;
+  }
 }
