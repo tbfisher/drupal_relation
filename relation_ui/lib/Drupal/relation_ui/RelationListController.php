@@ -49,6 +49,7 @@ class RelationListController extends EntityListController {
     foreach ($entity->endpoints as $endpoint) {
       $entities[$endpoint->entity_type][] = $endpoint->entity_id;
     }
+    $relation_entities = array();
     foreach ($entities as $type => $ids) {
       foreach (entity_load_multiple($type, $ids) as $endpoint_entity) {
         $endpoint_url = $endpoint_entity->urlInfo();
