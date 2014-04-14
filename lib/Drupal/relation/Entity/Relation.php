@@ -7,6 +7,7 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
@@ -116,7 +117,7 @@ class Relation extends ContentEntityBase implements RelationInterface {
   /**
    * Overrides Drupal\Core\Entity\DatabaseStorageController::preSave().
    */
-  public function preSave(EntityStorageControllerInterface $storage_controller) {
+  public function preSave(EntityStorageInterface $storage) {
     $this->changed = REQUEST_TIME;
     $this->arity = count($this->endpoints);
   }

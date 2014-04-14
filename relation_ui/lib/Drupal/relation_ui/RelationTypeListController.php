@@ -8,13 +8,13 @@
 namespace Drupal\relation_ui;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Config\Entity\ConfigEntityListController;
+use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityControllerInterface;
 
 /**
  * Provides a listing of relation types.
  */
-class RelationTypeListController extends ConfigEntityListController implements EntityControllerInterface {
+class RelationTypeListController extends ConfigEntityListBuilder implements EntityControllerInterface {
   /**
    * {@inheritdoc}
    */

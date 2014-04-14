@@ -7,6 +7,7 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Annotation\Translation;
@@ -45,8 +46,8 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   label = @Translation("Relation type"),
  *   module = "relation",
  *   controllers = {
- *     "storage" = "Drupal\Core\Config\Entity\ConfigStorageController",
- *     "render" = "Drupal\Core\Entity\EntityRenderController",
+ *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
+ *     "render" = "Drupal\Core\Entity\EntityViewBuilder",
  *   },
  *   admin_permission = "administer relation types",
  *   config_prefix = "type",
@@ -146,7 +147,7 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageControllerInterface $storage_controller) {
+  public function preSave(EntityStorageInterface $storage) {
     if (!isset($this->relation_type)) {
       throw new EntityMalformedException('Bundle property must be set on relation_type entities.');
     }
@@ -165,8 +166,8 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageControllerInterface $storage_controller, $update = TRUE) {
-    parent::postSave($storage_controller, $update);
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
 
     // Ensure endpoints field is attached to relation type.
 

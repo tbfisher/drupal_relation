@@ -43,14 +43,15 @@ class RelationEndpointFormatter extends FormatterBase {
       $entity_info = \Drupal::entityManager()->getDefinition($item->entity_type);
       if ($entity_info && $entity = entity_load($item->entity_type, $item->entity_id)) {
         $label = $entity->label();
-        $url = $entity->urlInfo();
-        $label = (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t);
-        $label = \Drupal::l($label, $url['route_name'], $url['route_parameters'], $url['options']);
+        $label_cell['data'] = array(
+          '#type' => 'link',
+          '#title' => (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t),
+        ) + $entity->urlInfo()->toRenderArray();
       } else {
-        $label = t('Deleted');
+        $label_cell = t('Deleted');
       }
 
-      $rows[] = array($item->entity_type, $item->entity_id, $label);
+      $rows[] = array($item->entity_type, $item->entity_id, $label_cell);
     }
 
     return array(

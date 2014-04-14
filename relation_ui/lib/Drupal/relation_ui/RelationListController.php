@@ -8,14 +8,14 @@
 namespace Drupal\relation_ui;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityListController;
+use Drupal\Core\Entity\EntityListBuilder;
 
 /**
  * Provides a listing of relation types.
  *
  * @todo: add filters
  */
-class RelationListController extends EntityListController {
+class RelationListController extends EntityListBuilder {
 
   /**
    * The url generator service.
@@ -30,7 +30,7 @@ class RelationListController extends EntityListController {
   public function buildHeader() {
     $header['label'] = t('Title');
     $header['relation_type'] = t('Type');
-    $header['relation'] = t('Relation');
+    $header['endpoints'] = t('Endpoints');
     return $header + parent::buildHeader();
   }
 
@@ -38,26 +38,50 @@ class RelationListController extends EntityListController {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $url = $entity->urlInfo();
-    $row['label'] = \Drupal::l($entity->label(), $url['route_name'], $url['route_parameters'], $url['options']);
+    $row['label']['data'] = array(
+      '#type' => 'link',
+      '#title' => $this->getLabel($entity),
+    ) + $entity->urlInfo()->toRenderArray();
 
     $bundle = entity_load($entity->getEntityType()->getBundleEntityType(), $entity->bundle());
-    $bundle_url = $bundle->urlInfo();
-    $row['relation_type'] = \Drupal::l($bundle->label(), $bundle_url['route_name'], $bundle_url['route_parameters'], $bundle_url['options']);
+    $row['relation_type']['data'] = array(
+        '#type' => 'link',
+      '#title' => $this->getLabel($bundle),
+    ) + $bundle->urlInfo()->toRenderArray();
 
     // Sort entities by their type
     foreach ($entity->endpoints as $endpoint) {
       $entities[$endpoint->entity_type][] = $endpoint->entity_id;
     }
+
+
     $relation_entities = array();
+    $entity_count_total = 0;
+    $entity_count = 0;
     foreach ($entities as $type => $ids) {
+      $entity_count_total += count(array_unique($ids));
       foreach (entity_load_multiple($type, $ids) as $endpoint_entity) {
-        $endpoint_url = $endpoint_entity->urlInfo();
-        $relation_entities[] = \Drupal::l($endpoint_entity->label(), $endpoint_url['route_name'], $endpoint_url['route_parameters'], $endpoint_url['options']);
+        $entity_count++;
+        $relation_entities[] = array(
+          '#type' => 'link',
+          '#title' => $this->getLabel($endpoint_entity),
+        ) + $endpoint_entity->urlInfo()->toRenderArray();
       }
     }
-    $endpoint_separator = $bundle->directional ? " → " : " ↔ ";
-    $row['relation'] = implode($endpoint_separator, $relation_entities);
+
+    if ($entity_count_total != $entity_count) {
+      $relation_entities[] =\Drupal::translation()->formatPlural(
+        $entity_count_total - $entity_count,
+        'Missing @count entity',
+        'Missing @count entities'
+      );
+    }
+
+    $row['endpoints']['data']['list'] = array(
+      '#theme' => 'item_list',
+      '#items' => $relation_entities,
+    );
+
     return $row + parent::buildRow($entity);
   }
 

@@ -10,7 +10,7 @@
  */
 function relation_ui_entity_type_alter(array &$entity_types) {
   $entity_types['relation']->setViewBuilderClass('Drupal\Core\Entity\EntityViewBuilder');
-  $entity_types['relation']->setListClass('Drupal\relation_ui\RelationListController');
+  $entity_types['relation']->setListBuilderClass('Drupal\relation_ui\RelationListController');
   $entity_types['relation']->setFormClass('default', 'Drupal\relation_ui\RelationFormController');
   $entity_types['relation']->setFormClass('edit', 'Drupal\relation_ui\RelationFormController');
   $entity_types['relation']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationDeleteConfirm');
@@ -18,26 +18,13 @@ function relation_ui_entity_type_alter(array &$entity_types) {
   $entity_types['relation']->setLinkTemplate('edit-form', 'relation_ui.edit');
   $entity_types['relation']->setLinkTemplate('delete-form', 'relation_ui.delete_confirm');
 
-  $entity_types['relation_type']->setListClass('Drupal\relation_ui\RelationTypeListController');
+  $entity_types['relation_type']->setListBuilderClass('Drupal\relation_ui\RelationTypeListController');
   $entity_types['relation_type']->setFormClass('add', 'Drupal\relation_ui\RelationTypeFormController');
   $entity_types['relation_type']->setFormClass('edit', 'Drupal\relation_ui\RelationTypeFormController');
   $entity_types['relation_type']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm');
   $entity_types['relation_type']->setLinkTemplate('add-form', 'relation_ui.type_edit');
   $entity_types['relation_type']->setLinkTemplate('edit-form', 'relation_ui.type_edit');
   $entity_types['relation_type']->setLinkTemplate('delete-form', 'relation_ui.type_delete');
-}
-
-/**
- * Implements hook_menu_link_defaults().
- */
-function relation_ui_menu_link_defaults() {
-  $links['admin/structure/relation'] = array(
-    'link_title' => 'Relation types',
-    'parent' => 'system.admin.structure',
-    'description' => 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.',
-    'route_name' => 'relation_ui.type_list',
-  );
-  return $links;
 }
 
 /**

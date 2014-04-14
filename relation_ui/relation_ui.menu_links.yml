@@ -1,0 +1,5 @@
+relation_ui.type_list:
+  title: 'Relation types'
+  parent: system.admin_structure
+  description: 'Manage relation types, including relation properties (directionality, transitivity etc), available bundles, and fields.'
+  route_name: relation_ui.type_list

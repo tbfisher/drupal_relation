@@ -7,7 +7,7 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\FieldableDatabaseStorageController;
+use Drupal\Core\Entity\ContentEntityDatabaseStorage;
 
 /**
  * Relation controller class
@@ -17,7 +17,7 @@ use Drupal\Core\Entity\FieldableDatabaseStorageController;
  * nodes.
  */
 
-class RelationStorageController extends FieldableDatabaseStorageController {
+class RelationStorageController extends ContentEntityDatabaseStorage {
   public function create(array $values = array()) {
     $account = \Drupal::currentUser();
     $values += array(

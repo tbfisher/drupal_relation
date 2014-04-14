@@ -7,12 +7,12 @@
 
 namespace Drupal\relation_ui;
 
-use Drupal\Core\Entity\EntityFormController;
+use Drupal\Core\Entity\ContentEntityFormController;
 
 /**
  * Form controller for relation edit form.
  */
-class RelationFormController extends EntityFormController {
+class RelationFormController extends ContentEntityFormController {
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::actions().
    */
