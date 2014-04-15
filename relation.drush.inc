@@ -95,7 +95,7 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
       for ($r_index = 0; $r_index < $arity; $r_index++) {
         $direction = ($relation_type->directional && $r_index > 0) ? 'target' : 'source';
         $entity_type = array_rand($available_types[$direction]);
-        $entity_info = entity_get_info($entity_type);
+        $entity_info = \Drupal::entityManager()->getDefinitions($entity_type);
         $bundles = entity_get_bundles($entity_type);
         $query = Drupal::entityQuery($entity_type);
 
@@ -117,7 +117,13 @@ function relation_generate_relations($number_relations = 10, $relation_types = a
       }
       $relation = relation_insert($relation_type->id(), $endpoints);
       $new_rids[] = $relation->id();
-      relation_generate_message(t('Generated @number_relations @type relations.', array('@number_relations' => $number_relations, '@type' => $relation_type->id())), 'ok');
+      relation_generate_message(
+        \Drupal::translation()->formatPlural(
+          $number_relations,
+          'Generated @count @relation_type relation.',
+          'Generated @count @relation_type relations.',
+          array('@relation_type' => $relation_type->id())
+        ), 'ok');
     }
   }
   return $new_rids;
