@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\Form\RelationTypeDeleteConfirm.
+ * Contains \Drupal\relation\Form\RelationTypeDeleteConfirm.
  */
 
-namespace Drupal\relation_ui\Form;
+namespace Drupal\relation\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Database\Connection;
@@ -54,7 +54,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
    */
   public function getCancelRoute() {
     return array(
-      'route_name' => 'relation_ui.list',
+      'route_name' => 'relation.list',
     );
   }
 
@@ -88,7 +88,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
     $t_args = array('%name' => $this->entity->label());
     drupal_set_message(t('The relation type %name has been deleted.', $t_args));
     watchdog('relation', 'Deleted relation type %name.', $t_args, WATCHDOG_NOTICE);
-    $form_state['redirect_route']['route_name'] = 'relation_ui.type_list';
+    $form_state['redirect_route']['route_name'] = 'relation.type_list';
   }
 
 }

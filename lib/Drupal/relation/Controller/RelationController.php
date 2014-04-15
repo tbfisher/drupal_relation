@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\Controller\RelationController.
+ * Contains \Drupal\relation\Controller\RelationController.
  */
 
-namespace Drupal\relation_ui\Controller;
+namespace Drupal\relation\Controller;
 
 use Drupal\Component\Utility\String;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\relation\RelationInterface;
 
 /**
- * Returns responses for Relation UI routes.
+ * Returns responses for Relation routes.
  */
-class RelationUIController extends ControllerBase {
+class RelationController extends ControllerBase {
   /**
    * Displays a relation.
    *
@@ -29,7 +29,7 @@ class RelationUIController extends ControllerBase {
   }
 
   /**
-   * The _title_callback for the relation_ui.view route.
+   * The _title_callback for the relation.view route.
    *
    * @param RelationInterface $relation
    *   A relation entity.

@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\RelationTypeListController.
+ * Contains \Drupal\relation\RelationTypeListController.
  */
 
-namespace Drupal\relation_ui;
+namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
@@ -40,7 +40,7 @@ class RelationTypeListController extends ConfigEntityListBuilder implements Enti
   public function render() {
     $build = parent::render();
     $build['#empty'] = t('No relation types exist. <a href="@link">Add relation type</a>.', array(
-      '@link' => \Drupal::url('relation_ui.type_add'),
+      '@link' => \Drupal::url('relation.type_add'),
     ));
     return $build;
   }

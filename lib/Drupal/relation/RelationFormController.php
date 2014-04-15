@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\relation_ui\RelationFormController.
+ * Definition of Drupal\relation\RelationFormController.
  */
 
-namespace Drupal\relation_ui;
+namespace Drupal\relation;
 
 use Drupal\Core\Entity\ContentEntityFormController;
 

@@ -3,5 +3,6 @@ type: module
 description: 'Describes relationships between entities.'
 package: Relation
 core: 8.x
+configure: relation.type_list
 dependencies:
   - relation_endpoint

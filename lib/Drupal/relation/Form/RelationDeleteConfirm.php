@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\Form\RelationDeleteConfirm.
+ * Contains \Drupal\relation\Form\RelationDeleteConfirm.
  */
 
-namespace Drupal\relation_ui\Form;
+namespace Drupal\relation\Form;
 
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Database\Connection;
@@ -37,7 +37,7 @@ class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
    */
   public function getCancelRoute() {
     return array(
-      'route_name' => 'relation_ui.view',
+      'route_name' => 'relation.view',
       'route_parameters' => array('relation' => $this->entity->id()),
     );
   }

@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\relation_ui\RelationTypeFormController.
+ * Definition of Drupal\relation\RelationTypeFormController.
  */
 
-namespace Drupal\relation_ui;
+namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityFormController;
@@ -31,7 +31,7 @@ class RelationTypeFormController extends EntityFormController {
     }
 
     $form['#attached']['css'] = array(
-      drupal_get_path('module', 'relation_ui') . '/relation_ui.css',
+      drupal_get_path('module', 'relation') . '/relation.css',
     );
     $form['labels'] = array(
       '#type' => 'container',

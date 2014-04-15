@@ -1,0 +1,26 @@
+relation.type_edit:
+  title: 'Edit'
+  route_name: relation.type_edit
+  base_route: relation.type_edit
+
+relation.view:
+  title: 'View'
+  route_name: relation.view
+  base_route: relation.view
+
+relation.edit:
+  title: 'Edit'
+  route_name: relation.edit
+  base_route: relation.view
+  weight: 10
+
+relation.delete_confirm:
+  title: 'Delete'
+  route_name: relation.delete_confirm
+  base_route: relation.view
+  weight: 20
+
+relation.list:
+  title: Relations
+  route_name: relation.list
+  base_route: node.content_overview

@@ -15,7 +15,7 @@ use Drupal\simpletest\WebTestBase;
 abstract class RelationTestBase extends WebTestBase {
   public static $modules = array('relation'
   // Loading all dependencies since d.o testbot is fussy.
-    ,'relation_endpoint', 'field', 'field_ui', 'relation_ui', 'block', 'relation_dummy_field'
+    ,'relation_endpoint', 'field', 'field_ui', 'block', 'relation_dummy_field'
   );
 
   protected $sleep = FALSE;

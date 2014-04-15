@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Definition of Drupal\relation_ui\Tests\RelationUITest.
+ * Definition of Drupal\relation\Tests\RelationUITest.
  */
 
-namespace Drupal\relation_ui\Tests;
+namespace Drupal\relation\Tests;
 
 use Drupal\relation\Tests\RelationTestBase;
 
@@ -16,7 +16,7 @@ use Drupal\relation\Tests\RelationTestBase;
  */
 class RelationUITest extends RelationTestBase {
 
-  public static $modules = array('node', 'relation_ui', 'field_ui');
+  public static $modules = array('node', 'field_ui');
 
   public static function getInfo() {
     return array(

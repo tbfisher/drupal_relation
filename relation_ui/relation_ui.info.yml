@@ -1,8 +1,0 @@
-name: 'Relation UI'
-type: module
-description: 'Administrative interface to relation. Without this module, you cannot create or edit your relation types.'
-package: Relation
-core: 8.x
-configure: relatio_ui.type_list
-dependencies:
-  - relation

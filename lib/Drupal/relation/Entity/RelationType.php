@@ -17,8 +17,6 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
 /**
  * Defines relation type entity
  *
- * See relation_ui_entity_info_alter() for any controllers introducing UI.
- *
  * Properties
  *
  *  - relation_type (required): Relation type machine name (string).
@@ -48,6 +46,12 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   controllers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "render" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "list_builder" = "Drupal\relation\RelationTypeListController",
+ *     "form" = {
+ *       "add" = "Drupal\relation\RelationTypeFormController",
+ *       "edit" = "Drupal\relation\RelationTypeFormController",
+ *       "delete" = "Drupal\relation\Form\RelationTypeDeleteConfirm"
+ *     },
  *   },
  *   admin_permission = "administer relation types",
  *   config_prefix = "type",
@@ -55,6 +59,11 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   entity_keys = {
  *     "id" = "relation_type",
  *     "label" = "label"
+ *   },
+ *   links = {
+ *     "add-form" = "relation.type_edit",
+ *     "edit-form" = "relation.type_edit",
+ *     "delete-form" = "relation.type_delete",
  *   }
  * )
  */

@@ -1,34 +1,9 @@
 <?php
 
 /**
- * @file
- * Provide administration interface for relation type bundles.
- */
-
-/**
- * Implements hook_entity_type_alter().
- */
-function relation_ui_entity_type_alter(array &$entity_types) {
-  $entity_types['relation']->setViewBuilderClass('Drupal\Core\Entity\EntityViewBuilder');
-  $entity_types['relation']->setListBuilderClass('Drupal\relation_ui\RelationListController');
-  $entity_types['relation']->setFormClass('default', 'Drupal\relation_ui\RelationFormController');
-  $entity_types['relation']->setFormClass('edit', 'Drupal\relation_ui\RelationFormController');
-  $entity_types['relation']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationDeleteConfirm');
-  $entity_types['relation']->setLinkTemplate('admin-form', 'relation_ui.type_edit');
-  $entity_types['relation']->setLinkTemplate('edit-form', 'relation_ui.edit');
-  $entity_types['relation']->setLinkTemplate('delete-form', 'relation_ui.delete_confirm');
-
-  $entity_types['relation_type']->setListBuilderClass('Drupal\relation_ui\RelationTypeListController');
-  $entity_types['relation_type']->setFormClass('add', 'Drupal\relation_ui\RelationTypeFormController');
-  $entity_types['relation_type']->setFormClass('edit', 'Drupal\relation_ui\RelationTypeFormController');
-  $entity_types['relation_type']->setFormClass('delete', 'Drupal\relation_ui\Form\RelationTypeDeleteConfirm');
-  $entity_types['relation_type']->setLinkTemplate('add-form', 'relation_ui.type_edit');
-  $entity_types['relation_type']->setLinkTemplate('edit-form', 'relation_ui.type_edit');
-  $entity_types['relation_type']->setLinkTemplate('delete-form', 'relation_ui.type_delete');
-}
-
-/**
- * Generate relations
+ * Generate relations.
+ *
+ * @todo: move these functions to devel submodule.
  */
 function relation_ui_generate_form($form, &$form_state) {
   $relation_types = entity_load_multiple('relation_type');
@@ -110,35 +85,5 @@ function relation_ui_build_filter_query($query) {
           break;
       }
     }
-  }
-}
-
-/**
- * Implements hook_theme().
- */
-function relation_ui_theme() {
-  $theme = array(
-    'relation' => array(
-      'render element' => 'elements',
-      'template' => 'relation',
-    ),
-    'relation_ui_admin_content' => array(
-      'variables' => array('relations' => NULL)
-    ),
-  );
-  return $theme;
-}
-
-/**
- * Prepares variables for relation templates.
- *
- * Default template: relation.html.twig.
- */
-function template_preprocess_relation(&$variables) {
-  $variables['relation'] = $variables['elements']['#relation'];
-
-  $variables += array('content' => array());
-  foreach (element_children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
   }
 }

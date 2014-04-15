@@ -18,8 +18,6 @@ use Drupal\Core\Field\FieldDefinition;
 /**
  * Defines relation entity
  *
- * See relation_ui_entity_info_alter() for any controllers introducing UI.
- *
  * @EntityType(
  *   id = "relation",
  *   label = @Translation("Relation"),
@@ -28,6 +26,13 @@ use Drupal\Core\Field\FieldDefinition;
  *   controllers = {
  *     "access" = "Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "list_builder" = "Drupal\relation\RelationListController",
+ *     "form" = {
+ *       "default" = "Drupal\relation\RelationFormController",
+ *       "edit" = "Drupal\relation\RelationFormController",
+ *       "delete" = "Drupal\relation\Form\RelationDeleteConfirm"
+ *     },
  *   },
  *   base_table = "relation",
  *   revision_table = "relation_revision",
@@ -41,6 +46,11 @@ use Drupal\Core\Field\FieldDefinition;
  *   },
  *   bundle_keys = {
  *     "bundle" = "relation_type"
+ *   },
+ *   links = {
+ *     "admin-form" = "relation.type_edit",
+ *     "edit-form" = "relation.edit",
+ *     "delete-form" = "relation.delete_confirm",
  *   },
  *   bundle_entity_type = "relation_type",
  *   admin_permission = "administer relations",

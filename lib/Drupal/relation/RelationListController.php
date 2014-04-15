@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\relation_ui\RelationListController.
+ * Contains \Drupal\relation\RelationListController.
  */
 
-namespace Drupal\relation_ui;
+namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
