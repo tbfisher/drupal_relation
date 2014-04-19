@@ -557,6 +557,7 @@ function relation_add_endpoint_field($bundle) {
       'name' => RELATION_FIELD_NAME,
       'cardinality' => FieldDefinitionInterface::CARDINALITY_UNLIMITED,
       'type' => 'relation_endpoint',
+      'locked' => TRUE,
     ));
     $field->save();
   }

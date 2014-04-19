@@ -102,26 +102,3 @@ function relation_endpoint_field_validate(EntityInterface $entity, $field, $inst
     }
   }
 }
-
-/**
- * Implements hook_field_presave().
- */
-function relation_endpoint_field_presave(EntityInterface $entity, $field, $instance, $langcode, &$items) {
-  // We need r_index here because EntityFieldQuery can't query on deltas.
-  foreach ($items as $delta => &$item) {
-    $item['r_index'] = $delta;
-  }
-}
-
-/**
- * Implements hook_form_field_ui_field_overview_form_alter().
- */
-function relation_endpoint_form_field_ui_field_overview_form_alter(&$form, $form_state) {
-  // Deleting endpoints would make the module useless.
-  if ($form['#entity_type'] == 'relation') {
-    $form['fields']['endpoints']['delete'] = array(
-      '#type' => 'markup',
-      '#markup' => '&nbsp;',
-    );
-  }
-}
