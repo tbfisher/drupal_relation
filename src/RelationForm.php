@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationFormController.
+ * Definition of \Drupal\relation\RelationForm.
  */
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\ContentEntityFormController;
+use Drupal\Core\Entity\ContentEntityForm;
 
 /**
- * Form controller for relation edit form.
+ * Form object for relation edit form.
  */
-class RelationFormController extends ContentEntityFormController {
+class RelationForm extends ContentEntityForm {
   /**
-   * Overrides Drupal\Core\Entity\EntityFormController::actions().
+   * Overrides Drupal\Core\Entity\EntityForm::actions().
    */
   protected function actions(array $form, array &$form_state) {
     $relation = $form_state['build_info']['callback_object']->entity;

@@ -29,8 +29,8 @@ use Drupal\Core\Field\FieldDefinition;
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\relation\RelationListController",
  *     "form" = {
- *       "default" = "Drupal\relation\RelationFormController",
- *       "edit" = "Drupal\relation\RelationFormController",
+ *       "default" = "Drupal\relation\RelationForm",
+ *       "edit" = "Drupal\relation\RelationForm",
  *       "delete" = "Drupal\relation\Form\RelationDeleteConfirm"
  *     },
  *   },

@@ -2,22 +2,22 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationTypeFormController.
+ * Definition of \Drupal\relation\RelationTypeForm.
  */
 
 namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityFormController;
+use Drupal\Core\Entity\EntityForm;
 use Drupal\Component\Utility\String;
 
 /**
- * Form controller for relation edit form.
+ * Form object for relation edit form.
  */
-class RelationTypeFormController extends EntityFormController {
+class RelationTypeForm extends EntityForm {
 
   /**
-   * Overrides Drupal\Core\Entity\EntityFormController::form().
+   * Overrides \Drupal\Core\Entity\EntityForm::form().
    */
   public function form(array $form, array &$form_state) {
     $form = parent::form($form, $form_state);
@@ -184,7 +184,7 @@ class RelationTypeFormController extends EntityFormController {
   }
 
   /**
-   * Overrides \Drupal\Core\Entity\EntityFormController::validate().
+   * Overrides \Drupal\Core\Entity\EntityForm::validate().
    */
   function validate(array $form, array &$form_state) {
     $max_arity = $form_state['values']['advanced']['max_arity'];
@@ -196,7 +196,7 @@ class RelationTypeFormController extends EntityFormController {
   }
 
   /**
-   * Overrides \Drupal\Core\Entity\EntityFormController::save().
+   * Overrides \Drupal\Core\Entity\EntityForm::save().
    */
   function save(array $form, array &$form_state) {
     $relation_type = $this->entity;
