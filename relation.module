@@ -23,6 +23,8 @@ const RELATION_FIELD_NAME = 'endpoints';
 use Drupal\Core\Language\Language;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldInstanceConfig;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 
@@ -649,8 +651,8 @@ function relation_views_api() {
  * @return \Drupal\Core\Entity\EntityInterface
  */
 function relation_add_endpoint_field($bundle) {
-  $field = \Drupal\field\Field::fieldInfo()->getField('relation', RELATION_FIELD_NAME);
-  $instance = \Drupal\field\Field::fieldInfo()->getInstance('relation', $bundle, RELATION_FIELD_NAME);
+  $field = FieldConfig::loadByName('relation', RELATION_FIELD_NAME);
+  $instance = FieldInstanceConfig::loadByName('relation', $bundle, RELATION_FIELD_NAME);
 
   if (empty($field)) {
     $field = entity_create('field_config', array(
