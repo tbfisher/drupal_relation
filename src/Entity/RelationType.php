@@ -48,8 +48,8 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *     "render" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\relation\RelationTypeListController",
  *     "form" = {
- *       "add" = "Drupal\relation\RelationTypeFormController",
- *       "edit" = "Drupal\relation\RelationTypeFormController",
+ *       "add" = "Drupal\relation\RelationTypeForm",
+ *       "edit" = "Drupal\relation\RelationTypeForm",
  *       "delete" = "Drupal\relation\Form\RelationTypeDeleteConfirm"
  *     },
  *   },

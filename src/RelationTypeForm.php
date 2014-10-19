@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationTypeFormController.
+ * Definition of Drupal\relation\RelationTypeForm.
  */
 
 namespace Drupal\relation;
@@ -15,7 +15,7 @@ use Drupal\Component\Utility\String;
 /**
  * Form controller for relation edit form.
  */
-class RelationTypeFormController extends EntityForm {
+class RelationTypeForm extends EntityForm {
 
   /**
    * {@inheritdoc}

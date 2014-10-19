@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of Drupal\relation\RelationFormController.
+ * Definition of Drupal\relation\RelationForm.
  */
 
 namespace Drupal\relation;
@@ -12,7 +12,7 @@ use Drupal\Core\Entity\ContentEntityFormController;
 /**
  * Form controller for relation edit form.
  */
-class RelationFormController extends ContentEntityFormController {
+class RelationForm extends ContentEntityFormController {
   /**
    * Overrides Drupal\Core\Entity\EntityFormController::actions().
    */
