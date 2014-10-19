@@ -12,18 +12,17 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Language\Language;
 use Drupal\relation\RelationInterface;
 use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityStorageControllerInterface;
-use Drupal\Core\Field\FieldDefinition;
+use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
  * Defines relation entity
  *
- * @EntityType(
+ * @ContentEntityType(
  *   id = "relation",
  *   label = @Translation("Relation"),
  *   bundle_label = @Translation("Relation type"),
  *   module = "relation",
- *   controllers = {
+ *   handlers = {
  *     "access" = "Drupal\relation\RelationAccessController",
  *     "storage" = "Drupal\relation\RelationStorageController",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
@@ -80,23 +79,23 @@ class Relation extends ContentEntityBase implements RelationInterface {
   }
 
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
-    $fields['rid'] = FieldDefinition::create('integer')
+    $fields['rid'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Relation ID'))
       ->setDescription(t('The relation ID.'))
       ->setReadOnly(TRUE);
 
-    $fields['vid'] = FieldDefinition::create('integer')
+    $fields['vid'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Revision ID'))
       ->setDescription(t('The relation revision ID.'))
       ->setReadOnly(TRUE);
 
-    $fields['relation_type'] = FieldDefinition::create('entity_reference')
+    $fields['relation_type'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Type'))
       ->setDescription(t('The relation type.'))
       ->setSetting('target_type', 'relation_type')
       ->setReadOnly(TRUE);
 
-    $fields['uid'] = FieldDefinition::create('entity_reference')
+    $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('User ID'))
       ->setDescription(t('The user ID of the relation author.'))
       ->setSettings(array(
@@ -104,20 +103,20 @@ class Relation extends ContentEntityBase implements RelationInterface {
         'default_value' => 0,
       ));
 
-    $fields['created'] = FieldDefinition::create('created')
+    $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the relation was created.'));
 
-    $fields['changed'] = FieldDefinition::create('changed')
+    $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the relation was last edited.'));
 
-    $fields['arity'] = FieldDefinition::create('integer')
+    $fields['arity'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('ArityD'))
       ->setDescription(t('Number of endpoints on the Relation.'));
 
     // Langcode here so edit form saves properly.
-    $fields['langcode'] = FieldDefinition::create('language')
+    $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language code'))
       ->setDescription(t('The relation dummy language code.'));
 
@@ -184,6 +183,7 @@ class Relation extends ContentEntityBase implements RelationInterface {
     if ($relation_type) {
       return ($relation_type->directional && $reverse) ? $relation_type->reverse_label : $relation_type->label;
     }
+    return NULL;
   }
 
   /**

@@ -11,6 +11,7 @@ namespace Drupal\relation_endpoint\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
+use \Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of the 'relation_endpoint' widget.
@@ -28,7 +29,7 @@ class RelationEndpointWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, array &$form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     return array();
   }
 }

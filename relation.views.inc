@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Component\Utility\String;
+
 /**
  * @file
  * Views support.
@@ -232,8 +234,8 @@ function relation_views_data_alter(&$data) {
           'title' => t('Relation: @relation_type_label (@left → relation)', $placeholders),
           'help' => t('Provides a relationship from @left to the relation table via the relation @relation_type_label', $placeholders),
           'relationship' => array(
-            // relation_handler_relationship::options_form() relies on this check_plain().
-            'label' => check_plain($relation_type->label),
+            // relation_handler_relationship::options_form() relies on this String::checkPlain().
+            'label' => String::checkPlain($relation_type->label),
             'base' => 'relation',
             'base field' => 'rid',
             'relationship field' => $entity_info[$source_entity_type]->getKey('id'),
@@ -256,8 +258,8 @@ function relation_views_data_alter(&$data) {
             'title' => t('Relation: @relation_type_label (@left @arrow @right)', $placeholders),
             'help' => t('Provides a relationship from @left to @right via the relation @relation_type_label', $placeholders),
             'relationship' => array(
-              // relation_handler_relationship::options_form() relies on this check_plain().
-              'label' => check_plain($relation_type->label),
+              // relation_handler_relationship::options_form() relies on this String::checkPlain().
+              'label' => String::checkPlain($relation_type->label),
               'base' => $target_table,
               'base field' => $entity_info[$target_entity_type]->getKey('id'),
               'relationship field' => $entity_info[$source_entity_type]->getKey('id'),
@@ -275,8 +277,8 @@ function relation_views_data_alter(&$data) {
             'title' => t('Relation: @relation_type_label (relation → @right)', $placeholders),
             'help' => t('Provides a relationship from the relation table to @right via the relation @relation_type_label', $placeholders),
             'relationship' => array(
-              // relation_handler_relationship::options_form() relies on this check_plain().
-              'label' => check_plain($relation_type->label),
+              // relation_handler_relationship::options_form() relies on this String::checkPlain().
+              'label' => String::checkPlain($relation_type->label),
               'base' => $target_table,
               'base field' => $entity_info[$target_entity_type]->getKey('id'),
               'relationship field' => 'rid',
@@ -295,8 +297,8 @@ function relation_views_data_alter(&$data) {
               'title' => t('Relation: @relation_type_reverse_label (@right @arrow @left)', $placeholders),
               'help' => t('Provides a relationship from @right to @left via the relation @relation_type_reverse_label', $placeholders),
               'relationship' => array(
-                // relation_handler_relationship::options_form() relies on this check_plain().
-                'label' => check_plain($relation_type->reverse_label),
+                // relation_handler_relationship::options_form() relies on this String::checkPlain().
+                'label' => String::checkPlain($relation_type->reverse_label),
                 'base' => $source_table,
                 'base field' => $entity_info[$source_entity_type]->getKey('id'),
                 'relationship field' => $entity_info[$target_entity_type]->getKey('id'),
@@ -314,8 +316,8 @@ function relation_views_data_alter(&$data) {
               'title' => t('Relation: @relation_type_reverse_label (@right → relation)', $placeholders),
               'help' => t('Provides a relationship from @right to the relation table via the relation @relation_type_reverse_label. Usually only needed to access the fields of the relation itself.', $placeholders),
               'relationship' => array(
-                // relation_handler_relationship::options_form() relies on this check_plain().
-                'label' => check_plain($relation_type->reverse_label),
+                // relation_handler_relationship::options_form() relies on this String::checkPlain().
+                'label' => String::checkPlain($relation_type->reverse_label),
                 'base' => 'relation',
                 'base field' => 'rid',
                 'relationship field' => $entity_info[$target_entity_type]->getKey('id'),
@@ -332,8 +334,8 @@ function relation_views_data_alter(&$data) {
               'title' => t('Relation: @relation_type_reverse_label (relation → @left)', $placeholders),
               'help' => t('Provides a relationship from the relation table to @left via the relation @relation_type_reverse_label', $placeholders),
               'relationship' => array(
-                // relation_handler_relationship::options_form() relies on this check_plain().
-                'label' => check_plain($relation_type->reverse_label),
+                // relation_handler_relationship::options_form() relies on this String::checkPlain().
+                'label' => String::checkPlain($relation_type->reverse_label),
                 'base' => $source_table,
                 'base field' => $entity_info[$source_entity_type]->getKey('id'),
                 'relationship field' => 'rid',

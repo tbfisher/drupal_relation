@@ -10,6 +10,8 @@ namespace Drupal\relation\Form;
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Provides a form for relation type deletion.
@@ -52,10 +54,8 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getCancelRoute() {
-    return array(
-      'route_name' => 'relation.list',
-    );
+  public function getCancelUrl() {
+    return new Url('relation.list');
   }
 
   /**
@@ -68,11 +68,12 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, array &$form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $num_relations = $this->database->query("SELECT COUNT(*) FROM {relation} WHERE relation_type = :type", array(':type' => $this->entity->id()))->fetchField();
+
     if ($num_relations) {
+      $caption = '<p>' . \Drupal::translation()->formatPlural($num_relations, '%relation_type is used by 1 relation. You can not remove this relation type until you have removed all %relation_type relations.', '%relation_type is used by @count relations. You can not remove %relation_type until you have removed all %relation_type relations.', array('%relation_type' => $this->entity->label())) . '</p>';
       $form['#title'] = $this->getQuestion();
-      $caption = '<p>' . t('%type is used by @count relations on your site. You may not remove %type until you have removed all existing relations.', array('@count' => $num_relations, '%type' => $this->entity->label())) . '</p>';
       $form['description'] = array('#markup' => $caption);
       return $form;
     }
@@ -83,12 +84,12 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submit(array $form, array &$form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $t_args = array('%name' => $this->entity->label());
-    drupal_set_message(t('The relation type %name has been deleted.', $t_args));
-    watchdog('relation', 'Deleted relation type %name.', $t_args, WATCHDOG_NOTICE);
-    $form_state['redirect_route']['route_name'] = 'relation.type_list';
+    $t_args = array('%relation_type' => $this->entity->label());
+    drupal_set_message(t('The relation type %relation_type has been deleted.', $t_args));
+    $this->logger('relation')->notice('Deleted relation type %relation_type.', $t_args);
+    $form_state->setRedirect('relation.type_list');
   }
 
 }

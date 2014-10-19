@@ -8,18 +8,19 @@
 namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityFormController;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityForm;
 use Drupal\Component\Utility\String;
 
 /**
  * Form controller for relation edit form.
  */
-class RelationTypeFormController extends EntityFormController {
+class RelationTypeFormController extends EntityForm {
 
   /**
-   * Overrides Drupal\Core\Entity\EntityFormController::form().
+   * {@inheritdoc}
    */
-  public function form(array $form, array &$form_state) {
+  public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
     $relation_type = $this->entity;
@@ -93,7 +94,6 @@ class RelationTypeFormController extends EntityFormController {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 50,
-      '#tree' => TRUE,
     );
     $form['advanced']['transitive'] = array(
       '#type'           => 'checkbox',
@@ -132,17 +132,15 @@ class RelationTypeFormController extends EntityFormController {
     );
 
     $options_bundles = array();
-    $counter = 0;
     $entity_info = \Drupal::entityManager()->getDefinitions();
     foreach (entity_get_bundles() as $entity_type => $bundles) {
-      $counter += 2;
       $entity_label = $entity_info[$entity_type]->getLabel();
       $options_bundles[$entity_label]["$entity_type:*"] = 'all ' . $entity_label . ' bundles';
       foreach ($bundles as $bundle_id => $bundle) {
         $options_bundles[$entity_label]["$entity_type:$bundle_id"] = $bundle['label'];
-        $counter++;
       }
     }
+
     $form['endpoints'] = array(
       '#type' => 'container',
       '#attributes' => array(
@@ -151,23 +149,23 @@ class RelationTypeFormController extends EntityFormController {
       '#suffix' => '<div class="clearfix"></div>',
     );
     $form['endpoints']['source_bundles'] = array(
-      '#type'          => 'select',
-      '#title'         => t('Available source bundles'),
-      '#options'       => $options_bundles,
-      '#size'          => max(12, $counter),
-      '#default_value' => $relation_type->getBundles('source'),
-      '#multiple'      => TRUE,
-      '#required'      => TRUE,
-      '#description'   => 'Bundles that are not selected will not be available as sources for directional, or end points of non-directional relations relations. Ctrl+click to select multiple. Note that selecting all bundles also include bundles not yet created for that entity type.',
+      '#type' => 'select',
+      '#title' => t('Source bundles'),
+      '#options' => $options_bundles,
+      '#size' => count($options_bundles, COUNT_RECURSIVE),
+      '#default_value' => $relation_type->source_bundles,
+      '#multiple' => TRUE,
+      '#required' => TRUE,
+      '#description' => t('Select which bundles may be endpoints on relations of this type. Selecting "all <em>entity</em> bundles" includes bundles created in the future.'),
     );
     $form['endpoints']['target_bundles'] = array(
-      '#type'          => 'select',
-      '#title'         => t('Available target bundles'),
-      '#options'       => $options_bundles,
-      '#size'          => max(12, $counter),
-      '#default_value' => $relation_type->getBundles('target'),
-      '#multiple'      => TRUE,
-      '#description'   => 'Bundles that are not selected will not be available as targets for directional relations. Ctrl+click to select multiple.',
+      '#type' => 'select',
+      '#title' => t('Target bundles'),
+      '#options' => $options_bundles,
+      '#size' => count($options_bundles, COUNT_RECURSIVE),
+      '#default_value' => $relation_type->target_bundles,
+      '#multiple' => TRUE,
+      '#description' => t('Select which bundles may be endpoints on relations of this type. Selecting "all <em>entity</em> bundles" includes bundles created in the future.'),
       '#states' => array(
         'visible' => array(
           ':input[name="directional"]' => array('checked' => TRUE),
@@ -184,27 +182,29 @@ class RelationTypeFormController extends EntityFormController {
   }
 
   /**
-   * Overrides \Drupal\Core\Entity\EntityFormController::validate().
+   * {@inheritdoc}
    */
-  function validate(array $form, array &$form_state) {
-    $max_arity = $form_state['values']['advanced']['max_arity'];
-    $min_arity = $form_state['values']['advanced']['min_arity'];
+  public function validate(array $form, FormStateInterface $form_state) {
+    $min_arity = $form_state->getValue('min_arity');
+    $max_arity = $form_state->getValue('max_arity');
+
     // Empty max arity indicates infinite arity
     if ($max_arity && $min_arity > $max_arity) {
-      form_set_error('min_arity', t('Minimum arity must be less than or equal to maximum arity.'));
+      $form_state->setErrorByName('min_arity', t('Minimum arity cannot be more than maximum arity.'));
     }
   }
 
   /**
-   * Overrides \Drupal\Core\Entity\EntityFormController::save().
+   * {@inheritdoc}
    */
-  function save(array $form, array &$form_state) {
+  public function save(array $form, FormStateInterface $form_state) {
     $relation_type = $this->entity;
-    $relation_type->label = $form_state['values']['name'];
+    $relation_type->label = $form_state->getValue('name');
 
+    $save_message = $relation_type->isNew() ? 'The %relation_type relation type has been created.' : 'The %relation_type relation type has been saved.';
     if ($relation_type->save()) {
-      drupal_set_message(t('The %relation_type relation type has been saved.', array('%relation_type' => $relation_type->relation_type)));
-      $form_state['redirect_route'] = $relation_type->urlInfo();
+      drupal_set_message(t($save_message, array('%relation_type' => $relation_type->relation_type)));
+      $form_state->setRedirectUrl($relation_type->urlInfo());
     }
     else {
       drupal_set_message(t('Error saving relation type.', 'error'));

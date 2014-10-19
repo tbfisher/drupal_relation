@@ -8,7 +8,7 @@
 namespace Drupal\relation\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
@@ -43,7 +43,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   id = "relation_type",
  *   label = @Translation("Relation type"),
  *   module = "relation",
- *   controllers = {
+ *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "render" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\relation\RelationTypeListController",
@@ -67,7 +67,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   }
  * )
  */
-class RelationType extends ConfigEntityBase implements RelationTypeInterface {
+class RelationType extends ConfigEntityBundleBase implements RelationTypeInterface {
 
   /**
    * The machine name of this relation type.
@@ -182,13 +182,10 @@ class RelationType extends ConfigEntityBase implements RelationTypeInterface {
 
     if (!$update) {
       \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
-      entity_invoke_bundle_hook('create', 'relation', $this->id());
-
-      relation_add_endpoint_field($this->id());
+      relation_add_endpoint_field($this);
     }
     elseif ($this->getOriginalID() != $this->id()) {
       \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
-      entity_invoke_bundle_hook('rename', 'relation', $this->getOriginalID(), $this->id());
     }
     else {
       \Drupal::cache()->invalidateTags(array('relation_type' => $this->id()));

@@ -9,12 +9,12 @@ namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
-use Drupal\Core\Entity\EntityControllerInterface;
+use Drupal\Core\Entity\EntityListBuilder;
 
 /**
  * Provides a listing of relation types.
  */
-class RelationTypeListController extends ConfigEntityListBuilder implements EntityControllerInterface {
+class RelationTypeListController extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */

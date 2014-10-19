@@ -7,7 +7,7 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\ContentEntityDatabaseStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 
 /**
  * Relation controller class
@@ -17,7 +17,7 @@ use Drupal\Core\Entity\ContentEntityDatabaseStorage;
  * nodes.
  */
 
-class RelationStorageController extends ContentEntityDatabaseStorage {
+class RelationStorageController extends SqlContentEntityStorage {
   public function create(array $values = array()) {
     $account = \Drupal::currentUser();
     $values += array(
