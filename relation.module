@@ -31,39 +31,6 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\relation\RelationTypeInterface;
 
 /**
- * Implements hook_permission().
- */
-function relation_permission() {
-  return array(
-    'administer relation types' => array(
-      'title' => t('Administer Relation types'),
-      'description' => t('Create, edit, delete, and perform administration tasks for relation types.'),
-    ),
-    'access relations' => array(
-      'title' => t('View Relations'),
-      'description' => t('View Relations of any Relation Type.'),
-      'restrict access' => TRUE,
-    ),
-    'create relations' => array(
-      'title' => t('Create Relations of any Relation Type'),
-      'restrict access' => TRUE,
-    ),
-    'edit relations' => array(
-      'title' => t('Edit Relations of any Relation Type'),
-      'restrict access' => TRUE,
-    ),
-    'delete relations' => array(
-      'title' => t('Delete Relations of any Relation Type'),
-      'restrict access' => TRUE,
-    ),
-    'administer relations' => array(
-      'title' => t('Administer all Relations'),
-      'restrict access' => TRUE,
-    ),
-  );
-}
-
-/**
  * Implements hook_theme().
  */
 function relation_theme() {
