@@ -13,7 +13,7 @@ use Drupal\relation\Tests\RelationTestBase;
  * Functional test of Relation's integration with the Entity Collector.
  */
 class RelationEntityCollectorTest extends RelationTestBase {
-  public static $modules = array('relation', 'relation_ui', 'relation_entity_collector');
+  public static $modules = array('relation_entity_collector');
 
   public static function getInfo() {
     return array(
