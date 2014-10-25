@@ -36,7 +36,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   base_table = "relation",
  *   revision_table = "relation_revision",
  *   uri_callback = "relation_uri",
- *   fieldable = TRUE,
+ *   field_ui_base_route = "relation.type_edit",
  *   entity_keys = {
  *     "id" = "rid",
  *     "revision" = "vid",
