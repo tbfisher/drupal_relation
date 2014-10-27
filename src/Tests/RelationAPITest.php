@@ -119,7 +119,7 @@ class RelationAPITest extends RelationTestBase {
     $this->assertFalse($count);
 
     // Get directed relations for node 3 using index, should return 2 relations.
-    // The other node 3 relation has an r_index 0.
+    // The other node 3 relation has a delta 0.
     $relations = relation_query('node', $this->node3->id(), 1)
       ->execute();
     $this->assertEqual(count($relations), 3);

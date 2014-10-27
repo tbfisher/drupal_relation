@@ -172,14 +172,14 @@ class RelationViewsTest extends RelationTestBase {
     }
 
     foreach (array(FALSE, TRUE) as $required) {
-      for ($r_index = -1; $r_index < 2; $r_index++) {
+      for ($delta = -1; $delta < 2; $delta++) {
         $view = new view;
         $handler = $view->new_display('default');
         $handler->display->display_options['relationships']['relation_directional_node']['id'] = 'relation_directional_node';
         $handler->display->display_options['relationships']['relation_directional_node']['table'] = 'node';
         $handler->display->display_options['relationships']['relation_directional_node']['field'] = 'relation_directional_node';
         $handler->display->display_options['relationships']['relation_directional_node']['required'] = $required;
-        $handler->display->display_options['relationships']['relation_directional_node']['r_index'] = $r_index;
+        $handler->display->display_options['relationships']['relation_directional_node']['delta'] = $delta;
         $handler->display->display_options['fields']['nid_source']['id'] = 'nid';
         $handler->display->display_options['fields']['nid_source']['table'] = 'node';
         $handler->display->display_options['fields']['nid_source']['field'] = 'nid';
@@ -196,7 +196,7 @@ class RelationViewsTest extends RelationTestBase {
         $view->set_arguments(array($this->node3->nid));
         $view->execute();
 
-        switch ($r_index) {
+        switch ($delta) {
           case -1:
             // Directional, both ways.
             $this->assertEqual(count($view->result), 2);
@@ -250,7 +250,7 @@ class RelationViewsTest extends RelationTestBase {
       return;
     }
 
-    for ($r_index = -1; $r_index < 2; $r_index++) {
+    for ($delta = -1; $delta < 2; $delta++) {
       $view = new view;
       $view->base_table = 'node';
       $handler = $view->new_display('default');
@@ -258,7 +258,7 @@ class RelationViewsTest extends RelationTestBase {
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['table'] = 'node';
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['field'] = 'relation_directional_entitysame_node';
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['required'] = 1;
-      $handler->display->display_options['relationships']['relation_directional_entitysame_node']['r_index'] = $r_index;
+      $handler->display->display_options['relationships']['relation_directional_entitysame_node']['delta'] = $delta;
       $handler->display->display_options['fields']['nid']['id'] = 'nid';
       $handler->display->display_options['fields']['nid']['table'] = 'node';
       $handler->display->display_options['fields']['nid']['field'] = 'nid';
@@ -269,7 +269,7 @@ class RelationViewsTest extends RelationTestBase {
       $view->set_arguments(array($this->node3->nid));
       $view->execute();
 
-      switch ($r_index) {
+      switch ($delta) {
         case -1:
           // Directional, both ways.
           $this->assertEqual(count($view->result), 3);
@@ -306,7 +306,7 @@ class RelationViewsTest extends RelationTestBase {
    * both with the same entities types.
    */
   function todo_testReverseDirectionalSameEntityRelations() {
-    for ($r_index = -1; $r_index < 2; $r_index++) {
+    for ($delta = -1; $delta < 2; $delta++) {
       $view = new view;
       $view->base_table = 'node';
       $handler = $view->new_display('default');
@@ -314,7 +314,7 @@ class RelationViewsTest extends RelationTestBase {
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['table'] = 'node';
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['field'] = 'relation_directional_entitysame_node';
       $handler->display->display_options['relationships']['relation_directional_entitysame_node']['required'] = 1;
-      $handler->display->display_options['relationships']['relation_directional_entitysame_node']['r_index'] = $r_index;
+      $handler->display->display_options['relationships']['relation_directional_entitysame_node']['delta'] = $delta;
       $handler->display->display_options['fields']['nid']['id'] = 'nid';
       $handler->display->display_options['fields']['nid']['table'] = 'node';
       $handler->display->display_options['fields']['nid']['field'] = 'nid';
@@ -325,7 +325,7 @@ class RelationViewsTest extends RelationTestBase {
       $view->set_arguments(array($this->node3->nid));
       $view->execute();
 
-      switch ($r_index) {
+      switch ($delta) {
         case -1:
           // Directional, both ways.
           $this->assertEqual(count($view->result), 3);
@@ -362,7 +362,7 @@ class RelationViewsTest extends RelationTestBase {
    * both with different entities types.
    */
   function todo_testForwardDirectionalDifferentEntityRelations() {
-    for ($r_index = -1; $r_index < 2; $r_index++) {
+    for ($delta = -1; $delta < 2; $delta++) {
       $view = new view;
       $view->base_table = 'users';
       $handler = $view->new_display('default');
@@ -370,7 +370,7 @@ class RelationViewsTest extends RelationTestBase {
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_node']['table'] = 'users';
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_node']['field'] = 'relation_directional_entitydifferent_node';
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_node']['required'] = 1;
-      $handler->display->display_options['relationships']['relation_directional_entitydifferent_node']['r_index'] = $r_index;
+      $handler->display->display_options['relationships']['relation_directional_entitydifferent_node']['delta'] = $delta;
       $handler->display->display_options['fields']['nid']['id'] = 'nid';
       $handler->display->display_options['fields']['nid']['table'] = 'node';
       $handler->display->display_options['fields']['nid']['field'] = 'nid';
@@ -381,7 +381,7 @@ class RelationViewsTest extends RelationTestBase {
       $view->set_arguments(array($this->user1->uid));
       $view->execute();
 
-      switch ($r_index) {
+      switch ($delta) {
         case -1:
           // Directional, both ways.
           $this->assertEqual(count($view->result), 2);
@@ -418,7 +418,7 @@ class RelationViewsTest extends RelationTestBase {
    * both with different entities types.
    */
   function todo_testReverseDirectionalDifferentEntityRelations() {
-    for ($r_index = -1; $r_index < 2; $r_index++) {
+    for ($delta = -1; $delta < 2; $delta++) {
       $view = new view;
       $view->base_table = 'node';
       $handler = $view->new_display('default');
@@ -426,7 +426,7 @@ class RelationViewsTest extends RelationTestBase {
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_user']['table'] = 'node';
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_user']['field'] = 'relation_directional_entitydifferent_user';
       $handler->display->display_options['relationships']['relation_directional_entitydifferent_user']['required'] = 1;
-      $handler->display->display_options['relationships']['relation_directional_entitydifferent_user']['r_index'] = $r_index;
+      $handler->display->display_options['relationships']['relation_directional_entitydifferent_user']['delta'] = $delta;
       $handler->display->display_options['fields']['nid']['id'] = 'nid';
       $handler->display->display_options['fields']['nid']['table'] = 'node';
       $handler->display->display_options['fields']['nid']['field'] = 'nid';
@@ -437,7 +437,7 @@ class RelationViewsTest extends RelationTestBase {
       $view->set_arguments(array($this->user1->uid));
       $view->execute();
 
-      switch ($r_index) {
+      switch ($delta) {
         case -1:
           // Directional, both ways.
           $this->assertEqual(count($view->result), 2);

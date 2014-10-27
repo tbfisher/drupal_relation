@@ -154,7 +154,7 @@ abstract class RelationTestBase extends WebTestBase {
     // Article 1 --> Page 3
     $this->endpoints_directional = $this->endpoints;
     $this->endpoints_directional[1]['entity_id'] = $this->node3->id();
-    $this->endpoints_directional[1]['r_index'] = 1;
+    $this->endpoints_directional[1]['delta'] = 1;
     $this->relation_type_directional = $this->relation_types['directional']['relation_type'];
     $this->rid_directional = $this->saveRelation($this->relation_type_directional, $this->endpoints_directional);
 
@@ -165,7 +165,7 @@ abstract class RelationTestBase extends WebTestBase {
     $this->saveRelation($this->relation_type_directional, $this->endpoints_directional2);
 
     // Page 3 --> Page 4
-    $this->endpoints_entitysame[1]['r_index'] = 1;
+    $this->endpoints_entitysame[1]['delta'] = 1;
     $this->relation_type_directional_entitysame = $this->relation_types['directional_entitysame']['relation_type'];
     $this->saveRelation($this->relation_type_directional_entitysame, $this->endpoints_entitysame);
     // Page 3 --> Page 5
@@ -177,7 +177,7 @@ abstract class RelationTestBase extends WebTestBase {
     $this->saveRelation($this->relation_type_directional_entitysame, $this->endpoints_entitysame);
 
     // User 1 --> Page 3
-    $this->endpoints_entitydifferent[1]['r_index'] = 1;
+    $this->endpoints_entitydifferent[1]['delta'] = 1;
     $this->relation_type_directional_entitydifferent = $this->relation_types['directional_entitydifferent']['relation_type'];
     $this->saveRelation($this->relation_type_directional_entitydifferent, $this->endpoints_entitydifferent);
     // User 1 --> Page 4

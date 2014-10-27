@@ -172,9 +172,9 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
           // Check for duplicates of the $subject first.
           if ($endpoint['entity_type'] == $entity_type && $endpoint['entity_id'] == $id && $duplicate == FALSE) {
             $duplicate = TRUE;
-            // Use the forward label as sentence predicate if r_index == 0.
+            // Use the forward label as sentence predicate if delta == 0.
             // (only makes a difference if relation is directional).
-            if ($endpoint['r_index'] == 0) {
+            if ($endpoint['delta'] == 0) {
               $predicate = ' ' . $relation_type->label;
             }
           }
@@ -183,7 +183,7 @@ function relation_dummy_field_field_formatter_view($entity_type, $entity, $field
             // we want to list the source without any siblings. If it is
             // directional and the subject is a source, list all targets.
             // If non-directional, list everything as normal.
-            if (!$relation_type->directional || $subject_is_source || $endpoint['r_index'] == 0) {
+            if (!$relation_type->directional || $subject_is_source || $endpoint['delta'] == 0) {
               $object_entities = entity_load($endpoint['entity_type'], array($endpoint['entity_id']));
               $object_entity = reset($object_entities);
               $object_label = entity_label($endpoint['entity_type'], $object_entity);

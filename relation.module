@@ -123,7 +123,7 @@ function relation_load($rid) {
  * @param array $endpoints
  *   An array containing endpoints. Each endpoint is an array with keys
  *   'entity_type' and 'entity_id'. The keys of each endpoint correspond to
- *   'r_index' if $enforce_direction is TRUE.
+ *   'delta' if $enforce_direction is TRUE.
  * @param string $relation_type
  *   (Optional) The relation type (bundle) of the relation to be checked.
  * @param bool $enforce_direction
@@ -134,8 +134,8 @@ function relation_load($rid) {
  */
 function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_direction = FALSE) {
   $query = Drupal::entityQuery('relation');
-  foreach ($endpoints as $r_index => $endpoint) {
-    relation_query_add_related($query, $endpoint['entity_type'], $endpoint['entity_id'], $enforce_direction ? $r_index : NULL);
+  foreach ($endpoints as $delta => $endpoint) {
+    relation_query_add_related($query, $endpoint['entity_type'], $endpoint['entity_id'], $enforce_direction ? $delta : NULL);
   }
   if ($relation_type) {
     $query->condition('relation_type', $relation_type);
@@ -153,7 +153,7 @@ function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_di
 /**
  * Implements hook_query_TAG_alter().
  *
- * Adds conditions to query to ensure different r_index for each endpoint.
+ * Adds conditions to query to ensure different delta for each endpoint.
  */
 function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
   $arity = 0;
@@ -178,7 +178,7 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
       break;
     }
   }
-  // Add r_index conditions between all endpoints
+  // Add delta conditions between all endpoints
   for ($i = 0; $i < $arity; $i++) {
     for ($k = $i + 1; $k < $arity; $k++) {
       // @see http://drupal.org/node/1859084, http://drupal.org/node/1760026
@@ -186,8 +186,8 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
       // conditions between even numbers.
       $left_suffix = !$i ? '' : '_' . ($i + 1);
       $right_suffix = !$k  ? '' : '_' . ($k + 1);
-      $column_left = $endpoints_table_name . $left_suffix . '.endpoints_r_index';
-      $column_right = $endpoints_table_name . $right_suffix . '.endpoints_r_index';
+      $column_left = $endpoints_table_name . $left_suffix . '.delta';
+      $column_right = $endpoints_table_name . $right_suffix . '.delta';
       $query->where("$column_left != $column_right");
     }
   }
@@ -261,7 +261,7 @@ function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type)
  * @param $entity_id
  *   (optional) The entity id of one of the endpoints. Can also be an array of
  *   entity IDs.
- * @param $r_index
+ * @param $delta
  *   (optional) The index of the search entity in the relation to be found
  *   (0 = source, 1 = target).
  *
@@ -270,10 +270,10 @@ function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type)
  *
  *   @todo deprecate this
  */
-function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL) {
+function relation_query($entity_type = NULL, $entity_id = NULL, $delta = NULL) {
   $query = Drupal::entityQuery('relation');
   if ($entity_type) {
-    relation_query_add_related($query, $entity_type, $entity_id, $r_index);
+    relation_query_add_related($query, $entity_type, $entity_id, $delta);
   }
   return $query;
 }
@@ -286,20 +286,20 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $r_index = NULL)
  *   Entity type of the related entity.
  * @param $entity_id
  *   Entity id of the related entity. Can be an array of entity IDs.
- * @param $r_index
+ * @param $delta
  *   The index of the related entity within the requested relation(s).
  *
  * @todo rename. / extend class ala RelationQuery::related()
  *
  * @return Drupal\Core\Entity\Query\QueryInterface
  */
-function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $query, $entity_type, $entity_id, $r_index = NULL) {
+function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $query, $entity_type, $entity_id, $delta = NULL) {
   $group = $query->andConditionGroup()
     ->condition('endpoints.entity_type', $entity_type, '=')
     ->condition('endpoints.entity_id', $entity_id, NULL);
 
-  if (isset($r_index)) {
-    $group->condition('endpoints.r_index', $r_index, '=');
+  if (isset($delta)) {
+    $group->condition('endpoints.delta', $delta, '=');
   }
 
   $query->condition($group);
@@ -320,21 +320,21 @@ function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $que
  *   The entity id of one of the endpoints.
  * @param $relation_type
  *   (optional) The relation type of the relation to find.
- * @param $r_index
+ * @param $delta
  *   (optional) The index of the search entity in the relation to be found
  *   (0 = source, 1 = target).
  *
  * @return
  *   The entity object from the other endpoint.
  */
-function relation_get_related_entity($entity_type, $entity_id, $relation_type = NULL, $r_index = NULL) {
+function relation_get_related_entity($entity_type, $entity_id, $relation_type = NULL, $delta = NULL) {
 
   // Static cache the results of relation_query() and relation_load() to avoid
   // duplicate queries if this is called multiple times with the same arguments
   // during a request.
   $items = &drupal_static(__FUNCTION__);
   $request_key = "$entity_type:$entity_id";
-  $cache_key = "$request_key:$relation_type:$r_index";
+  $cache_key = "$request_key:$relation_type:$delta";
 
   if (isset($items[$cache_key])) {
     $entities = $items[$cache_key];
@@ -345,7 +345,7 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   }
   else {
     $query = Drupal::entityQuery('relation');
-    relation_query_add_related($query, $entity_type, $entity_id, $r_index)
+    relation_query_add_related($query, $entity_type, $entity_id, $delta)
       ->range(0, 1);
     if ($relation_type) {
       $query->condition('relation_type', $relation_type);
@@ -371,9 +371,9 @@ function relation_get_related_entity($entity_type, $entity_id, $relation_type = 
   }
   if ($entities) {
     $first_entity_key = $entities[0]->entity_type . ':' . $entities[0]->entity_id;
-    if (isset($r_index)) {
-      $request_key = $request_key . ':' . $r_index;
-      $first_entity_key = $first_entity_key . ':' . $entities[0]->r_index;
+    if (isset($delta)) {
+      $request_key = $request_key . ':' . $delta;
+      $first_entity_key = $first_entity_key . ':' . $entities[0]->delta;
     }
     if ($request_key == $first_entity_key) {
       return entity_load($entities[1]->entity_type, $entities[1]->entity_id);
