@@ -7,30 +7,37 @@
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\ContentEntityFormController;
+use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Form controller for relation edit form.
+ * Form for relation edit.
  */
-class RelationForm extends ContentEntityFormController {
+class RelationForm extends ContentEntityForm {
   /**
-   * Overrides Drupal\Core\Entity\EntityFormController::actions().
+   * {@inheritdoc}
    */
-  protected function actions(array $form, array &$form_state) {
-    $relation = $form_state['build_info']['callback_object']->entity;
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $relation = $this->getEntity();
     $element = parent::actions($form, $form_state);
     $element['delete']['#access'] = $relation->access('delete');
     return $element;
   }
 
-  function save(array $form, array &$form_state) {
-    $relation = $this->getEntity($form_state);
+  /**
+   * {@inheritdoc}
+   */
+  public function save(array $form, FormStateInterface $form_state) {
+    $relation = $this->getEntity();
     $relation->save();
-    $form_state['redirect_route'] = $relation->urlInfo();
+    $form_state->setRedirectUrl($relation->urlInfo());
   }
 
-  public function form(array $form, array &$form_state) {
-    $relation = $this->entity;
+  /**
+   * {@inheritdoc}
+   */
+  public function form(array $form, FormStateInterface $form_state) {
+    $relation = $this->getEntity();
 
     if ($this->operation == 'edit') {
       $form['#title'] = t('<em>Editing</em> @label', array('@label' => $relation->label()));;

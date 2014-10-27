@@ -8,13 +8,13 @@
 namespace Drupal\relation;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityAccessController;
+use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Session\AccountInterface;
 
 /**
  * Defines the access controller for Relations.
  */
-class RelationAccessController extends EntityAccessController {
+class RelationAccessController extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */

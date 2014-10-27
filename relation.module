@@ -211,7 +211,7 @@ function relation_clear_related_entities_cache($endpoints) {
  *
  * @param $relation_type
  *   The relation type machine name.
- * @param $endpoints
+ * @param array $endpoints
  *   A list of endpoint entities. Each endpoint is defined by an associate
  *   array, with an entity_type and entity_id key. For example:
  *   @code
@@ -224,7 +224,7 @@ function relation_clear_related_entities_cache($endpoints) {
  * @return \Drupal\relation\Entity\Relation
  *   A saved relation.
  */
-function relation_insert($relation_type, $endpoints) {
+function relation_insert($relation_type, array $endpoints) {
   $relation = entity_create('relation', array('relation_type' => $relation_type));
   $relation->endpoints = $endpoints;
   $relation->save();

@@ -81,44 +81,46 @@ class Relation extends ContentEntityBase implements RelationInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields['rid'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Relation ID'))
-      ->setDescription(t('The relation ID.'))
-      ->setReadOnly(TRUE);
+      ->setDescription(t('Unique relation id (entity id).'))
+      ->setReadOnly(TRUE)
+      ->setSetting('unsigned', TRUE);
 
     $fields['vid'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Revision ID'))
-      ->setDescription(t('The relation revision ID.'))
-      ->setReadOnly(TRUE);
+      ->setDescription(t('The current {relation_revision}.vid version identifier.'))
+      ->setReadOnly(TRUE)
+      ->setSetting('unsigned', TRUE);
 
     $fields['relation_type'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Type'))
-      ->setDescription(t('The relation type.'))
+      ->setLabel(t('Relation Type'))
+      ->setDescription(t('Relation type (see relation_type table).'))
       ->setSetting('target_type', 'relation_type')
       ->setReadOnly(TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('User ID'))
-      ->setDescription(t('The user ID of the relation author.'))
+      ->setDescription(t('The {users}.uid that owns this relation; initially, this is the user that created it.'))
       ->setSettings(array(
         'target_type' => 'user',
         'default_value' => 0,
-      ));
+      ))
+      ->setRevisionable(TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
-      ->setDescription(t('The time that the relation was created.'));
+      ->setDescription(t('The date the Relation was created.'))
+      ->setRevisionable(TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the relation was last edited.'));
+      ->setDescription(t('The date the Relation was last edited.'))
+      ->setRevisionable(TRUE);
 
     $fields['arity'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('ArityD'))
-      ->setDescription(t('Number of endpoints on the Relation.'));
-
-    // Langcode here so edit form saves properly.
-    $fields['langcode'] = BaseFieldDefinition::create('language')
-      ->setLabel(t('Language code'))
-      ->setDescription(t('The relation dummy language code.'));
+      ->setDescription(t('Number of endpoints on the Relation. Cannot exceed max_arity, or be less than min_arity in relation_type table.'))
+      ->setRevisionable(TRUE)
+      ->setSetting('unsigned', TRUE);
 
     return $fields;
   }

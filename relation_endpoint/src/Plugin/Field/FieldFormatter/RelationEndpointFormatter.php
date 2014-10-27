@@ -7,6 +7,7 @@
 
 namespace Drupal\relation_endpoint\Plugin\Field\FieldFormatter;
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Utility\LinkGenerator;
@@ -40,15 +41,20 @@ class RelationEndpointFormatter extends FormatterBase {
 
     foreach ($items as $item) {
       $t = array('@entity_type' => $item->entity_type, '@entity_id' => $item->entity_id);
-      $entity_info = \Drupal::entityManager()->getDefinition($item->entity_type);
-      if ($entity_info && $entity = entity_load($item->entity_type, $item->entity_id)) {
-        $label = $entity->label();
-        $label_cell['data'] = array(
-          '#type' => 'link',
-          '#title' => (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t),
-        ) + $entity->urlInfo()->toRenderArray();
-      } else {
-        $label_cell = t('Deleted');
+
+      try {
+        if ($entity = entity_load($item->entity_type, $item->entity_id)) {
+          $label = $entity->label();
+          $label_cell['data'] = array(
+              '#type' => 'link',
+              '#title' => (!empty($label) && strlen($label) > 0) ? $label : t('Untitled', $t),
+            ) + $entity->urlInfo()->toRenderArray();
+        }
+        else {
+          $label_cell = t('Deleted');
+        }
+      } catch (PluginNotFoundException $e) {
+        $label_cell = t($e->getMessage());
       }
 
       $rows[] = array($item->entity_type, $item->entity_id, $label_cell);
