@@ -10,6 +10,7 @@ namespace Drupal\relation\Controller;
 use Drupal\Component\Utility\String;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\relation\RelationInterface;
+use Drupal\Core\Url;
 
 /**
  * Returns responses for Relation routes.
@@ -26,6 +27,48 @@ class RelationController extends ControllerBase {
    */
   public function page(RelationInterface $relation) {
     return $this->entityManager()->getViewBuilder('relation')->view($relation);
+  }
+
+  /**
+   * Displays add relation links for available relation types.
+   *
+   * Redirects to relation/add/[type] if only one relation type is available.
+   *
+   * @return array
+   *   A render array for a list of the relation types that can be added;
+   *   however, if there is only one relation type defined for the site, the
+   *   function redirects to the relation add page for that one relation type
+   *   and does not return at all.
+   *
+   * @see \Drupal\node\Controller\NodeController::addPage()
+   */
+  public function addPage() {
+    $relation_types = relation_get_relation_types_options();
+
+    // Bypass the relation/add listing if only one relation type is available.
+    if (count($relation_types) == 1) {
+      return $this->redirect('relation.add', ['relation_type' => key($relation_types)]);
+    }
+
+    foreach ($relation_types as $relation_type => $title) {
+      $links[] = array(
+        'title' => $title,
+        'url' => Url::fromRoute('relation.add', ['relation_type' => $relation_type]),
+        'attributes' => array(),
+      );
+    }
+
+    return array(
+      '#theme' => 'links',
+      '#links' => $links,
+    );
+  }
+
+  /**
+   * TODO
+   */
+  public function add() {
+    // TODO
   }
 
   /**

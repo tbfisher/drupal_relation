@@ -1,5 +1,10 @@
-relation_add_local_action:
+relation.add_relation_type:
   route_name: relation.type_add
   title: 'Add relation type'
   appears_on:
     - relation.type_list
+relation.add_relation:
+  route_name: relation.add
+  title: 'Add relation'
+  appears_on:
+    - relation.list
