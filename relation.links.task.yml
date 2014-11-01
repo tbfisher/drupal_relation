@@ -23,4 +23,5 @@ relation.delete_confirm:
 relation.list:
   title: Relations
   route_name: relation.list
-  base_route: node.content_overview
+  base_route: system.admin_content
+  weight: 20
