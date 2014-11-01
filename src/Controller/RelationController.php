@@ -10,6 +10,7 @@ namespace Drupal\relation\Controller;
 use Drupal\Component\Utility\String;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\relation\RelationInterface;
+use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Url;
 
 /**
@@ -65,10 +66,22 @@ class RelationController extends ControllerBase {
   }
 
   /**
-   * TODO
+   * Provides the relation submission form.
+   *
+   * @param \Drupal\relation\RelationTypeInterface $relation_type
+   *   The relation type entity for the relation.
+   *
+   * @return array
+   *   A relation submission form.
    */
-  public function add() {
-    // TODO
+  public function add(RelationTypeInterface $relation_type) {
+    $relation = $this->entityManager()->getStorage('relation')->create(array(
+      'relation_type' => $relation_type->relation_type,
+    ));
+
+    $form = $this->entityFormBuilder()->getForm($relation);
+
+    return $form;
   }
 
   /**
