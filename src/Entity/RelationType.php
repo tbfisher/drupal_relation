@@ -46,7 +46,7 @@ use Drupal\Core\Entity\EntityStorageControllerInterface;
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "render" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\relation\RelationTypeListController",
+ *     "list_builder" = "Drupal\relation\RelationTypeListBuilder",
  *     "form" = {
  *       "add" = "Drupal\relation\RelationTypeForm",
  *       "edit" = "Drupal\relation\RelationTypeForm",

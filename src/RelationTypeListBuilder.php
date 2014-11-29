@@ -2,19 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\relation\RelationTypeListController.
+ * Contains \Drupal\relation\RelationTypeListBuilder.
  */
 
 namespace Drupal\relation;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
-use Drupal\Core\Entity\EntityListBuilder;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Provides a listing of relation types.
  */
-class RelationTypeListController extends EntityListBuilder {
+class RelationTypeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
