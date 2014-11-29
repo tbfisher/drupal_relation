@@ -1,7 +1,7 @@
 relation.view:
   path: '/relation/{relation}'
   defaults:
-    _content: '\Drupal\relation\Controller\RelationController::page'
+    _controller: '\Drupal\relation\Controller\RelationController::page'
     _title_callback: '\Drupal\relation\Controller\RelationController::pageTitle'
   requirements:
     _entity_access: 'relation.view'
