@@ -295,8 +295,8 @@ function relation_query($entity_type = NULL, $entity_id = NULL, $delta = NULL) {
  */
 function relation_query_add_related(Drupal\Core\Entity\Query\QueryInterface $query, $entity_type, $entity_id, $delta = NULL) {
   $group = $query->andConditionGroup()
-    ->condition('endpoints.entity_type', $entity_type, '=')
-    ->condition('endpoints.entity_id', $entity_id, NULL);
+    ->condition('endpoints.target_type', $entity_type, '=')
+    ->condition('endpoints.target_id', $entity_id, NULL);
 
   if (isset($delta)) {
     $group->condition('endpoints.delta', $delta, '=');
