@@ -10,7 +10,7 @@ relation.add_page:
   path: '/relation/add'
   defaults:
     _title: 'Add relation'
-    _content: '\Drupal\relation\Controller\RelationController::addPage'
+    _controller: '\Drupal\relation\Controller\RelationController::addPage'
   requirements:
     _permission: 'create relations'
 
@@ -18,7 +18,7 @@ relation.add:
   path: '/relation/add/{relation_type}'
   defaults:
     _title: 'Add relation'
-    _content: '\Drupal\relation\Controller\RelationController::add'
+    _controller: '\Drupal\relation\Controller\RelationController::add'
   requirements:
     _permission: 'create relations'
 
