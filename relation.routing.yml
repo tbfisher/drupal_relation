@@ -47,7 +47,7 @@ relation.list:
 relation.type_list:
   path: '/admin/structure/relation'
   defaults:
-    _content: '\Drupal\Core\Entity\Controller\EntityListController::listing'
+    _controller: '\Drupal\Core\Entity\Controller\EntityListController::listing'
     entity_type: 'relation_type'
     _title: 'Relation types'
   requirements:
