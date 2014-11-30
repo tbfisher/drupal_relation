@@ -49,23 +49,18 @@ class RelationListController extends EntityListBuilder {
       '#title' => $this->getLabel($bundle),
     ) + $bundle->urlInfo()->toRenderArray();
 
-    // Sort entities by their type
-    foreach ($entity->endpoints as $endpoint) {
-      $entities[$endpoint->entity_type][] = $endpoint->entity_id;
-    }
-
-
     $relation_entities = array();
     $entity_count_total = 0;
     $entity_count = 0;
-    foreach ($entities as $type => $ids) {
-      $entity_count_total += count(array_unique($ids));
-      foreach (entity_load_multiple($type, $ids) as $endpoint_entity) {
+    foreach ($entity->endpoints() as $type => $ids) {
+      $entity_count_total += count($ids);
+      $entities = entity_load_multiple($type, $ids);
+      foreach ($ids as $id) {
         $entity_count++;
         $relation_entities[] = array(
           '#type' => 'link',
-          '#title' => $this->getLabel($endpoint_entity),
-        ) + $endpoint_entity->urlInfo()->toRenderArray();
+          '#title' => $this->getLabel($entities[$id]),
+        ) + $entities[$id]->urlInfo()->toRenderArray();
       }
     }
 
