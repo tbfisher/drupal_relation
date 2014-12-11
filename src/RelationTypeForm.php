@@ -31,8 +31,8 @@ class RelationTypeForm extends EntityForm {
       $form['#title'] = $this->t('Edit %label relation type', array('%label' => $relation_type->label()));
     }
 
-    $form['#attached']['css'] = array(
-      drupal_get_path('module', 'relation') . '/relation.css',
+    $form['#attached'] = array(
+      'library' => array('relation/drupal.relation'),
     );
     $form['labels'] = array(
       '#type' => 'container',

@@ -28,8 +28,8 @@ class EntityCollector extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $storage = &$form_state->getStorage();
-    $form['#attached']['css'] = array(
-      drupal_get_path('module', 'relation_entity_collector') . '/relation_entity_collector.css',
+    $form['#attached'] = array(
+      'library' => array('relation_entity_controller/drupal.relation_entity_controller'),
     );
     $relation_types_options = relation_get_relation_types_options();
     if (empty($relation_types_options)) {
