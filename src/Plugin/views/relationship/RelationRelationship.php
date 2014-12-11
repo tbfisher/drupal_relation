@@ -8,14 +8,14 @@
 namespace Drupal\relation\Plugin\views\relationship;
 
 use Drupal\views\Views;
-use Drupal\Component\Annotation\PluginID;
 use Drupal\views\Plugin\views\relationship\Standard as RelationshipStandard;
-use Drupal\views\Plugin\views\join\Standard as JoinStandard;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Relate entities using a Relation endpoint.
  *
- * @PluginID("relation_relationship")
+ * @ViewsRelationship("relation_relationship")
  */
 class RelationRelationship extends RelationshipStandard {
   /**
@@ -32,7 +32,7 @@ class RelationRelationship extends RelationshipStandard {
   /**
    * Let the user choose delta.
    */
-  function buildOptionsForm(&$form, &$form_state) {
+  function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
     // Check if this relation is entity-to-entity or entity-to-relation / relation-to-entity.
@@ -67,21 +67,21 @@ class RelationRelationship extends RelationshipStandard {
   }
 
   function query() {
-    $field = field_info_field('endpoints');
+    $table_mapping = \Drupal::entityManager()->getStorage('relation')->getTableMapping();
+    $endpoints_field = FieldStorageConfig::loadByName('relation', 'endpoints');
 
     // Get how `endpoint` is stored in the database.
-    $relation_data_table_name = _field_sql_storage_tablename($field);
-    $entity_id_field_name = _field_sql_storage_columnname('endpoints', 'entity_id');
-    $entity_type_field_name = _field_sql_storage_columnname('endpoints', 'entity_type');
-    $delta_field_name = _field_sql_storage_columnname('endpoints', 'delta');
+    $relation_data_table_name = $table_mapping->getDedicatedDataTableName($endpoints_field);
+    $entity_id_field_name = $table_mapping->getFieldColumnName($endpoints_field, 'entity_id');
+    $entity_type_field_name = $table_mapping->getFieldColumnName($endpoints_field, 'entity_type');
+    $delta_field_name = $table_mapping->getFieldColumnName($endpoints_field, 'delta');
 
     $join_type = empty($this->options['required']) ? 'LEFT' : 'INNER';
     $endpoints_twice = isset($this->definition['entity_type_left']) && isset($this->definition['entity_type_right']);
 
     $this->ensureMyTable();
-    // Join the left table with the entity type to the endpoints field data table.
 
-    $manager = Views::pluginManager('join');
+    // Join the left table with the entity type to the endpoints field data table.
     $configuration = array(
       'left_table' => $this->tableAlias,
       'left_field' => $this->realField,
@@ -118,7 +118,7 @@ class RelationRelationship extends RelationshipStandard {
     $join = Views::pluginManager('join')->createInstance('standard', $configuration);
 
     $join->adjusted = TRUE;
-    $l = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
+    $l = $this->query->addTable($relation_data_table_name, $this->relationship, $join);
 
     if ($endpoints_twice) {
       // Execute a self-join.
@@ -147,7 +147,7 @@ class RelationRelationship extends RelationshipStandard {
 
       $join = Views::pluginManager('join')->createInstance('standard', $configuration);
       $join->adjusted = TRUE;
-      $r = $this->query->add_table($relation_data_table_name, $this->relationship, $join);
+      $r = $this->query->addTable($relation_data_table_name, $this->relationship, $join);
     }
     else {
       $r = $l;
@@ -178,7 +178,7 @@ class RelationRelationship extends RelationshipStandard {
     $join->adjusted = TRUE;
     // use a short alias for this:
     $alias = $this->definition['base'] . '_' . $this->table;
-    $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
+    $this->alias = $this->query->addRelationship($alias, $join, $this->definition['base'], $this->relationship);
   }
 
   protected function ensure_no_duplicate_entities(&$extra, $check, $relation_type, $entity_type, $table, $field) {
