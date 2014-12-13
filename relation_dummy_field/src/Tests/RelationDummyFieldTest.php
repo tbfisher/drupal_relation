@@ -35,7 +35,7 @@ class RelationDummyFieldTest extends RelationTestBase {
   function testDummyFieldDisplayed() {
     $this->drupalGet('node/' . $this->node1->nid);
     $this->assertNoRaw($this->node4->title, 'Node 4 title is not found');
-    $this->field_name = drupal_strtolower($this->randomName()) . '_field_name';
+    $this->field_name = drupal_strtolower($this->randomMachineName()) . '_field_name';
     $field = array(
       'field_name' => $this->field_name,
       'type' => 'relation',
