@@ -1,3 +1,5 @@
+# Schema for the configuration files of the Relation module.
+
 relation.type.*:
   type: config_entity
   label: 'Relation type'
@@ -27,8 +29,14 @@ relation.type.*:
       type: integer
       label: 'Maximum number of entities'
     source_bundles:
-      type: mapping
+      type: sequence
       label: 'Allowed bundles of related entities'
+      sequence:
+        - type: string
+          label: 'Source bundle'
     target_bundles:
-      type: mapping
+      type: sequence
       label: 'Target bundles of related entities'
+      sequence:
+        - type: string
+          label: 'Target bundle'
