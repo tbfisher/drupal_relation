@@ -23,10 +23,10 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   bundle_label = @Translation("Relation type"),
  *   module = "relation",
  *   handlers = {
- *     "access" = "Drupal\relation\RelationAccessController",
- *     "storage" = "Drupal\relation\RelationStorageController",
+ *     "access" = "Drupal\relation\RelationAccessControlHandler",
+ *     "storage" = "Drupal\relation\RelationStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\relation\RelationListController",
+ *     "list_builder" = "Drupal\relation\RelationListBuilder",
  *     "form" = {
  *       "default" = "Drupal\relation\RelationForm",
  *       "edit" = "Drupal\relation\RelationForm",

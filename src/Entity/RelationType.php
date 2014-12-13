@@ -12,7 +12,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
-use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation type entity

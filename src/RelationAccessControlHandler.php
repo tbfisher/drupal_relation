@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation\RelationAccessController.
+ * Contains \Drupal\relation\RelationAccessControlHandler.
  */
 
 namespace Drupal\relation;
@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Defines the access controller for Relations.
  */
-class RelationAccessController extends EntityAccessControlHandler {
+class RelationAccessControlHandler extends EntityAccessControlHandler {
   /**
    * {@inheritdoc}
    */
