@@ -130,14 +130,14 @@ class RelationType extends ConfigEntityBundleBase implements RelationTypeInterfa
    *
    * @var array
    */
-  public $source_bundles;
+  public $source_bundles = array();
 
   /**
    * List of entity bundles that can be used as relation targets.
    *
    * @var array
    */
-  public $target_bundles;
+  public $target_bundles = array();
 
   /**
    * Implements Drupal\Core\Entity\EntityInterface::id().
