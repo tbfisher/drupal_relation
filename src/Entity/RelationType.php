@@ -192,14 +192,7 @@ class RelationType extends ConfigEntityBundleBase implements RelationTypeInterfa
   }
 
   /**
-   * Get valid entity/bundle pairs that can be associated with this type
-   * of Relation.
-   *
-   * @param NULL|string $direction
-   *   Bundle direction. Leave as NULL to get all.
-   *
-   * @return array
-   *   An array containing bundles as key/value pairs, keyed by entity type.
+   * {@inheritdoc}
    */
   public function getBundles($direction = NULL) {
     $pairs = array();

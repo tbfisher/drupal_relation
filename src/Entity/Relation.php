@@ -137,31 +137,9 @@ class Relation extends ContentEntityBase implements RelationInterface {
   }
 
   /**
-   * Filters endpoints by entity type.
-   *
-   * Suitable for direct usage with entity_load_multiple().
-   *
-   * Example:
-   *
-   * @code
-   * $endpoints = $relation->endpoints();
-   * $users = entity_load_multiple('user', $endpoints['user']);
-   * @endcode
-   *
-   * Sample return value:
-   *
-   * @code
-   * array(
-   *   "node" => array(5),
-   *   "user" => array(2),
-   * );
-   * @endcode
-   *
-   * @return array
-   *   An array where keys are entity type, and values are arrays containing
-   *   entity IDs of endpoints.
+   * {@inheritdoc}
    */
-  function endpoints() {
+  public function endpoints() {
     $entities = array();
 
     foreach ($this->endpoints as $endpoint) {
@@ -172,18 +150,9 @@ class Relation extends ContentEntityBase implements RelationInterface {
   }
 
   /**
-   * Gets the label of the relation type of the given relation
-   *
-   * @param $relation
-   *   A relation object.
-   * @param $reverse
-   *   optional: whether to get the reverse label (boolean).
-   *
-   * @return string|NULL
-   *   The label of the relation type, or NULL if the relation type
-   *   does not exist.
+   * {@inheritdoc}
    */
-  function relation_type_label($reverse = FALSE) {
+  public function relation_type_label($reverse = FALSE) {
     $relation_type = relation_type_load($this->bundle());
     if ($relation_type) {
       return ($relation_type->directional && $reverse) ? $relation_type->reverse_label : $relation_type->label;
