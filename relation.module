@@ -157,18 +157,6 @@ function relation_relation_exists($endpoints, $relation_type = NULL, $enforce_di
  */
 function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Query\AlterableInterface $query) {
   $arity = 0;
-  $endpoints_table_name = &drupal_static(__FUNCTION__ . '.endpoints_table_name', NULL);
-
-  if (!isset($endpoints_table_name)) {
-    $field = \Drupal\field\Field::fieldInfo()->getField('relation', RELATION_FIELD_NAME);
-    if ($field) {
-      $endpoints_table_name = \Drupal::entityManager()->getStorage('relation')->_fieldTableName($field);
-    }
-    else {
-      throw Exception('Could not get information about relation field.');
-    }
-  }
-
   // Get arity of the query
   $conditions = $query->conditions();
   foreach (Element::children($conditions) as $c) {
@@ -181,13 +169,10 @@ function relation_query_enforce_distinct_endpoints_alter(Drupal\Core\Database\Qu
   // Add r_index conditions between all endpoints
   for ($i = 0; $i < $arity; $i++) {
     for ($k = $i + 1; $k < $arity; $k++) {
-      // @see http://drupal.org/node/1859084, http://drupal.org/node/1760026
-      // For now each endpoint condition adds 2 joins to the query. Add
-      // conditions between even numbers.
       $left_suffix = !$i ? '' : '_' . ($i + 1);
       $right_suffix = !$k  ? '' : '_' . ($k + 1);
-      $column_left = $endpoints_table_name . $left_suffix . '.endpoints_r_index';
-      $column_right = $endpoints_table_name . $right_suffix . '.endpoints_r_index';
+      $column_left = 'relation__endpoints' . $left_suffix . '.endpoints_r_index';
+      $column_right = 'relation__endpoints' . $right_suffix . '.endpoints_r_index';
       $query->where("$column_left != $column_right");
     }
   }
