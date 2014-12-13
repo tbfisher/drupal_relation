@@ -78,7 +78,7 @@ class RelationUITest extends RelationTestBase {
     $this->drupalGet('admin/structure/relation');
 
     // Change label of relation endpoint field
-    $field_label = $this->randomName();
+    $field_label = $this->randomMachineName();
     $edit = array(
       'instance[label]' => $field_label,
     );

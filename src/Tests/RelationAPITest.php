@@ -63,16 +63,16 @@ class RelationAPITest extends RelationTestBase {
 
     // Where endpoints does not exist.
     $endpoints_do_not_exist = $this->endpoints;
-    $endpoints_do_not_exist[1]['entity_type'] = $this->randomName();
+    $endpoints_do_not_exist[1]['entity_type'] = $this->randomMachineName();
     $this->assertEqual(array(), relation_relation_exists($endpoints_do_not_exist, $this->relation_type_symmetric), 'Relation with non-existant endpoint not found.');
 
     // Where there are too many endpoints
     $endpoints_excessive = $this->endpoints;
-    $endpoints_excessive[] = array('entity_type' => $this->randomName(), 'entity_id' => 1000);
+    $endpoints_excessive[] = array('entity_type' => $this->randomMachineName(), 'entity_id' => 1000);
     $this->assertEqual(array(), relation_relation_exists($endpoints_do_not_exist, $this->relation_type_symmetric), 'Relation with too many endpoints not found.');
 
     // Where relation type is invalid
-    $this->assertEqual(array(), relation_relation_exists($this->endpoints, $this->randomName()), 'Relation with invalid relation type not found.');
+    $this->assertEqual(array(), relation_relation_exists($this->endpoints, $this->randomMachineName()), 'Relation with invalid relation type not found.');
 
   }
 
