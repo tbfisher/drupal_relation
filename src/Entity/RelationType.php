@@ -140,14 +140,14 @@ class RelationType extends ConfigEntityBundleBase implements RelationTypeInterfa
   public $target_bundles = array();
 
   /**
-   * Implements Drupal\Core\Entity\EntityInterface::id().
+   * {@inheritdoc}
    */
   public function id() {
     return $this->relation_type;
   }
 
   /**
-   * Overrides Drupal\Core\Entity\Entity::label().
+   * {@inheritdoc}
    */
   public function label($langcode = NULL) {
     return $this->label;

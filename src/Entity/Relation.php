@@ -58,26 +58,29 @@ use Drupal\Core\Field\BaseFieldDefinition;
  */
 class Relation extends ContentEntityBase implements RelationInterface {
   /**
-   * Implements Drupal\Core\Entity\EntityInterface::id().
+   * {@inheritdoc}
    */
   public function id() {
     return $this->get('rid')->value;
   }
 
   /**
-   * Overrides Drupal\Core\Entity\Entity::getRevisionId().
+   * {@inheritdoc}
    */
   public function getRevisionId() {
     return $this->get('vid')->value;
   }
 
   /**
-   * Overrides Drupal\Core\Entity\Entity::label().
+   * {@inheritdoc}
    */
   public function label($langcode = NULL) {
     return t('Relation @id', array('@id' => $this->id()));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields['rid'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Relation ID'))
@@ -126,7 +129,7 @@ class Relation extends ContentEntityBase implements RelationInterface {
   }
 
   /**
-   * Overrides Drupal\Core\Entity\DatabaseStorageController::preSave().
+   * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
     $this->changed = REQUEST_TIME;
@@ -189,7 +192,7 @@ class Relation extends ContentEntityBase implements RelationInterface {
   }
 
   /**
-   * Overrides ContentEntityBase::uuid().
+   * {@inheritdoc}
    */
   public function uuid() {
     // We don't have uuid (yet at least)
