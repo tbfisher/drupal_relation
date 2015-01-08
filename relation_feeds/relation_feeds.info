@@ -4,4 +4,5 @@ core = 7.x
 package = Relation
 files[] = tests/relation.feeds_processor.test
 dependencies[] = relation
-dependencies[] = feeds
+; Feeds integration does not work with alpha8 but that's the latest release
+dependencies[] = feeds (!=7.x-1.0-alpha8)
