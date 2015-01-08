@@ -12,4 +12,4 @@ files[] = views/views_handler_field_relation_link.inc
 files[] = views/views_handler_field_relation_link_delete.inc
 files[] = views/views_handler_field_relation_link_edit.inc
 dependencies[] = relation_endpoint
-;dependencies[] = ctools (!=7.x-1.0-rc1)
+dependencies[] = system (>=7.33)
