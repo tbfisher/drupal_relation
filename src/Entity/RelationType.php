@@ -7,6 +7,7 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\relation\RelationTypeInterface;
@@ -178,16 +179,13 @@ class RelationType extends ConfigEntityBundleBase implements RelationTypeInterfa
     parent::postSave($storage, $update);
 
     // Ensure endpoints field is attached to relation type.
-
     if (!$update) {
-      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
       relation_add_endpoint_field($this);
     }
-    elseif ($this->getOriginalID() != $this->id()) {
-      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
-    }
     else {
-      \Drupal::cache()->invalidateTags(array('relation_type' => $this->id()));
+      // Clear the cached field definitions as some settings affect the field
+      // definitions.
+      $this->entityManager()->clearCachedFieldDefinitions();
     }
   }
 
