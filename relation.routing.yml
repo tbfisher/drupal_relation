@@ -31,8 +31,7 @@ relation.list:
 relation.type_list:
   path: '/admin/structure/relation'
   defaults:
-    _controller: '\Drupal\Core\Entity\Controller\EntityListBuilder::listing'
-    entity_type: 'relation_type'
+    _entity_list: 'relation_type'
     _title: 'Relation types'
   requirements:
     _permission: 'administer relation types'
