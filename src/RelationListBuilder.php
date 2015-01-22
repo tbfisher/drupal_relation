@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation\RelationListController.
+ * Contains \Drupal\relation\RelationListBuilder.
  */
 
 namespace Drupal\relation;
@@ -15,7 +15,7 @@ use Drupal\Core\Entity\EntityListBuilder;
  *
  * @todo: add filters
  */
-class RelationListController extends EntityListBuilder {
+class RelationListBuilder extends EntityListBuilder {
 
   /**
    * The url generator service.

@@ -10,6 +10,8 @@ namespace Drupal\relation\Form;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a form for relation deletion.
@@ -35,11 +37,10 @@ class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getCancelRoute() {
-    return array(
-      'route_name' => 'relation.view',
-      'route_parameters' => array('relation' => $this->entity->id()),
-    );
+  public function getCancelUrl() {
+    return new Url('relation.view', array(
+      'relation' => $this->entity->id(),
+    ));
   }
 
   /**
@@ -52,10 +53,9 @@ class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submit(array $form, array &$form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
     drupal_set_message(t('Relation @id has been deleted.', array('@id' => $this->entity->id())));
-    $form_state['redirect'] = '<front>';
+    $form_state->set('redirect', '<front>');
   }
-
 }

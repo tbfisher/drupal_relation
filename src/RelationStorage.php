@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\relation\RelationStorageController.
+ * Contains \Drupal\relation\RelationStorage.
  */
 
 namespace Drupal\relation;
@@ -12,12 +12,14 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 /**
  * Relation controller class
  *
- * This extends the DatabaseStorageController class, adding required special
+ * This extends the SqlContentEntityStorage class, adding required special
  * handling for relation revisions, very similar to what's being done with
  * nodes.
  */
-
-class RelationStorageController extends SqlContentEntityStorage {
+class RelationStorage extends SqlContentEntityStorage {
+  /**
+   * TODO, what's this?
+   */
   public function create(array $values = array()) {
     $account = \Drupal::currentUser();
     $values += array(
@@ -28,7 +30,7 @@ class RelationStorageController extends SqlContentEntityStorage {
   }
 
   /**
-   * Overrides Drupal\Core\Entity\DatabaseStorageController::buildQuery().
+   * {@inheritdoc}
    */
   protected function buildQuery($ids, $revision_id = FALSE) {
     // Ensure that uid is taken from the {relation} table

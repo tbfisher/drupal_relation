@@ -7,12 +7,12 @@
 
 namespace Drupal\relation\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\relation\RelationTypeInterface;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Entity\Annotation\EntityType;
-use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Defines relation type entity
@@ -179,28 +179,18 @@ class RelationType extends ConfigEntityBundleBase implements RelationTypeInterfa
     parent::postSave($storage, $update);
 
     // Ensure endpoints field is attached to relation type.
-
     if (!$update) {
-      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
       relation_add_endpoint_field($this);
     }
-    elseif ($this->getOriginalID() != $this->id()) {
-      \Drupal::cache()->deleteTags(array('relation_types' => TRUE));
-    }
     else {
-      \Drupal::cache()->invalidateTags(array('relation_type' => $this->id()));
+      // Clear the cached field definitions as some settings affect the field
+      // definitions.
+      $this->entityManager()->clearCachedFieldDefinitions();
     }
   }
 
   /**
-   * Get valid entity/bundle pairs that can be associated with this type
-   * of Relation.
-   *
-   * @param NULL|string $direction
-   *   Bundle direction. Leave as NULL to get all.
-   *
-   * @return array
-   *   An array containing bundles as key/value pairs, keyed by entity type.
+   * {@inheritdoc}
    */
   public function getBundles($direction = NULL) {
     $pairs = array();
