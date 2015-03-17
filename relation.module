@@ -222,7 +222,7 @@ function relation_insert($relation_type, array $endpoints) {
  * @see entity_uri()
  */
 function relation_uri(Drupal\relation\RelationInterface $relation) {
-  return new Url('relation.view', array(
+  return new Url('entity.relation.canonical', array(
     'relation' => $relation->id(),
   ));
 }
@@ -233,7 +233,7 @@ function relation_uri(Drupal\relation\RelationInterface $relation) {
  * @see entity_uri()
  */
 function relation_type_uri(Drupal\relation\RelationTypeInterface $relation_type) {
-  return new Url('relation.type_edit', array(
+  return new Url('entity.relation_type.edit_form', array(
     'relation' => $relation_type->id(),
   ));
 }

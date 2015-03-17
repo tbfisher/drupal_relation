@@ -3,6 +3,6 @@ type: module
 description: 'Describes relationships between entities.'
 package: Relation
 core: 8.x
-configure: relation.type_list
+configure: entity.relation_type.collection
 dependencies:
   - dynamic_entity_reference

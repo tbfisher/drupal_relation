@@ -85,7 +85,7 @@ class RelationController extends ControllerBase {
   }
 
   /**
-   * The _title_callback for the relation.view route.
+   * The _title_callback for the entity.relation.canonical route.
    *
    * @param RelationInterface $relation
    *   A relation entity.

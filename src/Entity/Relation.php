@@ -36,7 +36,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   base_table = "relation",
  *   revision_table = "relation_revision",
  *   uri_callback = "relation_uri",
- *   field_ui_base_route = "relation.type_edit",
+ *   field_ui_base_route = "entity.relation_type.edit_form",
  *   entity_keys = {
  *     "id" = "rid",
  *     "revision" = "vid",
@@ -47,9 +47,10 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "bundle" = "relation_type"
  *   },
  *   links = {
- *     "admin-form" = "relation.type_edit",
- *     "edit-form" = "relation.edit",
- *     "delete-form" = "relation.delete_confirm",
+ *     "canonical" = "/relation/{relation}",
+ *     "edit-form" = "/relation/{relation}/edit",
+ *     "delete-form" = "/relation/{relation}/delete",
+ *     "collection" = "/admin/content/relation",
  *   },
  *   bundle_entity_type = "relation_type",
  *   admin_permission = "administer relations",

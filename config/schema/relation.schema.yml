@@ -32,11 +32,11 @@ relation.type.*:
       type: sequence
       label: 'Allowed bundles of related entities'
       sequence:
-        - type: string
-          label: 'Source bundle'
+        type: string
+        label: 'Source bundle'
     target_bundles:
       type: sequence
       label: 'Target bundles of related entities'
       sequence:
-        - type: string
-          label: 'Target bundle'
+        type: string
+        label: 'Target bundle'

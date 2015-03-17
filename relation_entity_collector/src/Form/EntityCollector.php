@@ -34,7 +34,7 @@ class EntityCollector extends FormBase {
     $relation_types_options = relation_get_relation_types_options();
     if (empty($relation_types_options)) {
       $form['explanation']['#markup'] = $this->t('Before you can create relations, you need to create one or more <a href="@url">relation types</a>. Once you\'ve done that, visit any page that loads one or more entities, and use this block to add entities to a new relation. Picked entities stay in the entity_collector until cleared or a relation is created so it is possible to collect the entities from several pages.', array(
-        '@url' => $this->url('relation.type_list')
+        '@url' => $this->url('entity.relation_type.collection')
       ));
       return $form;
     }
