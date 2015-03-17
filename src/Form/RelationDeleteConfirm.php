@@ -38,7 +38,7 @@ class RelationDeleteConfirm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('relation.view', array(
+    return new Url('entity.relation.canonical', array(
       'relation' => $this->entity->id(),
     ));
   }

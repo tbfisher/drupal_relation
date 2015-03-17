@@ -55,7 +55,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('relation.list');
+    return new Url('entity.relation.collection');
   }
 
   /**
@@ -89,7 +89,7 @@ class RelationTypeDeleteConfirm extends EntityConfirmFormBase {
     $t_args = array('%relation_type' => $this->entity->label());
     drupal_set_message(t('The relation type %relation_type has been deleted.', $t_args));
     $this->logger('relation')->notice('Deleted relation type %relation_type.', $t_args);
-    $form_state->setRedirect('relation.type_list');
+    $form_state->setRedirect('entity.relation_type.collection');
   }
 
 }

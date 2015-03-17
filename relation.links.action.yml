@@ -1,5 +1,5 @@
-relation_add_local_action:
-  route_name: relation.type_add
+entity.relation_type.add_form:
+  route_name: entity.relation_type.add_form
   title: 'Add relation type'
   appears_on:
-    - relation.type_list
+    - entity.relation_type.collection

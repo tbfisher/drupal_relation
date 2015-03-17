@@ -61,9 +61,9 @@ use Drupal\Core\Entity\Annotation\EntityType;
  *     "label" = "label"
  *   },
  *   links = {
- *     "add-form" = "relation.type_edit",
- *     "edit-form" = "relation.type_edit",
- *     "delete-form" = "relation.type_delete",
+ *     "edit-form" = "/admin/structure/relation/manage/{relation_type}",
+ *     "delete-form" = "/admin/structure/relation/manage/{relation_type}/delete",
+ *     "collection" = "/admin/structure/relation",
  *   }
  * )
  */

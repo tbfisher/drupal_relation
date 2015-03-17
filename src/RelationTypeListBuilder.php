@@ -39,7 +39,7 @@ class RelationTypeListBuilder extends ConfigEntityListBuilder {
   public function render() {
     $build = parent::render();
     $build['#empty'] = t('No relation types exist. <a href="@link">Add relation type</a>.', array(
-      '@link' => \Drupal::url('relation.type_add'),
+      '@link' => \Drupal::url('entity.relation_type.add_form'),
     ));
     return $build;
   }
